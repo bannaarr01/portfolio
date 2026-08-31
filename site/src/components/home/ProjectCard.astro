@@ -1,0 +1,63 @@
+---
+/** Secondary project card — two-up grid beneath the case studies. */
+import type { Project } from '../../types/portfolio';
+import Tag from '../ui/Tag.astro';
+import './home.css';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+---
+
+<article class="project h-card">
+  <h3 class="h-card-title">{project.title}</h3>
+  <p class="company">Company &middot; {project.company}</p>
+  <p class="h-body summary">{project.summary}</p>
+
+  <ul class="h-bullets">
+    {project.highlights.map((h) => <li>{h}</li>)}
+  </ul>
+
+  <ul class="h-tags tech">
+    {project.tech.map((t) => <Tag label={t} />)}
+  </ul>
+</article>
+
+<style>
+  .project {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    padding: 26px 24px 24px;
+  }
+
+  .company {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: -0.005em;
+  }
+
+  .summary {
+    margin-top: 13px;
+  }
+
+  .h-bullets {
+    margin-top: 16px;
+  }
+
+  /* Pin the tags to the bottom so cards in a row align. */
+  .tech {
+    margin-top: auto;
+    padding-top: 20px;
+  }
+
+  @media (max-width: 560px) {
+    .project {
+      padding: 22px 20px 20px;
+    }
+  }
+</style>

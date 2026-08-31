@@ -1,0 +1,150 @@
+---
+/**
+ * Continuous horizontal stack marquee.
+ *
+ * The rail holds the track twice and translates by exactly -50%, so the loop
+ * is seamless. Each track carries its own trailing gap as padding-right,
+ * otherwise the seam between the two copies would be a gap short.
+ *
+ * Transform only — no `left`, no `margin` animation. Pauses on hover and on
+ * keyboard focus within, and does not run at all under reduced motion.
+ */
+import type { StackItem } from '../../types/portfolio';
+import Icon from '../ui/Icon.astro';
+import './home.css';
+
+interface Props {
+  items: StackItem[];
+  title: string;
+  subtitle: string;
+  /** Seconds for one full pass. Scale with item count. */
+  duration?: number;
+}
+
+const { items, title, subtitle, duration = 46 } = Astro.props;
+---
+
+<div class="strip h-card">
+  <div class="head">
+    <span class="h-kicker">{title}</span>
+    <span class="sub">{subtitle}</span>
+  </div>
+
+  <div class="viewport" role="region" aria-label={title}>
+    <div class="rail" style={`--dur:${duration}s`}>
+      <ul class="track">
+        {
+          items.map((item) => (
+            <li>
+              <Icon name={item.icon} size={14} />
+              {item.name}
+            </li>
+          ))
+        }
+      </ul>
+      <ul class="track" aria-hidden="true">
+        {
+          items.map((item) => (
+            <li>
+              <Icon name={item.icon} size={14} />
+              {item.name}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</div>
+
+<style>
+  .strip {
+    overflow: hidden;
+    padding: 18px 0 20px;
+  }
+
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 22px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sub {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+  }
+
+  .viewport {
+    margin-top: 18px;
+    /* Fade the ends so items enter and leave instead of being clipped.
+       `black` here is mask alpha, not a palette colour. */
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      black 7%,
+      black 93%,
+      transparent
+    );
+  }
+
+  .rail {
+    display: flex;
+    width: max-content;
+  }
+
+  .track {
+    display: flex;
+    gap: 10px;
+    margin: 0;
+    padding: 0 10px 0 0;
+    list-style: none;
+  }
+
+  .track > li {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--band, var(--bg));
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+  }
+
+  .track > li :global(svg) {
+    color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .rail {
+      animation: slide var(--dur) linear infinite;
+    }
+
+    .viewport:hover .rail,
+    .viewport:focus-within .rail {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes slide {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .head {
+      flex-direction: column;
+      gap: 4px;
+      padding-inline: 20px;
+    }
+  }
+</style>

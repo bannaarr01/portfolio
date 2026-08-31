@@ -1,0 +1,80 @@
+---
+/**
+ * Homepage.
+ *
+ * Every string on this page comes from `src/data/*` (group 07). Nothing is
+ * hardcoded here — the content is being replaced wholesale.
+ *
+ * Bands alternate --bg / --surface from About down, so the page never shows
+ * more than one section-height of flat navy.
+ */
+import PortfolioLayout from '../layouts/PortfolioLayout.astro';
+
+import About from '../components/home/About.astro';
+import Contact from '../components/home/Contact.astro';
+import Education from '../components/home/Education.astro';
+import Experience from '../components/home/Experience.astro';
+import Hero from '../components/home/Hero.astro';
+import Philosophy from '../components/home/Philosophy.astro';
+import Projects from '../components/home/Projects.astro';
+import Skills from '../components/home/Skills.astro';
+import Testimonials from '../components/home/Testimonials.astro';
+
+import { about, stats } from '../data/about';
+import { contact } from '../data/contact';
+import { certifications, certificationsCard, degrees, degreesCard } from '../data/education';
+import { jobs } from '../data/experience';
+import { hero } from '../data/hero';
+import { philosophy, principles } from '../data/philosophy';
+import { caseStudies, caseStudyKicker, projects, projectsSubheading } from '../data/projects';
+import { meta } from '../data/site';
+import { headings } from '../data/sections';
+import { skillGroups, stack, stackSubtitle, stackTitle } from '../data/skills';
+import { testimonials, testimonialsIntro } from '../data/testimonials';
+---
+
+<PortfolioLayout title={meta.title} description={meta.description} active="about">
+  <Hero content={hero} />
+
+  <About heading={headings.about} content={about} stats={stats} />
+
+  <Experience heading={headings.experience} jobs={jobs} />
+
+  <Projects
+    heading={headings.projects}
+    caseStudies={caseStudies}
+    caseStudyKicker={caseStudyKicker}
+    secondaryHeading={projectsSubheading}
+    projects={projects}
+  />
+
+  <Skills
+    heading={headings.skills}
+    stack={stack}
+    stackTitle={stackTitle}
+    stackSubtitle={stackSubtitle}
+    groups={skillGroups}
+  />
+
+  <Testimonials
+    heading={headings.testimonials}
+    intro={testimonialsIntro}
+    testimonials={testimonials}
+  />
+
+  <Philosophy
+    heading={headings.philosophy}
+    content={philosophy}
+    principles={principles}
+  />
+
+  <Education
+    heading={headings.education}
+    degreesCard={degreesCard}
+    degrees={degrees}
+    certificationsCard={certificationsCard}
+    certifications={certifications}
+  />
+
+  <Contact content={contact} />
+</PortfolioLayout>

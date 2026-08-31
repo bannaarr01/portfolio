@@ -1,0 +1,154 @@
+---
+/**
+ * Featured case study: edge light, corner ticks, and the three-up
+ * Problem / Approach / Result grid with Result emphasised on --accent-soft.
+ */
+import type { CaseStudy } from '../../types/portfolio';
+import Tag from '../ui/Tag.astro';
+import './home.css';
+
+interface Props {
+  study: CaseStudy;
+  kicker: string;
+}
+
+const { study, kicker } = Astro.props;
+---
+
+<article class="case h-card h-card-lit">
+  <span class="h-ticks" aria-hidden="true"></span>
+
+  <p class="h-kicker">{kicker}</p>
+  <h3>{study.title}</h3>
+  <p class="company">Company &middot; {study.company}</p>
+  <p class="h-body summary">{study.summary}</p>
+
+  <dl class="par">
+    <div class="cell">
+      <dt>Problem</dt>
+      <dd>{study.problem}</dd>
+    </div>
+    <div class="cell">
+      <dt>Approach</dt>
+      <dd>{study.approach}</dd>
+    </div>
+    <div class="cell result">
+      <dt>Result</dt>
+      <dd>{study.result}</dd>
+    </div>
+  </dl>
+
+  <p class="arch"><span>Architecture</span>{study.architecture}</p>
+
+  <ul class="h-tags tech">
+    {study.tech.map((t) => <Tag label={t} />)}
+  </ul>
+</article>
+
+<style>
+  .case {
+    padding: 30px 30px 28px;
+  }
+
+  h3 {
+    margin: 12px 0 0;
+    color: var(--text);
+    font-size: clamp(22px, 2.3vw, 27px);
+    font-weight: 700;
+    line-height: 1.16;
+    letter-spacing: -0.032em;
+    text-wrap: balance;
+  }
+
+  .company {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: -0.005em;
+  }
+
+  .summary {
+    margin-top: 14px;
+    max-width: 76ch;
+  }
+
+  /* ------------------------------------------------ problem/approach/result */
+
+  .par {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 22px 0 0;
+  }
+
+  .cell {
+    padding: 17px 17px 18px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: var(--band, var(--bg));
+  }
+
+  .cell.result {
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    background: var(--accent-soft);
+  }
+
+  .cell dt {
+    margin: 0 0 8px;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .cell dd {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+
+  .cell.result dd {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* -------------------------------------------------------- architecture -- */
+
+  .arch {
+    margin: 20px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .arch span {
+    margin-right: 8px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .tech {
+    margin-top: 20px;
+  }
+
+  @media (max-width: 900px) {
+    .par {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .case {
+      padding: 26px 20px 24px;
+    }
+  }
+</style>

@@ -1,0 +1,140 @@
+---
+/**
+ * One role on the experience timeline.
+ *
+ * The header is a two-column grid — `minmax(0, 1fr) auto` — so a long company
+ * name wraps inside its own column while the date/location meta stays pinned
+ * top-right. A flex row with wrap drops the meta below the title instead;
+ * that was a real bug in the mockup.
+ *
+ * The stack breakpoint is a *container* query, not a viewport one: these
+ * cards are half-width above 900px and full-width below, so what matters is
+ * the card's own width, not the window's.
+ */
+import type { Job } from '../../types/portfolio';
+import Icon from '../ui/Icon.astro';
+import Tag from '../ui/Tag.astro';
+import './home.css';
+
+interface Props {
+  job: Job;
+}
+
+const { job } = Astro.props;
+---
+
+<article class="job h-card">
+  <header class="head">
+    <div class="who">
+      <p class="role">{job.role}</p>
+      <h3 class="company">{job.company}</h3>
+    </div>
+    <div class="meta">
+      <p class="h-meta">
+        <Icon name="calendar" size={13} />
+        {job.start} &ndash; {job.end}
+      </p>
+      <p class="h-meta">
+        <Icon name="map-pin" size={13} />
+        {job.location}
+      </p>
+    </div>
+  </header>
+
+  {
+    job.blocks.map((block) => (
+      <section class="block">
+        <h4>{block.heading}</h4>
+        <ul class="h-bullets">
+          {block.bullets.map((b) => (
+            <li>{b}</li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  <ul class="h-tags tech">
+    {job.tech.map((t) => <Tag label={t} />)}
+  </ul>
+</article>
+
+<style>
+  .job {
+    container-type: inline-size;
+    padding: 26px 26px 24px;
+  }
+
+  .head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .role {
+    margin: 0 0 4px;
+    color: var(--accent-strong);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.008em;
+  }
+
+  .company {
+    margin: 0;
+    color: var(--text);
+    font-size: 20px;
+    font-weight: 650;
+    line-height: 1.24;
+    letter-spacing: -0.028em;
+    /* The whole point of the grid: this wraps, the meta does not move. */
+    overflow-wrap: anywhere;
+  }
+
+  .meta {
+    display: grid;
+    justify-items: end;
+    gap: 5px;
+    text-align: right;
+  }
+
+  .block {
+    margin-top: 20px;
+  }
+
+  .block h4 {
+    margin: 0 0 11px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .tech {
+    margin-top: 22px;
+  }
+
+  /* Below ~430px of *card* width the meta no longer fits beside the title. */
+  @container (max-width: 430px) {
+    .head {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .meta {
+      justify-items: start;
+      text-align: left;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .job {
+      padding: 22px 20px 20px;
+    }
+  }
+</style>

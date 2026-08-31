@@ -1,0 +1,55 @@
+---
+/**
+ * Skill group card. The icon sits *inline with the heading*, not stacked
+ * above it — the mockup got this wrong initially.
+ */
+import type { SkillGroup } from '../../types/portfolio';
+import Icon from '../ui/Icon.astro';
+import Tag from '../ui/Tag.astro';
+import './home.css';
+
+interface Props {
+  group: SkillGroup;
+}
+
+const { group } = Astro.props;
+---
+
+<article class="skill h-card">
+  <div class="head">
+    <span class="h-badge"><Icon name={group.icon} size={17} /></span>
+    <h3>{group.title}</h3>
+  </div>
+
+  <ul class="h-tags items">
+    {group.items.map((item) => <Tag label={item} />)}
+  </ul>
+</article>
+
+<style>
+  .skill {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    padding: 22px 22px 22px;
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+  }
+
+  .items {
+    margin-top: 16px;
+  }
+</style>
