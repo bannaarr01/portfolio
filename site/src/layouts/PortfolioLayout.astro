@@ -1,20 +1,13 @@
 ---
-// STUB: owned by group 01 (01-layout-chrome).
-// BaseLayout + the portfolio footer.
+// BaseLayout + the quiet portfolio footer. PLAN.md §6.
 import SiteFooter from '../components/layout/SiteFooter.astro';
-import BaseLayout from './BaseLayout.astro';
+import BaseLayout, { type Props as BaseProps } from './BaseLayout.astro';
 
-interface Props {
-  title: string;
-  description: string;
-  ogImage?: string;
-  noindex?: boolean;
-  wide?: boolean;
-}
+export type Props = BaseProps;
 ---
 
 <BaseLayout {...Astro.props}>
-  <!-- STUB: owned by group 01 -->
+  <slot name="head" slot="head" />
   <slot />
   <SiteFooter slot="footer" />
 </BaseLayout>

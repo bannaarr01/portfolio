@@ -1,73 +1,125 @@
 ---
-// STUB: owned by group 01 (01-layout-chrome).
-// Functional on purpose — Wave 2 needs a working toggle to check both themes
-// in `npm run dev`. It writes the same `localStorage` key the head script
-// reads (THEME_STORAGE_KEY); keep that contract when you replace it.
+/**
+ * Theme toggle island. PLAN.md §6 — takes no props.
+ *
+ * Two details worth knowing before editing this file:
+ *
+ * 1. The accessible name is *content-derived*, not an `aria-label`. Two
+ *    visually-hidden spans describe the action in each direction and CSS
+ *    `display: none`s the inactive one. Nodes hidden with `display: none` are
+ *    excluded from accessible-name computation, so the button announces the
+ *    right action on first paint with no JS — and never announces a stale
+ *    label in the gap before the module script runs. An `aria-label` cannot do
+ *    that, because the correct value isn't known at build time.
+ *
+ * 2. The button is a fixed 36×36 with both icons absolutely stacked, so
+ *    hydration cannot shift layout (CLS budget 0.05, PLAN.md §8).
+ *
+ * It writes the same `localStorage` key the head script reads
+ * (THEME_STORAGE_KEY). That contract is the whole no-flash mechanism.
+ */
 import Icon from '../ui/Icon.astro';
 ---
 
-<button
-  class="theme-toggle"
-  type="button"
-  data-theme-toggle
-  aria-label="Toggle colour theme"
->
-  <!-- STUB: owned by group 01 -->
-  <span class="on-dark"><Icon name="sun" size={18} /></span>
-  <span class="on-light"><Icon name="moon" size={18} /></span>
+<button class="theme-toggle" type="button" data-theme-toggle>
+  <span class="tt-icons">
+    <Icon name="sun" size={17} class="tt-sun" />
+    <Icon name="moon" size={17} class="tt-moon" />
+  </span>
+  <span class="visually-hidden tt-label tt-label--dark">Switch to light theme</span>
+  <span class="visually-hidden tt-label tt-label--light">Switch to dark theme</span>
 </button>
 
 <style>
   .theme-toggle {
     display: grid;
     place-items: center;
-    width: 34px;
-    height: 34px;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    padding: 0;
     border: 1px solid transparent;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-button);
     background: transparent;
     color: var(--muted);
     cursor: pointer;
     transition:
-      background-color var(--dur-fast) var(--ease),
-      color var(--dur-fast) var(--ease),
-      border-color var(--dur-fast) var(--ease);
+      background-color var(--dur-ui) var(--ease),
+      border-color var(--dur-ui) var(--ease),
+      color var(--dur-ui) var(--ease);
   }
 
   .theme-toggle:hover {
-    background: var(--surface);
+    background: var(--surface-raised);
     border-color: var(--border);
-    color: var(--text);
+    color: var(--accent-strong);
   }
 
-  /* Dark is the default, so `.on-dark` shows unless the attribute is present. */
-  .on-light {
-    display: none;
-  }
-
-  :global(:root[data-theme='light']) .on-dark {
-    display: none;
-  }
-
-  :global(:root[data-theme='light']) .on-light {
+  /* Fixed-size stacking context — both icons share one cell, so the crossfade
+     never reflows. */
+  .tt-icons {
+    position: relative;
     display: block;
+    width: 17px;
+    height: 17px;
+  }
+
+  .tt-icons :global(.icon) {
+    position: absolute;
+    inset: 0;
+    transition:
+      opacity var(--dur-ui) var(--ease),
+      transform var(--dur-ui) var(--ease);
+  }
+
+  /* Exactly one icon is ever visible. Dark offers the sun; light offers the
+     moon. `visibility` rides along so the hidden one is not hit-testable. */
+  .tt-icons :global(.tt-moon) {
+    opacity: 0;
+    visibility: hidden;
+    transform: rotate(-90deg) scale(0.6);
+  }
+
+  :global(:root[data-theme='light']) .tt-icons :global(.tt-sun) {
+    opacity: 0;
+    visibility: hidden;
+    transform: rotate(90deg) scale(0.6);
+  }
+
+  :global(:root[data-theme='light']) .tt-icons :global(.tt-moon) {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  /* Accessible name — see the header comment. */
+  :global(:root[data-theme='light']) .tt-label--dark {
+    display: none;
+  }
+
+  :global(:root:not([data-theme='light'])) .tt-label--light {
+    display: none;
   }
 </style>
 
 <script>
   import { THEME_STORAGE_KEY } from '../../lib/theme';
 
-  document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
-    const root = document.documentElement;
-    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+  // Dark is the absence of the attribute (PLAN.md §4.5), so light is set and
+  // dark is deleted.
+  for (const btn of document.querySelectorAll('[data-theme-toggle]')) {
+    btn.addEventListener('click', () => {
+      const root = document.documentElement;
+      const next = root.dataset.theme === 'light' ? 'dark' : 'light';
 
-    if (next === 'light') root.dataset.theme = 'light';
-    else delete root.dataset.theme;
+      if (next === 'light') root.dataset.theme = 'light';
+      else delete root.dataset.theme;
 
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, next);
-    } catch {
-      /* private mode — the toggle still works for this page view */
-    }
-  });
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, next);
+      } catch {
+        /* private mode — the toggle still works for this page view */
+      }
+    });
+  }
 </script>

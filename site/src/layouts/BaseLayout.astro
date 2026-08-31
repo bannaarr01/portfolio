@@ -1,23 +1,40 @@
 ---
-// STUB: owned by group 01 (01-layout-chrome).
-// Props are the published contract (PLAN.md §6) — keep them when you replace
-// this. The head order below is not decorative: THEME_INIT_SCRIPT must be
-// synchronous and before any stylesheet, or the page flashes light before
-// paint. Astro injects `<link rel=stylesheet>` at the end of <head>, so
-// keeping the inline script first is enough.
+/**
+ * The shell every page sits inside. PLAN.md §6.
+ *
+ * Head order is not cosmetic: THEME_INIT_SCRIPT must run synchronously and
+ * before any stylesheet, or the page paints light and then snaps to dark.
+ * Astro injects `<link rel="stylesheet">` at the end of <head>, so keeping the
+ * inline script first is sufficient — but keep it first.
+ *
+ * The script is embedded from `lib/theme` rather than written out here. Group
+ * 09 pins its SHA-256 in the CSP; a copy that drifts breaks the header.
+ */
 import Header from '../components/layout/Header.astro';
+import type { NavKey } from '../components/layout/nav';
+import Seo from '../components/seo/Seo.astro';
 import { THEME_INIT_SCRIPT } from '../lib/theme';
+
+// Preloaded rather than left to the CSS import, so the two faces used above
+// the fold are in flight before the stylesheet resolves.
+import geistSans from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+import geistMono from '@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url';
+
 import '../styles/global.css';
 
-interface Props {
+export interface Props {
   title: string;
   description: string;
   ogImage?: string;
   noindex?: boolean;
   wide?: boolean;
+  /** Addition to the §6 signature — the only way to reach Header's `active`. */
+  active?: NavKey;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, ogImage, noindex = false, wide = false, active } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
 ---
 
 <!doctype html>
@@ -26,29 +43,56 @@ const { title, description, noindex = false } = Astro.props;
     <meta charset="utf-8" />
     <script is:inline set:html={THEME_INIT_SCRIPT} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <!-- SVG first for browsers that take it; .ico is the legacy fallback and
          the file crawlers still probe for at /favicon.ico. -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" sizes="16x16 32x32 48x48" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex" />}
+
+    <link rel="preload" as="font" type="font/woff2" href={geistSans} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={geistMono} crossorigin />
+
+    <Seo
+      title={title}
+      description={description}
+      canonical={canonical}
+      ogImage={ogImage}
+      noindex={noindex}
+    />
+
+    <slot name="head" />
   </head>
+
   <body>
-    <!-- STUB: owned by group 01 -->
     <a class="skip-link" href="#main">Skip to content</a>
-    <Header />
-    <main id="main">
+
+    <Header active={active} />
+
+    <main id="main" class:list={[wide && 'is-wide']}>
       <slot />
     </main>
+
     <!-- Portfolio and journal pass different footers through here. -->
     <slot name="footer" />
   </body>
 </html>
 
 <style>
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+  }
+
   main {
+    /* Clears the fixed header. */
     padding-top: var(--header-h);
+  }
+
+  /* `wide` retargets the container token itself, so every `.site-container`
+     inside the page widens without any of them knowing the prop exists. */
+  main.is-wide {
+    --container: var(--container-wide);
   }
 </style>

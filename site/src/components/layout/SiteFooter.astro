@@ -1,27 +1,59 @@
 ---
-// STUB: owned by group 01 (01-layout-chrome). The portfolio footer.
+/**
+ * Portfolio footer. Deliberately quiet — one row, small type, no headings.
+ * The journal gets the loud one (JournalFooter, PLAN.md §4.7).
+ */
 import Container from '../ui/Container.astro';
+import Icon from '../ui/Icon.astro';
+import { SITE_OWNER } from './nav';
 
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <!-- STUB: owned by group 01 -->
-  <Container>
-    <p>&copy; {year} — portfolio footer</p>
+  <Container class="footer-row">
+    <p>
+      &copy; {year}
+      {SITE_OWNER}. Built with Astro &middot; Deployed on AWS &middot; Managed with
+      Terraform.
+    </p>
+    <p class="footer-note">
+      <Icon name="server" size={14} />
+      Backend and cloud systems built for scale.
+    </p>
   </Container>
 </footer>
 
 <style>
   .site-footer {
-    padding-block: var(--space-6);
+    margin-top: auto;
+    padding-block: 26px;
     border-top: 1px solid var(--border);
     background: var(--bg);
+  }
+
+  .site-footer :global(.footer-row) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-5);
   }
 
   p {
     font-size: 12.5px;
     font-weight: 600;
+    line-height: 1.5;
     color: var(--soft);
+  }
+
+  .footer-note {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .footer-note :global(.icon) {
+    color: var(--accent);
   }
 </style>
