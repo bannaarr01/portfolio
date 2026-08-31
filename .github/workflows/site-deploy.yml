@@ -1,0 +1,213 @@
+##############################################################################
+# site-deploy — build and publish the site.
+#
+# Assumes the site-deploy role via OIDC. That role can write objects to one
+# bucket and invalidate one distribution, and nothing else — no long-lived
+# access key exists anywhere in this repository or its settings.
+#
+# The sync is three stages in a fixed order (§13.2), because the naive
+# single-command sync has two failure windows: HTML can go live referencing
+# assets that have not uploaded yet, and `--delete` can remove an asset that
+# HTML still in someone's browser cache is about to request.
+##############################################################################
+
+name: site-deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/site-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        type: choice
+        options: [staging, prod]
+        default: staging
+      invalidate:
+        description: 'Create a CloudFront invalidation (normally unnecessary — see §13.3)'
+        type: boolean
+        default: false
+      prune:
+        description: 'Run stage 3 and delete orphaned objects'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write # the only reason this workflow can reach AWS
+
+# Queue, do not cancel. Two syncs interleaving over one bucket can leave a
+# half-published site; a superseded deploy that finishes first is harmless
+# because the next one overwrites it.
+concurrency:
+  group: site-deploy-${{ github.event.inputs.environment || 'prod' }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy to ${{ github.event.inputs.environment || 'prod' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Scopes the OIDC `sub` claim to repo:<owner>/<repo>:environment:<name>,
+    # which is exactly what the deploy role's trust policy allows. Also where
+    # the per-environment bucket and distribution vars live.
+    environment: ${{ github.event.inputs.environment || 'prod' }}
+
+    env:
+      SITE_BUCKET: ${{ vars.SITE_BUCKET }}
+      DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install
+        working-directory: site
+        run: npm ci
+
+      - name: Build
+        working-directory: site
+        run: npm run build
+
+      - name: Verify build output
+        working-directory: site
+        run: |
+          set -euo pipefail
+          test -f dist/index.html || { echo "::error::dist/index.html missing — refusing to sync"; exit 1; }
+          test -f dist/404.html  || { echo "::error::dist/404.html missing — both 403 and 404 map to it at the edge"; exit 1; }
+          echo "dist size: $(du -sh dist | cut -f1), $(find dist -type f | wc -l) files"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: site-deploy-${{ github.run_id }}
+
+      # ---- Stage 1: immutable assets, no --delete -----------------------
+      #
+      # Content-hashed filenames, so a changed file is a new URL and a year of
+      # caching is safe. Uploaded FIRST so that by the time any HTML
+      # referencing them is live, they already exist.
+      #
+      # `og/*` is here per §13.1 even though those names are not hashed: the
+      # PNG for a post only changes if its title changes, and social scrapers
+      # re-fetch rarely enough that a stale preview for one post is a better
+      # trade than making every crawler revalidate.
+      - name: 'Stage 1 — hashed assets (immutable)'
+        working-directory: site
+        run: |
+          set -euo pipefail
+          aws s3 sync dist/ "s3://${SITE_BUCKET}/" \
+            --no-progress \
+            --exclude "*" \
+            --include "_astro/*" \
+            --include "og/*" \
+            --include "fonts/*" \
+            --cache-control "public, max-age=31536000, immutable"
+
+      # ---- Stage 2: everything else, no --delete ------------------------
+      #
+      # Stable paths whose content changes, so they must revalidate. This
+      # header is what makes routine invalidation unnecessary (§13.3):
+      # CloudFront holds the object but revalidates against S3 by ETag, which
+      # costs a conditional GET rather than one of the 1,000 free invalidation
+      # paths per month.
+      #
+      # Note this re-uploads every file on every deploy. `aws s3 sync` treats a
+      # newer local mtime as a change, and a fresh checkout timestamps
+      # everything at clone time. For a site of this size that is a few hundred
+      # PUTs — a fraction of a cent — and it guarantees the headers below are
+      # actually applied rather than inherited from an older upload.
+      - name: 'Stage 2 — HTML, XML, everything else (revalidate)'
+        working-directory: site
+        run: |
+          set -euo pipefail
+          aws s3 sync dist/ "s3://${SITE_BUCKET}/" \
+            --no-progress \
+            --exclude "_astro/*" \
+            --exclude "og/*" \
+            --exclude "fonts/*" \
+            --cache-control "public, max-age=0, must-revalidate"
+
+      # The CLI derives Content-Type from the extension and does not know
+      # .webmanifest, so it ships as application/octet-stream and browsers
+      # ignore the manifest. Fixed explicitly rather than left to chance.
+      - name: 'Stage 2b — fix content types the CLI guesses wrong'
+        working-directory: site
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for f in dist/*.webmanifest; do
+            key="$(basename "$f")"
+            echo "fixing content-type for $key"
+            aws s3 cp "$f" "s3://${SITE_BUCKET}/${key}" \
+              --no-progress \
+              --content-type "application/manifest+json" \
+              --cache-control "public, max-age=0, must-revalidate" \
+              --metadata-directive REPLACE
+          done
+
+      # ---- Stage 3: prune orphans, last ---------------------------------
+      #
+      # A delete-only pass. `--size-only` means nothing re-uploads (stages 1
+      # and 2 just put everything there and the sizes match), so the sole
+      # effect is removing keys no longer present in dist/.
+      #
+      # §13.2 suggests deferring this by a day so a page already loaded in a
+      # browser can still fetch the assets it references. Set `prune: false` on
+      # a manual run to do exactly that, then run again later with it on.
+      - name: 'Stage 3 — prune orphaned objects'
+        if: github.event.inputs.prune != 'false'
+        working-directory: site
+        run: |
+          set -euo pipefail
+          aws s3 sync dist/ "s3://${SITE_BUCKET}/" \
+            --no-progress \
+            --delete \
+            --size-only
+
+      # Off by default and it should stay that way. If a blanket /* becomes
+      # routine, the cache headers are wrong — more invalidations is not the
+      # fix (§13.3).
+      - name: Invalidate CloudFront (opt-in)
+        if: github.event.inputs.invalidate == 'true'
+        run: |
+          set -euo pipefail
+          id=$(aws cloudfront create-invalidation \
+            --distribution-id "${DISTRIBUTION_ID}" \
+            --paths '/*' \
+            --query 'Invalidation.Id' --output text)
+          echo "invalidation ${id} created"
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "${DISTRIBUTION_ID}" \
+            --id "${id}"
+
+      # Workflow inputs reach the shell through env, never through direct
+      # interpolation into a run block.
+      - name: Summary
+        if: always()
+        env:
+          TARGET_ENV: ${{ github.event.inputs.environment || 'prod' }}
+          DID_PRUNE: ${{ github.event.inputs.prune != 'false' }}
+          DID_INVALIDATE: ${{ github.event.inputs.invalidate == 'true' }}
+        run: |
+          {
+            echo "### site-deploy"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Environment | \`${TARGET_ENV}\` |"
+            echo "| Bucket | \`${SITE_BUCKET}\` |"
+            echo "| Pruned | \`${DID_PRUNE}\` |"
+            echo "| Invalidated | \`${DID_INVALIDATE}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"

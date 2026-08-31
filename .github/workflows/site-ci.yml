@@ -1,0 +1,76 @@
+##############################################################################
+# site-ci — build and quality gates for pull requests touching the site.
+#
+# This workflow needs no AWS credentials at all, and is declared without
+# `id-token` permission so it cannot acquire any. Everything it does is local
+# to the runner: install, typecheck, build, crawl the output, measure it.
+##############################################################################
+
+name: site-ci
+
+on:
+  pull_request:
+    paths:
+      - 'site/**'
+      - '.github/workflows/site-ci.yml'
+      - '.github/lighthouserc.json'
+
+permissions:
+  contents: read
+
+# A PR that gets three pushes in a minute should run once, on the last one.
+concurrency:
+  group: site-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: site
+
+jobs:
+  build:
+    name: build & check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      # `ci`, not `install` — fails on a lockfile that does not match
+      # package.json instead of quietly resolving something else.
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npx astro check
+
+      - name: Build
+        run: npm run build
+
+      # Internal links only. External links break for reasons outside this
+      # repo, and a CI job that fails because someone else's blog moved is a
+      # job people learn to ignore.
+      - name: Internal link check
+        run: >-
+          npx --yes linkinator@6 dist
+          --recurse
+          --verbosity error
+          --skip "^(?!http://localhost)"
+
+      - name: Lighthouse CI
+        run: npx --yes @lhci/cli@0.14.x autorun --config=../.github/lighthouserc.json
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: site/.lighthouseci
+          retention-days: 7
+          if-no-files-found: ignore

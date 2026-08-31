@@ -1,0 +1,27 @@
+# Provider plugins and module cache
+.terraform/
+.terraform.tfstate.lock.info
+
+# State should only ever live in S3. If one of these appears, something ran
+# without the backend configured.
+*.tfstate
+*.tfstate.*
+
+# Plan artefacts
+*.tfplan
+tfplan
+plan.txt
+
+# Backend bucket name is supplied at init time, never committed
+backend.hcl
+
+# Local variable overrides
+*.auto.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Crash logs
+crash.log
+crash.*.log

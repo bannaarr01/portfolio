@@ -1,0 +1,29 @@
+# trivy config scanning for infra/.
+#
+#   trivy config --config infra/trivy.yaml infra
+#
+# Justified exceptions are inline `#trivy:ignore:<ID>` comments on the line
+# ABOVE the resource they apply to — note the asymmetry with checkov, which
+# wants its skips INSIDE the block. Neither tool complains about the wrong
+# placement; it simply stops checking. Both conventions are documented in
+# modules/static-site/s3.tf.
+#
+# MEDIUM is included in the gate deliberately. CloudFront access logging is a
+# MEDIUM finding and is switched off on purpose (§15) — filtering it out by
+# severity would hide the decision rather than record it. Everything suppressed
+# here is suppressed by an ID with a reason next to it, so `Failures: 0` means
+# every finding was looked at, not that the threshold was set above them.
+
+severity:
+  - MEDIUM
+  - HIGH
+  - CRITICAL
+
+exit-code: 1
+
+misconfiguration:
+  include-non-failures: false
+
+scan:
+  skip-dirs:
+    - '**/.terraform'
