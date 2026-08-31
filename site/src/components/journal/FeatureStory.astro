@@ -1,0 +1,193 @@
+---
+/**
+ * FeatureStory — the lead slot on the journal index. Tall cover left, copy
+ * right. The cover repeats the title link decoratively (tabindex -1,
+ * aria-hidden) so mouse users get the large target without a duplicate stop in
+ * the tab order or the accessibility tree.
+ */
+import CoverArt from './CoverArt.astro';
+import Icon from '../ui/Icon.astro';
+import Avatar from '../ui/Avatar.astro';
+import { asIconName, categoryTitle } from './taxonomy';
+import { readingMinutes } from './reading-time';
+import { formatDate } from '../../lib/format';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { title, description, category, publishDate, heroGlyph } = post.data;
+
+const [catTitle, minutes] = await Promise.all([
+  categoryTitle(category),
+  readingMinutes(post),
+]);
+
+const href = `/blog/${post.id}/`;
+---
+
+<div class="feature-layout">
+  <a class="feature-cover" href={href} tabindex="-1" aria-hidden="true">
+    <CoverArt category={category} variant="lead" glyph={asIconName(heroGlyph)} />
+  </a>
+
+  <div class="feature-copy">
+    <p class="feature-meta">
+      <span class="cat">{catTitle}</span>
+      <span class="dot" aria-hidden="true">&middot;</span>
+      <span>{minutes} min read</span>
+    </p>
+
+    <h2 class="feature-title"><a href={href}>{title}</a></h2>
+    <p class="feature-dek">{description}</p>
+
+    <div class="byline">
+      <Avatar initials="TC" size={38} />
+      <div>
+        <strong>Tan Chin Siang</strong>
+        <time datetime={publishDate.toISOString()}>{formatDate(publishDate)}</time>
+      </div>
+    </div>
+
+    <a class="read-link" href={href}>
+      Read the story <Icon name="arrow-right" size={15} />
+    </a>
+  </div>
+</div>
+
+<style>
+  .feature-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+    gap: 58px;
+    align-items: start;
+    padding: 42px 0 74px;
+  }
+
+  .feature-cover {
+    display: block;
+    border-radius: var(--r-card);
+    transition:
+      transform var(--dur-ui) var(--ease),
+      box-shadow var(--dur-ui) var(--ease);
+  }
+
+  .feature-cover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .feature-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .feature-meta .cat {
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+
+  .feature-meta .dot {
+    color: var(--border-strong);
+  }
+
+  .feature-title {
+    margin-top: 14px;
+    font-size: clamp(32px, 3.6vw, 50px);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.038em;
+    text-wrap: balance;
+  }
+
+  .feature-title a {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 260ms var(--ease);
+  }
+
+  .feature-title a:hover {
+    background-size: 100% 1px;
+  }
+
+  .feature-dek {
+    margin-top: 20px;
+    max-width: 52ch;
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .byline {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-top: 30px;
+  }
+
+  .byline strong {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+
+  .byline time {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .read-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 28px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--accent);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--accent-strong);
+  }
+
+  .read-link :global(svg) {
+    transition: transform var(--dur-ui) var(--ease);
+  }
+
+  .read-link:hover :global(svg) {
+    transform: translateX(3px);
+  }
+
+  @media (max-width: 900px) {
+    .feature-layout {
+      grid-template-columns: 1fr;
+      gap: 30px;
+      padding-bottom: 56px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .feature-cover:hover {
+      transform: none;
+    }
+
+    .read-link:hover :global(svg) {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,192 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import JournalLayout from '../../../layouts/JournalLayout.astro';
+import SectionRail from '../../../components/journal/SectionRail.astro';
+import CardGrid from '../../../components/journal/CardGrid.astro';
+import Icon from '../../../components/ui/Icon.astro';
+import { categoryTitle } from '../../../components/journal/taxonomy';
+import { getSeriesParts } from '../../../lib/content';
+
+export const getStaticPaths = (async () => {
+  const series = await getCollection('series');
+  return series.map((entry) => ({
+    params: { series: entry.data.slug },
+    props: { entry },
+  }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { slug, title, description, category } = entry.data;
+
+/* Ordered by `part` ascending — never by date. */
+const parts = await getSeriesParts(slug);
+const catTitle = await categoryTitle(category);
+---
+
+<JournalLayout title={`${title} — The Engineering Journal`} description={description}>
+  <section class="series-hero">
+    <div class="site-container">
+      <a class="hero-back" href="/blog/">
+        <Icon name="arrow-left" size={15} /> All writing
+      </a>
+
+      <span class="series-badge"><Icon name="book-check" size={21} /></span>
+
+      <p class="kicker">
+        Guided series &middot; {parts.length}
+        {parts.length === 1 ? ' part' : ' parts'}
+      </p>
+      <h1 class="archive-title">{title}</h1>
+      <p class="archive-dek">{description}</p>
+
+      <a class="filed-under" href={`/blog/category/${category}/`}>
+        Filed under {catTitle}
+        <Icon name="arrow-up-right" size={13} />
+      </a>
+    </div>
+  </section>
+
+  <section class="series-archive site-container" aria-labelledby="series-heading">
+    <SectionRail
+      kicker="Reading order"
+      heading="Explore the series"
+      id="series-heading"
+      note={`Part 01 – ${String(parts.length).padStart(2, '0')}`}
+    />
+
+    {
+      parts.length > 0 ? (
+        <CardGrid posts={parts} showPart />
+      ) : (
+        <p class="series-empty">
+          No parts of this series have been published yet.
+          <a href="/blog/">Browse all writing</a>
+        </p>
+      )
+    }
+  </section>
+</JournalLayout>
+
+<style>
+  .series-hero {
+    position: relative;
+    padding: calc(var(--header-h) + 56px) 0 62px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--hero-bg), var(--bg));
+  }
+
+  .series-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(680px 420px at 82% 22%, var(--glow-cyan), transparent 66%);
+  }
+
+  .series-hero > :global(.site-container) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    transition: color var(--dur-ui) var(--ease);
+  }
+
+  .hero-back:hover {
+    color: var(--accent-strong);
+  }
+
+  .series-badge {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-top: 52px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-control);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .series-hero .kicker {
+    display: block;
+    margin-top: 24px;
+  }
+
+  .archive-title {
+    margin-top: 12px;
+    max-width: 16ch;
+    font-size: clamp(38px, 6.4vw, 82px);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+  }
+
+  .archive-dek {
+    margin-top: 20px;
+    max-width: 58ch;
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .filed-under {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-strong);
+  }
+
+  .filed-under:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .series-archive {
+    padding: 70px 0 88px;
+  }
+
+  .series-empty {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 34px;
+    padding: 40px 28px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    font-size: 15.5px;
+    color: var(--muted);
+  }
+
+  .series-empty a {
+    font-weight: 700;
+    color: var(--accent-strong);
+  }
+
+  @media (max-width: 900px) {
+    .series-hero {
+      padding: calc(var(--header-h) + 36px) 0 48px;
+    }
+
+    .series-badge {
+      margin-top: 36px;
+    }
+
+    .series-archive {
+      padding: 46px 0 64px;
+    }
+  }
+</style>

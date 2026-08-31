@@ -1,0 +1,47 @@
+---
+/**
+ * DisciplineGrid — all four categories, including the empty ones. An empty
+ * discipline is a real navigational answer ("nothing here yet"), so it stays in
+ * the grid rather than being filtered out.
+ */
+import SectionRail from './SectionRail.astro';
+import RowGrid from './RowGrid.astro';
+import type { Row } from './taxonomy';
+import { getOrderedCategories } from './taxonomy';
+import { getCategoryCounts } from '../../lib/content';
+
+const [categories, counts] = await Promise.all([
+  getOrderedCategories(),
+  getCategoryCounts(),
+]);
+
+const rows: Row[] = categories.map((c) => {
+  const n = counts[c.data.slug];
+  return {
+    href: `/blog/category/${c.data.slug}/`,
+    title: c.data.title,
+    description: c.data.description,
+    meta: n === 0 ? 'No articles yet' : `${n} ${n === 1 ? 'article' : 'articles'}`,
+  };
+});
+---
+
+<section class="disciplines is-band" aria-labelledby="disciplines-heading">
+  <div class="site-container">
+    <SectionRail
+      kicker="Browse the archive"
+      heading="Explore by discipline"
+      id="disciplines-heading"
+      note={`${categories.length} disciplines`}
+    />
+    <RowGrid rows={rows} />
+  </div>
+</section>
+
+<style>
+  .disciplines {
+    padding: 78px 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+</style>

@@ -1,0 +1,102 @@
+---
+/**
+ * CategoryTabs — PLAN.md §6. Owned by group 04.
+ *
+ * Latest + the four disciplines. Scrolls horizontally on narrow viewports with
+ * the scrollbar hidden and edge fades marking the overflow.
+ */
+import { getOrderedCategories } from './taxonomy';
+import type { CategorySlug } from '../../types/content';
+
+/* Signature is frozen — PLAN.md §6. */
+interface Props {
+  active?: CategorySlug | 'latest';
+}
+
+const { active } = Astro.props;
+const categories = await getOrderedCategories();
+
+const tabs = [
+  { label: 'Latest', href: '/blog/', key: 'latest' as const },
+  ...categories.map((c) => ({
+    label: c.data.title,
+    href: `/blog/category/${c.data.slug}/`,
+    key: c.data.slug,
+  })),
+];
+---
+
+<nav class="tabs-shell" aria-label="Article categories">
+  <div class="tabs">
+    {
+      tabs.map((tab) => (
+        <a
+          href={tab.href}
+          class:list={[tab.key === active && 'is-active']}
+          aria-current={tab.key === active ? 'page' : undefined}
+        >
+          {tab.label}
+        </a>
+      ))
+    }
+  </div>
+</nav>
+
+<style>
+  .tabs-shell {
+    position: relative;
+    border-top: 1px solid var(--border);
+  }
+
+  .tabs {
+    display: flex;
+    gap: 28px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: x proximity;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabs a {
+    position: relative;
+    flex: none;
+    padding: 20px 0;
+    scroll-snap-align: start;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    color: var(--muted);
+    transition: color var(--dur-ui) var(--ease);
+  }
+
+  .tabs a:hover {
+    color: var(--text);
+  }
+
+  .tabs a.is-active {
+    color: var(--text);
+  }
+
+  .tabs a.is-active::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 -1px;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  /* Fade the right edge only while the strip actually overflows. */
+  @media (max-width: 700px) {
+    .tabs {
+      /* `black` here is a mask alpha stop (opaque), not a colour value —
+         mask-image reads the alpha channel only. */
+      mask-image: linear-gradient(90deg, black 88%, transparent);
+      padding-right: 24px;
+    }
+  }
+</style>

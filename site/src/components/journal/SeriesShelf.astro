@@ -1,0 +1,50 @@
+---
+/**
+ * SeriesShelf — every series that has at least one published part, with its
+ * part count taken through getSeriesParts() so drafts never inflate the number.
+ */
+import { getCollection } from 'astro:content';
+import SectionRail from './SectionRail.astro';
+import RowGrid from './RowGrid.astro';
+import type { Row } from './taxonomy';
+import { getSeriesParts } from '../../lib/content';
+
+const all = await getCollection('series');
+
+const rows: Row[] = (
+  await Promise.all(
+    all.map(async (s) => {
+      const parts = await getSeriesParts(s.data.slug);
+      return { entry: s, count: parts.length };
+    }),
+  )
+)
+  .filter(({ count }) => count > 0)
+  .sort((a, b) => a.entry.data.title.localeCompare(b.entry.data.title))
+  .map(({ entry, count }) => ({
+    href: `/blog/series/${entry.data.slug}/`,
+    title: entry.data.title,
+    description: entry.data.description,
+    meta: `${count} ${count === 1 ? 'part' : 'parts'} · Read in order`,
+  }));
+---
+
+{
+  rows.length > 0 && (
+    <section class="series-shelf site-container" aria-labelledby="series-shelf-heading">
+      <SectionRail
+        kicker="Guided learning paths"
+        heading="Read by series"
+        id="series-shelf-heading"
+        note={`${rows.length} ${rows.length === 1 ? 'series' : 'series'}`}
+      />
+      <RowGrid rows={rows} variant="arrow" />
+    </section>
+  )
+}
+
+<style>
+  .series-shelf {
+    padding: 0 0 78px;
+  }
+</style>

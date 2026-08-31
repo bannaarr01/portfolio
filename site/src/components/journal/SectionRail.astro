@@ -1,0 +1,70 @@
+---
+/**
+ * SectionRail — the ruled kicker/heading/note row that opens every journal
+ * section. Repeating one rail across feature, archive, shelf and disciplines is
+ * what makes the journal read as a single ruled publication rather than a stack
+ * of unrelated blocks.
+ */
+interface Props {
+  kicker: string;
+  heading?: string;
+  note?: string;
+  id?: string;
+}
+
+const { kicker, heading, note, id } = Astro.props;
+---
+
+<div class="rail">
+  <div class="rail-lead">
+    <p class="kicker">{kicker}</p>
+    {heading && <h2 id={id}>{heading}</h2>}
+  </div>
+  {note && <p class="rail-note">{note}</p>}
+</div>
+
+<style>
+  .rail {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .rail-lead .kicker {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-size: clamp(30px, 3.2vw, 40px);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
+  }
+
+  .rail-note {
+    flex: none;
+    padding-bottom: 4px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 900px) {
+    .rail {
+      flex-direction: column;
+      align-items: start;
+    }
+
+    .rail-note {
+      padding-bottom: 0;
+    }
+  }
+</style>

@@ -1,0 +1,78 @@
+---
+/**
+ * CardGrid — the journal's three-up archive grid.
+ *
+ * The cards sit in a ruled cell box rather than floating with gaps, matching
+ * SeriesShelf and DisciplineGrid so the whole journal reads as one ruled
+ * publication. That density is deliberate: it is the layout half of the
+ * portfolio/journal separation the serif used to carry (PLAN.md §4.7).
+ *
+ * Every cell carries a top and right hairline unconditionally; the inner grid is
+ * then offset by 1px up and right so the outermost rules fall outside the
+ * clipping box and the frame's own border takes over. That keeps the ruling
+ * correct at 3, 2 and 1 columns with no per-breakpoint nth-child arithmetic —
+ * which is what broke here first: `:nth-child(3n)` outranks a plain
+ * `.blog-card` override inside a media query, so the 3-column rules leaked into
+ * the 2-column layout at exactly 1000px.
+ *
+ * A partial last row closes correctly for free: the final card's right hairline
+ * runs the full row height and the frame's bottom border closes underneath.
+ */
+import BlogCard from './BlogCard.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+  showPart?: boolean;
+}
+
+const { posts, showPart = false } = Astro.props;
+---
+
+<div class="card-frame">
+  <div class="card-grid">
+    {posts.map((post) => <BlogCard post={post} showPart={showPart} />)}
+  </div>
+</div>
+
+<style>
+  .card-frame {
+    margin-top: 34px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-card);
+    overflow: hidden;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Pull the outer hairlines under the frame's own border. */
+    margin: -1px -1px 0 0;
+  }
+
+  .card-grid > :global(.blog-card) {
+    padding: 24px 20px 22px;
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+
+  .card-grid > :global(.blog-card:hover) {
+    background: var(--surface);
+  }
+
+  @media (min-width: 901px) {
+    .card-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .card-grid > :global(.blog-card) {
+      padding: 26px 24px 24px;
+    }
+  }
+
+  @media (min-width: 1001px) {
+    .card-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

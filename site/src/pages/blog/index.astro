@@ -1,0 +1,78 @@
+---
+import JournalLayout from '../../layouts/JournalLayout.astro';
+import Masthead from '../../components/journal/Masthead.astro';
+import CategoryTabs from '../../components/journal/CategoryTabs.astro';
+import FeatureStory from '../../components/journal/FeatureStory.astro';
+import SectionRail from '../../components/journal/SectionRail.astro';
+import CardGrid from '../../components/journal/CardGrid.astro';
+import SeriesShelf from '../../components/journal/SeriesShelf.astro';
+import DisciplineGrid from '../../components/journal/DisciplineGrid.astro';
+import { getPublishedPosts } from '../../lib/content';
+
+const posts = await getPublishedPosts();
+const [feature, ...rest] = posts;
+---
+
+<JournalLayout
+  title="The Engineering Journal — Tan Chin Siang"
+  description="Field notes on building backend systems that remain reliable, observable, and adaptable as their responsibilities grow."
+>
+  <Masthead articleCount={posts.length} />
+
+  <div class="tabs-band">
+    <div class="site-container">
+      <CategoryTabs active="latest" />
+    </div>
+  </div>
+
+  {
+    feature && (
+      <section class="journal-feature site-container" aria-label="Featured story">
+        <SectionRail kicker="Featured story" note="Issue 01 · Engineering systems" />
+        <FeatureStory post={feature} />
+      </section>
+    )
+  }
+
+  {
+    rest.length > 0 && (
+      <section class="journal-latest site-container" aria-labelledby="latest-heading">
+        <SectionRail
+          kicker="Latest writing"
+          heading="Ideas from the engineering desk"
+          id="latest-heading"
+          note={`${posts.length} ${posts.length === 1 ? 'article' : 'articles'}`}
+        />
+        <CardGrid posts={rest} />
+      </section>
+    )
+  }
+
+  <SeriesShelf />
+  <DisciplineGrid />
+</JournalLayout>
+
+<style>
+  .tabs-band {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .journal-feature {
+    padding: 74px 0 0;
+  }
+
+  .journal-latest {
+    padding: 40px 0 78px;
+  }
+
+  @media (max-width: 900px) {
+    .journal-feature {
+      padding-top: 52px;
+    }
+
+    .journal-latest {
+      padding: 24px 0 56px;
+    }
+  }
+</style>
