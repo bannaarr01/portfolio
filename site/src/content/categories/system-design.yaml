@@ -1,5 +1,6 @@
-# PLACEHOLDER — group 07 owns src/content/** and replaces this wholesale.
+# Feeds: /blog/category/system-design/, the CategoryTabs strip, and the
+# discipline grid on /blog/. Article counts are derived at build time.
 slug: system-design
 title: System Design
-description: Trade-offs, failure modes, and the architecture decisions worth defending.
+description: Architecture decisions for reliable, observable distributed systems.
 order: 3

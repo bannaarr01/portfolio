@@ -1,5 +1,6 @@
-# PLACEHOLDER — group 07 owns src/content/** and replaces this wholesale.
+# Feeds: /blog/category/aws-cloud/, the CategoryTabs strip, and the discipline
+# grid on /blog/. Article counts are derived at build time, never stored here.
 slug: aws-cloud
 title: AWS & Cloud
-description: Building on AWS without the bill or the blast radius getting away from you.
+description: AWS study notes, cloud architecture, infrastructure automation, and operations.
 order: 2

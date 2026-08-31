@@ -1,6 +1,6 @@
-# PLACEHOLDER — group 07 owns src/content/** and replaces this wholesale.
-# Here only so collection queries return something during Wave 2.
+# Feeds: /blog/category/go/, the CategoryTabs strip, and the discipline grid
+# on /blog/. Article counts are derived at build time, never stored here.
 slug: go
 title: Go
-description: Concurrency, tooling, and writing Go that survives production.
+description: Go language patterns, concurrency, testing, tooling, and production services.
 order: 1
