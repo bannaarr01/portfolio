@@ -1,12 +1,12 @@
 ---
-title: "AWS Global Infrastructure: Regions, Zones, and Edge Locations"
-description: "AWS Cloud Practitioner study notes on Regions, Availability Zones, CloudFront edge locations, Local Zones, Wavelength Zones, and Direct Connect."
+title: 'AWS Global Infrastructure: Regions, Zones, and Edge Locations'
+description: 'AWS Cloud Practitioner study notes on Regions, Availability Zones, CloudFront edge locations, Local Zones, Wavelength Zones, and Direct Connect.'
 category: aws-cloud
 series: aws-cloud-practitioner-study-notes
 part: 4
 publishDate: 2026-08-19
 draft: false
-tags: ["aws", "global-infrastructure", "study-notes"]
+tags: ['aws', 'global-infrastructure', 'study-notes']
 heroGlyph: aws
 ---
 

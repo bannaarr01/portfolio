@@ -19,8 +19,7 @@ export const caseStudies = [
   {
     title: 'TODO: Case study title',
     company: 'TODO: Employer or client',
-    summary:
-      'TODO: one sentence on what this system did and what you changed about it.',
+    summary: 'TODO: one sentence on what this system did and what you changed about it.',
     problem:
       'TODO: the constraint or tradeoff that made this hard. Say what was actually at stake, not that "the system needed improvement".',
     approach:
@@ -34,16 +33,12 @@ export const caseStudies = [
   {
     title: 'TODO: Second case study title',
     company: 'TODO: Employer or client',
-    summary:
-      'TODO: one sentence on the system and your role in changing it.',
-    problem:
-      'TODO: what was failing, degrading, or costing too much, and who felt it.',
-    approach:
-      'TODO: the work you did, in the order it mattered.',
+    summary: 'TODO: one sentence on the system and your role in changing it.',
+    problem: 'TODO: what was failing, degrading, or costing too much, and who felt it.',
+    approach: 'TODO: the work you did, in the order it mattered.',
     result:
       'TODO: the measurable outcome. If you have a before-and-after pair, use both numbers.',
-    architecture:
-      'TODO: one line describing the resulting shape.',
+    architecture: 'TODO: one line describing the resulting shape.',
     tech: ['NestJS', 'TypeScript', 'PostgreSQL', 'RabbitMQ', 'Prometheus'],
   },
-] as const satisfies readonly CaseStudy[];
+] satisfies CaseStudy[];

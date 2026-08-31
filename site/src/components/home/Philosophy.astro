@@ -1,0 +1,242 @@
+---
+/**
+ * Philosophy: two wide intro cards, a four-up numbered principle grid, the
+ * reading card, and the pull-quote panel.
+ */
+import type { Principle } from '../../types/portfolio';
+import Icon from '../ui/Icon.astro';
+import Reveal from '../ui/Reveal.astro';
+import Section from './Section.astro';
+import SectionHeading from './SectionHeading.astro';
+import type { PhilosophyContent, SectionCopy } from './types';
+import './home.css';
+
+interface Props {
+  heading: SectionCopy;
+  content: PhilosophyContent;
+  principles: Principle[];
+}
+
+const { heading, content, principles } = Astro.props;
+---
+
+<Section band="surface">
+  <Reveal><SectionHeading {...heading} /></Reveal>
+
+  <div class="intro">
+    {
+      content.intro.map((card, i) => (
+        <Reveal delay={i * 60}>
+          <article class="intro-card h-card">
+            <p class="h-kicker">{card.kicker}</p>
+            <h3>{card.title}</h3>
+            <p class="h-body">{card.body}</p>
+          </article>
+        </Reveal>
+      ))
+    }
+  </div>
+
+  <div class="principles">
+    {
+      principles.map((p, i) => (
+        <Reveal delay={(i % 4) * 60}>
+          <article class="principle h-card">
+            <span class="num">{p.num}</span>
+            <h3>{p.title}</h3>
+            <p class="h-body">{p.body}</p>
+          </article>
+        </Reveal>
+      ))
+    }
+  </div>
+
+  <Reveal>
+    <article class="reading h-card">
+      <div>
+        <p class="h-kicker">{content.reading.kicker}</p>
+        <h3>{content.reading.title}</h3>
+        <p class="h-body">{content.reading.body}</p>
+      </div>
+      <ul class="books">
+        {
+          content.reading.books.map((book) => (
+            <li>
+              <Icon name="book-open" size={14} />
+              <span>{book}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </article>
+  </Reveal>
+
+  <Reveal>
+    <aside class="pull" aria-label={content.pullQuote.label}>
+      <span class="h-ticks" aria-hidden="true"></span>
+      <p class="h-kicker">{content.pullQuote.label}</p>
+      <blockquote>{content.pullQuote.quote}</blockquote>
+    </aside>
+  </Reveal>
+</Section>
+
+<style>
+  .intro {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 1.8vw, 22px);
+  }
+
+  .intro > :global(*),
+  .principles > :global(*) {
+    height: 100%;
+  }
+
+  .intro-card {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    padding: 28px 26px 26px;
+  }
+
+  .intro-card h3 {
+    margin: 12px 0 12px;
+    color: var(--text);
+    font-size: clamp(19px, 2vw, 23px);
+    font-weight: 650;
+    line-height: 1.24;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  /* ------------------------------------------------------- principles -- */
+
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(14px, 1.6vw, 18px);
+    margin-top: clamp(20px, 2.2vw, 26px);
+  }
+
+  .principle {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    padding: 24px 22px 24px;
+  }
+
+  .num {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .principle h3 {
+    margin: 12px 0 10px;
+    color: var(--text);
+    font-size: 16.5px;
+    font-weight: 650;
+    line-height: 1.28;
+    letter-spacing: -0.025em;
+  }
+
+  .principle .h-body {
+    font-size: 14.5px;
+  }
+
+  /* ---------------------------------------------------------- reading -- */
+
+  .reading {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    gap: clamp(24px, 3.4vw, 48px);
+    margin-top: clamp(20px, 2.2vw, 26px);
+    padding: 30px 30px 28px;
+  }
+
+  .reading h3 {
+    margin: 12px 0 12px;
+    color: var(--text);
+    font-size: clamp(19px, 2vw, 23px);
+    font-weight: 650;
+    line-height: 1.24;
+    letter-spacing: -0.03em;
+  }
+
+  .books {
+    display: grid;
+    align-content: start;
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .books > li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--band, var(--bg));
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  .books > li :global(svg) {
+    margin-top: 2px;
+    flex: none;
+    color: var(--accent);
+  }
+
+  /* ------------------------------------------------------- pull quote -- */
+
+  .pull {
+    position: relative;
+    margin-top: clamp(20px, 2.2vw, 26px);
+    padding: 30px 34px 32px;
+    border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+    border-radius: 16px;
+    background: var(--accent-soft);
+  }
+
+  .pull blockquote {
+    max-width: 74ch;
+    margin: 14px 0 0;
+    color: var(--text);
+    font-size: clamp(17px, 1.9vw, 21px);
+    font-weight: 500;
+    line-height: 1.52;
+    letter-spacing: -0.024em;
+    text-wrap: pretty;
+  }
+
+  /* --------------------------------------------------------- collapse -- */
+
+  @media (max-width: 900px) {
+    .intro,
+    .reading {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .principles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 560px) {
+    .principles {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .reading,
+    .pull {
+      padding-inline: 20px;
+    }
+  }
+</style>

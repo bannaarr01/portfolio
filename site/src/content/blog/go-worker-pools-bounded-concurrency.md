@@ -1,10 +1,10 @@
 ---
-title: "Go Worker Pools: Bounded Concurrency Without Leaking Goroutines"
-description: "How to size a worker pool, propagate cancellation with context, and shut down cleanly so no goroutine outlives the request that spawned it."
+title: 'Go Worker Pools: Bounded Concurrency Without Leaking Goroutines'
+description: 'How to size a worker pool, propagate cancellation with context, and shut down cleanly so no goroutine outlives the request that spawned it.'
 category: go
 publishDate: 2026-08-24
 draft: false
-tags: ["go", "concurrency", "patterns"]
+tags: ['go', 'concurrency', 'patterns']
 heroGlyph: go
 ---
 

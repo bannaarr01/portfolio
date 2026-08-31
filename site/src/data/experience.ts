@@ -126,4 +126,4 @@ export const jobs = [
     ],
     tech: ['PHP', 'MySQL', 'JavaScript', 'jQuery', 'Bootstrap', 'HTML', 'CSS'],
   },
-] as const satisfies readonly Job[];
+] satisfies Job[];

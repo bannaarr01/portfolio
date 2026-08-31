@@ -1,0 +1,158 @@
+---
+/**
+ * JournalLayout + the two-column article shell. PLAN.md §6.
+ *
+ * Ownership split: group 01 owns the grid, the 1000px collapse, and the sticky
+ * offset. Group 05 owns the table of contents itself and drops it into the
+ * `toc` slot. The fallback below renders straight from `headings`, so the rail
+ * is never blank while that lands.
+ *
+ * The sticky offset is `--header-h + --space-6`. Getting it wrong is how
+ * headings end up hiding behind the fixed header when you follow a TOC link.
+ *
+ * Slots:
+ *   head   passed through to BaseLayout
+ *   hero   full-bleed, above the shell — supplies its own container
+ *   toc    the sticky rail; falls back to the outline below
+ *   —      default: the prose column
+ *   after  full-bleed, below the shell — related reading, back link
+ */
+import type { MarkdownHeading } from 'astro';
+import JournalLayout from './JournalLayout.astro';
+import type { Props as BaseProps } from './BaseLayout.astro';
+
+export interface Props extends BaseProps {
+  headings: MarkdownHeading[];
+}
+
+const { headings, ...rest } = Astro.props;
+
+// h2 carries the outline; h3 indents beneath it. Deeper levels stay out — a
+// four-level TOC in a 245px column is unreadable.
+const outline = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+<JournalLayout {...rest}>
+  <slot name="head" slot="head" />
+
+  <slot name="hero" />
+
+  <div class="site-container article-shell">
+    <aside class="article-toc">
+      <slot name="toc">
+        {
+          outline.length > 0 && (
+            <nav aria-labelledby="toc-heading">
+              <p class="kicker" id="toc-heading">
+                On this page
+              </p>
+              <ol>
+                {outline.map((h, i) => (
+                  <li class:list={[h.depth === 3 && 'is-sub']}>
+                    <span class="n">{String(i + 1).padStart(2, '0')}</span>
+                    <a href={`#${h.slug}`}>{h.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )
+        }
+      </slot>
+    </aside>
+
+    <div class="article-body">
+      <slot />
+    </div>
+  </div>
+
+  {
+    /* Full-bleed tail below the shell — related reading band, back link.
+      Outside .site-container so a section can span the viewport. */
+  }
+  <slot name="after" />
+</JournalLayout>
+
+<style>
+  .article-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 245px) minmax(0, 1fr);
+    gap: 74px;
+    align-items: start;
+    padding: 68px 0 var(--space-7);
+  }
+
+  .article-toc {
+    position: sticky;
+    /* Clears the fixed header, plus breathing room. */
+    top: calc(var(--header-h) + var(--space-6));
+    align-self: start;
+    max-height: calc(100svh - var(--header-h) - var(--space-8));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-top: var(--space-2);
+  }
+
+  .article-toc .kicker {
+    margin-bottom: var(--space-4);
+  }
+
+  .article-toc ol {
+    display: grid;
+    gap: 11px;
+  }
+
+  .article-toc li {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: var(--space-2);
+    align-items: start;
+  }
+
+  .article-toc li.is-sub {
+    padding-left: var(--space-4);
+  }
+
+  .article-toc .n {
+    padding-top: 1px;
+    font-size: 11.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+
+  .article-toc a {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--muted);
+    transition: color var(--dur-ui) var(--ease);
+  }
+
+  .article-toc a:hover {
+    color: var(--text);
+  }
+
+  .article-body {
+    min-width: 0;
+  }
+
+  /* ---------------- breakpoint · 1000px (PLAN.md §4.9) ----------------
+     The rail moves above the prose and stops sticking. */
+
+  @media (max-width: 999px) {
+    .article-shell {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-7);
+      padding-top: var(--space-7);
+    }
+
+    .article-toc {
+      position: static;
+      max-height: none;
+      overflow: visible;
+      padding: var(--space-5);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+    }
+  }
+</style>

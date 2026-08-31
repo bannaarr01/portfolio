@@ -1,10 +1,10 @@
 ---
-title: "Designing a Read-Heavy Service That Survives Its Own Success"
-description: "A long-form walk through caching, replication lag, stampede control, and pagination for a service whose read traffic grows faster than its writes."
+title: 'Designing a Read-Heavy Service That Survives Its Own Success'
+description: 'A long-form walk through caching, replication lag, stampede control, and pagination for a service whose read traffic grows faster than its writes.'
 category: system-design
 publishDate: 2026-08-26
 draft: false
-tags: ["system-design", "caching", "databases", "reliability", "performance"]
+tags: ['system-design', 'caching', 'databases', 'reliability', 'performance']
 heroGlyph: server
 ---
 
@@ -271,15 +271,15 @@ have been.
 
 ## What to measure
 
-| Signal | Where it lives | Healthy | Investigate | Page |
-|---|---|---|---|---|
-| Cache hit rate | Redis / app metrics | > 92% | 80 to 92% | < 80% sustained 10 min |
-| Origin fetch rate | App metrics | Flat | Rising with traffic | Step change after deploy |
-| Replication lag | Database | < 500 ms | 0.5 to 5 s | > 5 s for 2 min |
-| Endpoint p95 | Edge / RUM | < 120 ms | 120 to 300 ms | > 300 ms for 5 min |
-| Endpoint p99 | Edge / RUM | < 400 ms | 400 ms to 1 s | > 1 s for 5 min |
-| Connection pool saturation | App metrics | < 60% | 60 to 85% | > 85% for 2 min |
-| Shed request rate | Load shedder | 0 | Any sustained | > 1% of traffic |
+| Signal                     | Where it lives      | Healthy  | Investigate         | Page                     |
+| -------------------------- | ------------------- | -------- | ------------------- | ------------------------ |
+| Cache hit rate             | Redis / app metrics | > 92%    | 80 to 92%           | < 80% sustained 10 min   |
+| Origin fetch rate          | App metrics         | Flat     | Rising with traffic | Step change after deploy |
+| Replication lag            | Database            | < 500 ms | 0.5 to 5 s          | > 5 s for 2 min          |
+| Endpoint p95               | Edge / RUM          | < 120 ms | 120 to 300 ms       | > 300 ms for 5 min       |
+| Endpoint p99               | Edge / RUM          | < 400 ms | 400 ms to 1 s       | > 1 s for 5 min          |
+| Connection pool saturation | App metrics         | < 60%    | 60 to 85%           | > 85% for 2 min          |
+| Shed request rate          | Load shedder        | 0        | Any sustained       | > 1% of traffic          |
 
 The table is deliberately wider than the prose column. On a narrow viewport it
 should scroll inside its own container rather than forcing the page body to

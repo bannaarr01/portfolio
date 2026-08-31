@@ -1,0 +1,203 @@
+---
+/**
+ * /blog/<slug>/ — the article template.
+ * Owner: group 05.
+ *
+ * Composes group 01's ArticleLayout, which owns the two-column shell, the
+ * 1000px collapse and the sticky offset. This page fills its slots:
+ *
+ *   hero    full-bleed, supplies its own container
+ *   toc     the sticky rail column
+ *   —       default: the prose column
+ *   after   full-bleed, below the shell
+ */
+import type { GetStaticPaths } from 'astro';
+import { getEntry, render } from 'astro:content';
+
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import ArticleHero from '../../components/article/ArticleHero.astro';
+import ArticleToc from '../../components/article/ArticleToc.astro';
+import AuthorBox from '../../components/article/AuthorBox.astro';
+import SeriesNav from '../../components/article/SeriesNav.astro';
+import RelatedGrid from '../../components/article/RelatedGrid.astro';
+import Icon from '../../components/ui/Icon.astro';
+import { SITE_OWNER } from '../../components/layout/nav';
+import type { Post } from '../../types/content';
+
+import {
+  getAdjacentInSeries,
+  getPublishedPosts,
+  getRelatedPosts,
+  getSeriesParts,
+  ogImageUrl,
+} from '../../lib';
+
+import '../../styles/prose.css';
+
+/**
+ * Author identity.
+ *
+ * The name comes from `SITE_OWNER`, which is the established single source on
+ * develop — CoverArt, FeatureStory, both footers and Header all read it from
+ * `components/layout/nav`. There is no `src/data/` on develop yet, so the role
+ * and bio sit here until group 07 lands a data module to own them.
+ */
+const AUTHOR_ROLE = 'Backend & Cloud Software Engineer';
+const AUTHOR_BIO =
+  'Backend and cloud software engineer writing about reliable systems, ' +
+  'infrastructure automation, and engineering practice.';
+
+// "Boluwaji Joshua Adedigba" -> "BJA", matching the initials in ui/Logo.
+const AUTHOR_INITIALS = SITE_OWNER.split(/\s+/)
+  .filter(Boolean)
+  .map((word) => word[0]!.toUpperCase())
+  .join('');
+
+// `satisfies` rather than a type annotation: annotating widens the inferred
+// props to `unknown` and Astro.props stops typechecking. Matches group 04.
+export const getStaticPaths = (async () => {
+  // getPublishedPosts() is the only place the draft filter lives. Pages must
+  // never query the blog collection directly, or drafts leak into production.
+  const posts = await getPublishedPosts();
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.props;
+const { Content, headings, remarkPluginFrontmatter } = await render(post);
+
+// minutesRead is injected by group 00's remark plugin. Never computed here.
+const minutesRead = Number(remarkPluginFrontmatter.minutesRead ?? 1);
+
+const category = await getEntry('categories', post.data.category);
+const categoryTitle = category?.data.title ?? post.data.category;
+const categoryHref = `/blog/category/${post.data.category}/`;
+
+const seriesSlug = post.data.series;
+const seriesEntry = seriesSlug ? await getEntry('series', seriesSlug) : undefined;
+const seriesParts = seriesSlug ? await getSeriesParts(seriesSlug) : [];
+const adjacent = seriesSlug
+  ? await getAdjacentInSeries(post)
+  : { prev: undefined, next: undefined };
+
+const related = await getRelatedPosts(post, 3);
+
+const href = (entry: Post) => `/blog/${entry.id}/`;
+
+const author = { name: SITE_OWNER, role: AUTHOR_ROLE, initials: AUTHOR_INITIALS };
+---
+
+<ArticleLayout
+  title={post.data.title}
+  description={post.data.description}
+  ogImage={ogImageUrl(post.id)}
+  headings={headings}
+>
+  <ArticleHero
+    slot="hero"
+    title={post.data.title}
+    description={post.data.description}
+    category={post.data.category}
+    categoryTitle={categoryTitle}
+    categoryHref={categoryHref}
+    series={seriesEntry
+      ? { title: seriesEntry.data.title, href: `/blog/series/${seriesEntry.id}/` }
+      : null}
+    part={post.data.part}
+    publishDate={post.data.publishDate}
+    updatedDate={post.data.updatedDate}
+    minutesRead={minutesRead}
+    author={author}
+    glyph={post.data.heroGlyph}
+  />
+
+  <ArticleToc slot="toc" headings={headings} />
+
+  <div class="article-column">
+    <div class="prose">
+      <Content />
+    </div>
+
+    {
+      seriesEntry && (
+        <SeriesNav
+          series={{
+            title: seriesEntry.data.title,
+            href: `/blog/series/${seriesEntry.id}/`,
+          }}
+          totalParts={seriesParts.length || undefined}
+          prev={
+            adjacent.prev
+              ? {
+                  title: adjacent.prev.data.title,
+                  href: href(adjacent.prev),
+                  part: adjacent.prev.data.part,
+                }
+              : null
+          }
+          next={
+            adjacent.next
+              ? {
+                  title: adjacent.next.data.title,
+                  href: href(adjacent.next),
+                  part: adjacent.next.data.part,
+                }
+              : null
+          }
+        />
+      )
+    }
+
+    <AuthorBox
+      name={SITE_OWNER}
+      role={AUTHOR_ROLE}
+      bio={AUTHOR_BIO}
+      initials={AUTHOR_INITIALS}
+    />
+  </div>
+
+  <Fragment slot="after">
+    <RelatedGrid posts={related} />
+
+    <div class="back-row">
+      <a class="back-link" href="/blog/">
+        <Icon name="arrow-left" size={16} />
+        Back to all articles
+      </a>
+    </div>
+  </Fragment>
+</ArticleLayout>
+
+<style>
+  /* Everything in the prose column shares the article's measure, so the
+     series nav and author panel line up with the last paragraph above
+     them. font-size matches .prose so `ch` resolves identically. */
+  .article-column {
+    max-width: 68ch;
+    min-width: 0;
+    font-size: 17px;
+  }
+
+  .back-row {
+    width: var(--container);
+    margin-inline: auto;
+    padding: 40px 0 60px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .back-link:hover {
+    color: var(--accent-strong);
+  }
+</style>

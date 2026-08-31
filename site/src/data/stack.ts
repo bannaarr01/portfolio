@@ -44,4 +44,4 @@ export const stack = [
   { name: 'Prometheus', icon: 'prometheus' },
   { name: 'Grafana', icon: 'grafana' },
   { name: 'Datadog', icon: 'activity' },
-] as const satisfies readonly StackItem[];
+] satisfies StackItem[];

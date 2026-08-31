@@ -1,0 +1,617 @@
+/* ============================================================
+   prose.css — long-form reading scale for the journal
+   Owner: group 05 (article template)
+
+   The serif is gone, so legibility rests entirely on this file.
+   Sans-serif long-form wants a slightly smaller size, more leading
+   and a tighter measure than the serif it replaced:
+
+       17px / 1.7 / ~70 characters per line
+
+   The brief asks for 68ch. In Geist that renders as 97 characters,
+   because `ch` is the width of a digit. The measure below is the
+   verified equivalent — see the note on --measure.
+
+   Every colour here is a token. Nothing in this file may hardcode
+   a hex value — see PLAN.md §4.1-4.3.
+   ============================================================ */
+
+.prose {
+  /* --- the reading scale ------------------------------------ */
+
+  /* Outer bound: how far a code block, table or figure may run.
+     This is the brief's 68ch. */
+  max-width: 68ch;
+
+  /* Running-text measure.
+     MEASURED, NOT ASSUMED: 68ch renders as ~97 characters per line in
+     Geist, because `ch` is the width of a digit and digits are far
+     wider than the average lowercase glyph. 97 characters is well past
+     comfortable for a 4,000-word sitting. 32.5em lands at ~70, which
+     is the number 68ch was reaching for.
+
+     Deliberately an absolute length, not `em`: `em` resolves against
+     each element's own size, so the lead paragraph and the headings
+     would each land on a different measure and the right edge would
+     wander down the page. */
+  --measure: 552px;
+
+  min-width: 0; /* so the prose column may shrink inside a grid */
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.7;
+  letter-spacing: -0.004em;
+  color: var(--text);
+
+  /* a stray URL must never widen the page */
+  overflow-wrap: break-word;
+
+  /* tabular figures inside tables and code, proportional in prose */
+  font-variant-numeric: normal;
+}
+
+/* Two widths, and the split is the point.
+
+   Running text holds the measure. Structure — section rules, code,
+   tables, figures — spans the full column. A long article picks up a
+   visible rhythm from the alternation, and a wide table gets the room
+   it needs instead of scrolling on a desktop screen. */
+.prose > :is(p, ul, ol, dl, blockquote),
+.prose figcaption {
+  max-width: var(--measure);
+}
+
+/* Anything the TOC or a #fragment can target must clear the fixed
+   header, otherwise the heading lands underneath it. */
+.prose :is(h2, h3, h4, h5, h6)[id] {
+  scroll-margin-top: calc(var(--header-h) + 32px);
+}
+
+/* ------------------------------------------------------------
+   Paragraphs
+   ------------------------------------------------------------ */
+
+.prose p {
+  margin: 0 0 26px;
+}
+
+/* Editorial lead-in: the opening paragraph carries a touch more
+   presence than the body it introduces. One paragraph only. */
+.prose > p:first-of-type {
+  font-size: 18.5px;
+  line-height: 1.62;
+  letter-spacing: -0.008em;
+  color: var(--text);
+}
+
+.prose > :last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------
+   Headings
+
+   H2 rules are what give a 4,000-word study note scannable
+   rhythm. The short accent segment riding on each rule is the
+   article's signature — it echoes the section rule used across
+   the site and ties every H2 back to its number in the TOC.
+   ------------------------------------------------------------ */
+
+.prose h2 {
+  position: relative;
+  margin: 56px 0 22px;
+  padding-top: 34px;
+  border-top: 1px solid var(--border);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.prose h2::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 46px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* An article that opens on a heading shouldn't open on a rule. */
+.prose > h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.prose > h2:first-child::before {
+  display: none;
+}
+
+.prose h3 {
+  margin: 38px 0 16px;
+  font-size: 22px;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.prose h4 {
+  margin: 30px 0 12px;
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.prose h5,
+.prose h6 {
+  margin: 26px 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------
+   Inline
+   ------------------------------------------------------------ */
+
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  transition:
+    color 0.16s cubic-bezier(0.4, 0, 0.2, 1),
+    text-decoration-color 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prose a:hover {
+  color: var(--accent-strong);
+  text-decoration-color: currentColor;
+}
+
+.prose strong,
+.prose b {
+  font-weight: 650;
+  color: var(--text);
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose abbr[title] {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+
+.prose mark {
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.prose sup,
+.prose sub {
+  font-size: 0.72em;
+  line-height: 0;
+}
+
+/* ------------------------------------------------------------
+   Lists
+   ------------------------------------------------------------ */
+
+.prose ul,
+.prose ol {
+  display: grid;
+  gap: 11px;
+  margin: 0 0 26px;
+  padding: 0;
+}
+
+.prose li {
+  position: relative;
+  padding-left: 22px;
+  list-style: none;
+}
+
+.prose ul > li::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0.75em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.prose ol {
+  counter-reset: prose-ol;
+}
+
+.prose ol > li {
+  counter-increment: prose-ol;
+}
+
+.prose ol > li::before {
+  content: counter(prose-ol) '.';
+  position: absolute;
+  left: 0;
+  top: 0;
+  min-width: 18px;
+  font-size: 0.88em;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+/* Nested lists tuck in rather than restarting the rhythm. */
+.prose li > ul,
+.prose li > ol {
+  margin: 11px 0 0;
+}
+
+.prose li > p {
+  margin: 0 0 11px;
+}
+
+.prose li > p:last-child {
+  margin-bottom: 0;
+}
+
+/* Task lists, should a post use them. */
+.prose li:has(> input[type='checkbox']) {
+  padding-left: 26px;
+}
+
+.prose li > input[type='checkbox'] {
+  position: absolute;
+  left: 0;
+  top: 0.42em;
+  accent-color: var(--accent);
+}
+
+.prose li:has(> input[type='checkbox'])::before {
+  display: none;
+}
+
+/* ------------------------------------------------------------
+   Blockquote
+   ------------------------------------------------------------ */
+
+.prose blockquote {
+  margin: 0 0 26px;
+  padding: 6px 0 6px 22px;
+  border-left: 3px solid var(--accent);
+  background: linear-gradient(90deg, var(--accent-soft), transparent 64%);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.prose blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.prose blockquote cite {
+  display: block;
+  margin-top: 10px;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  /* --muted, not --soft: --soft only clears AA at 18.66px bold. */
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------
+   Rule
+   ------------------------------------------------------------ */
+
+.prose hr {
+  height: 1px;
+  margin: 48px 0;
+  border: 0;
+  background: var(--border);
+}
+
+/* ------------------------------------------------------------
+   Code
+
+   Shiki runs dual-theme (group 00 registers github-light /
+   github-dark-default). It emits the light colour inline and the
+   dark one as a --shiki-dark custom property, so the theme swap
+   is pure CSS with no client JS.
+
+   Dark is this site's DEFAULT (no data-theme attribute), which is
+   the inverse of Shiki's assumption — hence :not([data-theme="light"]).
+
+   The block itself sits on --surface-raised rather than Shiki's own
+   background: on deep navy a near-black block reads as a hole.
+   ------------------------------------------------------------ */
+
+.prose pre {
+  margin: 0 0 30px;
+  padding: 26px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  letter-spacing: 0;
+  tab-size: 2;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+
+  /* --- surface + the 1px edge light along the top ------------ */
+  background-color: var(--surface-raised);
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent-strong) 26%, transparent),
+    transparent
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: 0 0;
+}
+
+/* In light mode --surface-raised resolves to the same white as --bg, so
+   the block would
+   sit flat on the page and lose the lift the dark treatment gives it.
+   --surface is the lifted band in light and stays subordinate in dark. */
+:root[data-theme='light'] .prose pre {
+  background-color: var(--surface);
+}
+
+/* Shiki writes background-color and color inline on .astro-code,
+   so overriding it needs the same weight the inline style carries. */
+.prose pre.astro-code {
+  background-color: var(--surface-raised) !important;
+}
+
+:root[data-theme='light'] .prose pre.astro-code {
+  background-color: var(--surface) !important;
+}
+
+:root:not([data-theme='light']) .prose pre.astro-code,
+:root:not([data-theme='light']) .prose pre.astro-code span {
+  color: var(--shiki-dark) !important;
+}
+
+.prose pre code {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+/* Inline code — a chip, not a block. */
+.prose :not(pre) > code {
+  padding: 0.14em 0.42em;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  font-weight: 450;
+}
+
+/* A chip inside a link should read as part of the link. */
+.prose a > code {
+  color: inherit;
+}
+
+/* ------------------------------------------------------------
+   Tables
+
+   The study notes carry several wide tables, so a table scrolls
+   inside itself rather than pushing the page sideways.
+
+   display:block turns the table into its own scroll container
+   without needing a wrapper element — the markdown pipeline does
+   not emit one, and this file cannot add one. (A rehype wrapper
+   plugin from group 00 would be the cleaner long-term fix; see the
+   group 05 report.)
+   ------------------------------------------------------------ */
+
+.prose table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 0 30px;
+  border-collapse: collapse;
+  font-size: 14.5px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.prose thead {
+  /* keeps the anonymous table box filling the scroll container */
+  width: 100%;
+}
+
+/* Without a floor, a scrolling table collapses every column to its
+   min-content width and each cell becomes a one-word column. Better to
+   scroll a little further and keep the cells readable. */
+.prose :is(th, td) {
+  min-width: 7.5rem;
+}
+
+.prose th {
+  padding: 15px 16px;
+  border: 1px solid var(--border);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose td {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  vertical-align: top;
+}
+
+.prose tbody tr:nth-child(2n) {
+  background: var(--surface);
+}
+
+.prose td > code,
+.prose th > code {
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------
+   Media
+   ------------------------------------------------------------ */
+
+.prose img,
+.prose video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.prose figure {
+  margin: 0 0 30px;
+}
+
+.prose figure > img {
+  margin-bottom: 12px;
+}
+
+.prose figcaption {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* A bare image in its own paragraph still needs block spacing. */
+.prose p:has(> img:only-child) {
+  margin-bottom: 30px;
+}
+
+.prose iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 0 0 30px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* ------------------------------------------------------------
+   Definition lists
+   ------------------------------------------------------------ */
+
+.prose dl {
+  margin: 0 0 26px;
+}
+
+.prose dt {
+  font-weight: 650;
+  color: var(--text);
+}
+
+.prose dd {
+  margin: 6px 0 16px;
+  padding-left: 22px;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------
+   Narrow screens
+
+   The size holds at 17px — shrinking body copy on the device that
+   reads the most long-form would be the wrong trade. Only the
+   padding-heavy blocks give ground.
+   ------------------------------------------------------------ */
+
+@media (max-width: 640px) {
+  .prose > p:first-of-type {
+    font-size: 18px;
+  }
+
+  .prose h2 {
+    margin-top: 48px;
+    padding-top: 28px;
+    font-size: 26px;
+  }
+
+  .prose h3 {
+    font-size: 20px;
+  }
+
+  .prose pre {
+    padding: 18px;
+    border-radius: 10px;
+  }
+
+  .prose table {
+    font-size: 13.5px;
+  }
+
+  .prose th,
+  .prose td {
+    padding: 12px 13px;
+  }
+}
+
+/* ------------------------------------------------------------
+   Print — the study notes get printed
+   ------------------------------------------------------------ */
+
+@media print {
+  .prose {
+    max-width: none;
+    font-size: 11pt;
+    color: black;
+  }
+
+  .prose pre,
+  .prose table,
+  .prose blockquote,
+  .prose figure {
+    break-inside: avoid;
+  }
+
+  .prose h2,
+  .prose h3 {
+    break-after: avoid;
+  }
+
+  .prose a::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.8em;
+    word-break: break-all;
+  }
+}

@@ -21,7 +21,15 @@
  * quote next to a long one is the case that proves the layout holds.
  */
 
+import type { TestimonialsIntro } from '../components/home/types';
 import type { Testimonial } from '../types/portfolio';
+
+/** The intro row above the quote cards, with its outbound link. */
+export const testimonialsIntro = {
+  lead: 'TODO: one sentence framing who these people are and how you worked with them.',
+  linkLabel: 'View LinkedIn profile',
+  linkHref: 'TODO: https://linkedin.com/in/<you>',
+} satisfies TestimonialsIntro;
 
 export const testimonials = [
   {
@@ -40,4 +48,4 @@ export const testimonials = [
     relationship: 'TODO: how you worked together',
     initials: 'TD',
   },
-] as const satisfies readonly Testimonial[];
+] satisfies Testimonial[];

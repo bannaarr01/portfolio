@@ -1,0 +1,318 @@
+---
+/**
+ * ArticleToc — the sticky rail that runs beside a long article.
+ *
+ * Reads the flat `headings` array returned by `render()` and keeps only
+ * depth-2 entries, which are the sections the article actually navigates by.
+ *
+ * The numbering is zero-padded with padStart. `'0' + index` renders `010`
+ * from the tenth heading onward — a real bug on the original site, still
+ * visible in mockup-article.html.
+ *
+ * Goes in ArticleLayout's `toc` slot. That layout's `.article-toc` aside owns
+ * the sticky offset, the rail's scrollbar and the collapsed panel chrome —
+ * this component styles the list inside it and nothing else.
+ *
+ * Owner: group 05.
+ */
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+  /** Heading shown above the list. */
+  label?: string;
+}
+
+const { headings, label = 'On this page' } = Astro.props;
+
+const sections = headings
+  .filter((h) => h.depth === 2 && h.slug)
+  .map((h, i) => ({
+    ...h,
+    // 01, 02 … 09, 10, 11 — never 010.
+    n: String(i + 1).padStart(2, '0'),
+  }));
+---
+
+{
+  sections.length > 0 && (
+    <nav class="toc" aria-labelledby="toc-label" data-toc>
+      <p class="toc__label" id="toc-label">
+        {label}
+      </p>
+
+      <div class="toc__rail">
+        {/* Progress spine. Fills as the document scrolls, with zero JS,
+            where scroll-driven animations are supported. */}
+        <span class="toc__spine" aria-hidden="true" />
+
+        <ol class="toc__list">
+          {sections.map((s) => (
+            <li class="toc__item">
+              <a class="toc__link" href={`#${s.slug}`} data-toc-link>
+                <span class="toc__n" aria-hidden="true">
+                  {s.n}
+                </span>
+                <span class="toc__text">{s.text}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </nav>
+  )
+}
+
+<script>
+  // Scroll-spy: marks the section currently under the reading line.
+  // One observer for every heading; the callback re-reads positions so a
+  // fast scroll that skips several thresholds still lands on the right one.
+  const nav = document.querySelector<HTMLElement>('[data-toc]');
+  const links = nav
+    ? Array.from(nav.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'))
+    : [];
+
+  const items = links
+    .map((a) => {
+      const id = decodeURIComponent(a.hash.slice(1));
+      const el = id ? document.getElementById(id) : null;
+      return el ? { a, el } : null;
+    })
+    .filter((x): x is { a: HTMLAnchorElement; el: HTMLElement } => x !== null);
+
+  // The rail's scrollbar lives on ArticleLayout's .article-toc, not on this
+  // nav, so walk up to whichever ancestor actually scrolls.
+  const scroller = (() => {
+    let el: HTMLElement | null = nav;
+    while (el && el !== document.body) {
+      const oy = getComputedStyle(el).overflowY;
+      if (oy === 'auto' || oy === 'scroll') return el;
+      el = el.parentElement;
+    }
+    return null;
+  })();
+
+  if (nav && items.length > 1 && 'IntersectionObserver' in window) {
+    const headerH =
+      parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue('--header-h'),
+        10
+      ) || 68;
+    const line = headerH + 48;
+
+    let current: (typeof items)[number] | null = null;
+
+    const mark = (next: (typeof items)[number]) => {
+      if (next === current) return;
+      if (current) {
+        current.a.parentElement?.classList.remove('is-active');
+        current.a.removeAttribute('aria-current');
+      }
+      next.a.parentElement?.classList.add('is-active');
+      next.a.setAttribute('aria-current', 'location');
+      current = next;
+
+      // Keep the active entry visible when the rail has its own scrollbar.
+      if (scroller && scroller.scrollHeight > scroller.clientHeight + 4) {
+        const r = next.a.getBoundingClientRect();
+        const n = scroller.getBoundingClientRect();
+        if (r.top < n.top + 8) scroller.scrollTop += r.top - n.top - 24;
+        else if (r.bottom > n.bottom - 8) scroller.scrollTop += r.bottom - n.bottom + 24;
+      }
+    };
+
+    const sync = () => {
+      let pick = items[0];
+      for (const item of items) {
+        if (item.el.getBoundingClientRect().top - line <= 0) pick = item;
+        else break;
+      }
+      mark(pick);
+    };
+
+    const io = new IntersectionObserver(sync, {
+      rootMargin: `-${line}px 0px 0px 0px`,
+      threshold: 0,
+    });
+    items.forEach((item) => io.observe(item.el));
+    sync();
+  }
+</script>
+
+<style>
+  /* Positioning, the sticky offset, the rail's own scrollbar and the
+     collapsed panel chrome all belong to ArticleLayout's .article-toc
+     (group 01). Duplicating them here nests a panel inside a panel at
+     mobile — double border, double padding. This file styles the list. */
+  .toc {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .toc__label {
+    margin: 0 0 16px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .toc__rail {
+    position: relative;
+    padding-left: 15px;
+  }
+
+  /* The spine: a hairline the whole list hangs off, with a cyan
+     fill that tracks reading progress. */
+  .toc__rail::before {
+    content: '';
+    position: absolute;
+    inset: 2px auto 2px 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  /* Reading progress. Kept deliberately quiet — it is a background
+     measure, and the active marker below has to stay the louder of
+     the two. */
+  .toc__spine {
+    position: absolute;
+    inset: 2px auto 2px 0;
+    width: 1px;
+    background: color-mix(in srgb, var(--accent) 52%, transparent);
+    transform-origin: 50% 0;
+    scale: 1 0;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .toc__spine {
+      animation: toc-progress linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+
+  @keyframes toc-progress {
+    from {
+      scale: 1 0;
+    }
+    to {
+      scale: 1 1;
+    }
+  }
+
+  .toc__list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .toc__item {
+    position: relative;
+  }
+
+  /* Active marker: sits on the spine and overpowers it. */
+  .toc__item::before {
+    content: '';
+    position: absolute;
+    left: -16px;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 999px;
+    background: var(--accent-strong);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--accent-strong) 55%, transparent);
+    opacity: 0;
+    transform: scaleY(0.4);
+    transform-origin: 50% 50%;
+    transition:
+      opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .toc__item.is-active::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .toc__link {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    padding: 5px 8px 5px 0;
+    border-radius: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .toc__link:hover {
+    color: var(--text);
+  }
+
+  .toc__n {
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+    transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .toc__text {
+    font-size: 13px;
+    line-height: 1.42;
+    letter-spacing: -0.005em;
+  }
+
+  .toc__item.is-active .toc__link {
+    color: var(--text);
+    font-weight: 650;
+  }
+
+  .toc__item.is-active .toc__n {
+    color: var(--accent-strong);
+  }
+
+  /* ----------------------------------------------------------
+     Collapsed state. ArticleLayout turns the rail into a panel at
+     999px; this is only how the list rearranges inside it — two
+     columns so fifteen sections don't push the article down the page.
+     The breakpoint matches group 01's exactly, or the list would
+     rearrange one pixel before the panel appears.
+     ---------------------------------------------------------- */
+  @media (max-width: 999px) {
+    .toc__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2px 20px;
+    }
+
+    /* Progress against a panel that no longer runs beside the text
+       would be noise. */
+    .toc__spine {
+      display: none;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .toc__list {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toc__spine {
+      animation: none;
+      scale: 1 0;
+    }
+
+    .toc__link,
+    .toc__n,
+    .toc__item::before {
+      transition: none;
+    }
+  }
+</style>

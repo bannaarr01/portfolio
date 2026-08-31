@@ -1,0 +1,207 @@
+---
+/**
+ * BlogCard — PLAN.md §6. Owned by group 04, consumed by 05 (related posts).
+ *
+ * The whole card is a click target via a stretched pseudo-element on the title
+ * link, so there is exactly one <a> per card and nothing interactive nested
+ * inside it. "Read article" is deliberately a <span>, not a second link.
+ */
+import CoverArt from './CoverArt.astro';
+import Icon from '../ui/Icon.astro';
+import { categoryTitle, findSeries } from './taxonomy';
+import { formatDate, getMinutesRead } from '../../lib';
+import type { Post } from '../../types/content';
+
+interface Props {
+  post: Post;
+  showPart?: boolean;
+}
+
+const { post, showPart = false } = Astro.props;
+const { title, description, category, publishDate, part, heroGlyph } = post.data;
+
+const [catTitle, series] = await Promise.all([
+  categoryTitle(category),
+  findSeries(post.data.series),
+]);
+const minutes = getMinutesRead(post);
+
+const href = `/blog/${post.id}/`;
+const showSeriesLine = !showPart && series !== undefined && part !== undefined;
+---
+
+<article class="blog-card">
+  {showPart && part !== undefined && <p class="part-label">Part {part}</p>}
+
+  <CoverArt category={category} variant="card" glyph={heroGlyph} />
+
+  <p class="blog-card-meta">
+    <span class="cat">{catTitle}</span>
+    <span class="dot" aria-hidden="true">&middot;</span>
+    <time datetime={publishDate.toISOString()}>{formatDate(publishDate, 'short')}</time>
+  </p>
+
+  {
+    showSeriesLine && (
+      <p class="blog-card-series">
+        {series!.data.title} &middot; Part {part}
+      </p>
+    )
+  }
+
+  <h3><a href={href}>{title}</a></h3>
+  <p class="blog-card-dek">{description}</p>
+
+  <div class="blog-card-foot">
+    <span class="mins">{minutes} min read</span>
+    <span class="go">Read article <Icon name="arrow-up-right" size={13} /></span>
+  </div>
+</article>
+
+<style>
+  .blog-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    transition: background var(--dur-ui) var(--ease);
+  }
+
+  .blog-card :global(.cover) {
+    margin-bottom: 18px;
+  }
+
+  .part-label {
+    margin-bottom: 14px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+  }
+
+  .blog-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .blog-card-meta .cat {
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+
+  .blog-card-meta .dot {
+    color: var(--border-strong);
+  }
+
+  .blog-card-series {
+    margin-top: 11px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--accent-strong);
+  }
+
+  h3 {
+    margin-top: 8px;
+    font-size: 21px;
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    text-wrap: pretty;
+  }
+
+  h3 a {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size var(--dur-ui) var(--ease);
+  }
+
+  /* One link, stretched over the whole card — no nested interactive elements. */
+  h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  .blog-card:hover h3 a {
+    background-size: 100% 1px;
+  }
+
+  .blog-card-dek {
+    margin-top: 11px;
+    font-size: 14.5px;
+    line-height: 1.56;
+    color: var(--muted);
+  }
+
+  .blog-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .blog-card-foot .mins {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .blog-card-foot .go {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--muted);
+    transition: color var(--dur-ui) var(--ease);
+  }
+
+  .blog-card:hover .go {
+    color: var(--accent-strong);
+  }
+
+  .blog-card-foot .go :global(svg) {
+    transition: transform var(--dur-ui) var(--ease);
+  }
+
+  .blog-card:hover .go :global(svg) {
+    transform: translate(2px, -2px);
+  }
+
+  /* The stretched link owns the focus ring for the whole card. */
+  .blog-card:focus-within {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 6px;
+    border-radius: 4px;
+  }
+
+  h3 a:focus-visible {
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blog-card:hover .go :global(svg) {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,182 @@
+---
+/** Contact: centred closer on the --surface band. */
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import Reveal from '../ui/Reveal.astro';
+import Section from './Section.astro';
+import type { ContactContent } from './types';
+import './home.css';
+
+interface Props {
+  content: ContactContent;
+}
+
+const { content } = Astro.props;
+---
+
+<Section id="contact" band="surface" class="contact">
+  <Reveal>
+    <div class="inner">
+      <span class="h-badge badge"><Icon name="mail" size={21} /></span>
+
+      <h2>
+        {content.heading.lead}{' '}
+        <span class="grad">{content.heading.accent}</span>
+      </h2>
+      <div class="rule"></div>
+
+      <p class="lead">{content.lead}</p>
+
+      <div class="actions">
+        <Button variant="primary" href={content.primaryCta.href}>
+          {content.primaryCta.label}
+          <Icon name={content.primaryCta.icon} size={16} />
+        </Button>
+        <Button variant="secondary" href={content.secondaryCta.href}>
+          {content.secondaryCta.label}
+          <Icon name={content.secondaryCta.icon} size={16} />
+        </Button>
+      </div>
+
+      <div class="lines">
+        <a href={`mailto:${content.email}`}>
+          <Icon name="mail" size={14} />
+          {content.email}
+        </a>
+        <a href={`tel:${content.phone.replace(/[^+\d]/g, '')}`}>
+          <Icon name="phone" size={14} />
+          {content.phone}
+        </a>
+      </div>
+
+      <div class="socials">
+        {
+          content.socials.map((social) => (
+            <a
+              href={social.href}
+              aria-label={social.label}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Icon name={social.icon} size={17} />
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </Reveal>
+</Section>
+
+<style>
+  .inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .badge {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+  }
+
+  h2 {
+    margin: 22px 0 0;
+    color: var(--text);
+    font-size: clamp(30px, 3.2vw, 44px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+  }
+
+  .grad {
+    background: linear-gradient(96deg, var(--accent-strong), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .rule {
+    width: 64px;
+    height: 3px;
+    margin-top: 16px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+
+  .lead {
+    max-width: 58ch;
+    margin: 22px 0 0;
+    color: var(--muted);
+    font-size: 16.5px;
+    line-height: 1.68;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 30px;
+  }
+
+  .lines {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 28px;
+    margin-top: 30px;
+  }
+
+  .lines a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    letter-spacing: -0.005em;
+    transition: color 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+  }
+
+  .lines a:hover {
+    color: var(--accent-strong);
+  }
+
+  .socials {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 26px;
+  }
+
+  .socials a {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-raised);
+    color: var(--muted);
+    transition:
+      transform 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      border-color 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      color 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      box-shadow 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+  }
+
+  .socials a:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+    box-shadow: 0 12px 40px color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent-strong);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .socials a:hover {
+      transform: none;
+    }
+  }
+</style>

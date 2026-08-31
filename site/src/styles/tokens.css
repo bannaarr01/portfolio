@@ -1,0 +1,156 @@
+/* ============================================================================
+   tokens.css — the only file in this codebase permitted to contain a hex value.
+   Owned by group 00. A missing token is a request to group 00, never a local
+   constant. Transcribed from PLAN.md §4.1–4.3 and §4.9.
+
+   DARK IS THE DEFAULT, NOT A VARIANT. Dark is authored on :root; light is the
+   override on :root[data-theme="light"]. Getting this backwards means every
+   consumer inherits the wrong base.
+   ============================================================================ */
+
+:root {
+  /* --- Palette · dark (default) — PLAN.md §4.1 -----------------------------
+     Contrast on --bg #05101C: text 17.09:1, accent-strong 10.59:1,
+     accent-2 10.28:1, accent 7.88:1, muted 7.54:1 — all AAA.
+     --soft lands near 4.0:1: large/bold meta text only, never body copy. */
+  --bg: #05101c; /* page background, deepest navy   */
+  --surface: #0a1826; /* alternating section bands       */
+  --surface-raised: #0f2133; /* cards, header, popovers         */
+  --border: #1b3348; /* hairlines, card borders         */
+  --border-strong: #24455f; /* hover borders, dividers         */
+  --text: #e6f4ff; /* primary copy                    */
+  --muted: #8aa6be; /* secondary copy, body paragraphs */
+  --soft: #5c7691; /* meta, timestamps, captions      */
+  --accent: #06b6d4; /* links, active nav, bullets      */
+  --accent-strong: #22d3ee; /* hover, emphasis, gradient start */
+  --accent-2: #2dd4bf; /* teal — gradient end, secondary  */
+  --accent-soft: #0b2a38; /* tag/chip backgrounds            */
+  --success: #34d399; /* availability dot                */
+
+  /* --- Atmosphere · dark — PLAN.md §4.3 ---------------------------------- */
+  --glow-cyan: #06b6d435;
+  --glow-teal: #2dd4bf28;
+  --glow-deep: #1e40af30;
+  --grid-line: #22d3ee0b;
+  --header-bg: #05101cd9;
+  --hero-bg: #071324; /* lifted from --bg so hero gradients read */
+  --noise-opacity: 0.025;
+
+  /* --- Effects · dark ------------------------------------------------------
+     Derived from the palette above. They live here rather than at the call
+     site so no component ever needs to spell out a hex. */
+  --glow-cta: 0 8px 28px #06b6d440; /* primary CTA resting glow  */
+  --glow-cta-hover: 0 12px 34px #06b6d459; /* primary CTA on hover      */
+  --glow-card-hover: 0 12px 40px #06b6d41f; /* card lift                 */
+  --shadow-card: 0 10px 32px #0208104d; /* card at rest              */
+  --edge-light: linear-gradient(90deg, transparent, #22d3ee40, transparent);
+  --on-accent: #04121a; /* text on a saturated accent fill */
+
+  /* --- Cover art — PLAN.md §4.8 -------------------------------------------
+     The journal's CSS-only cover artwork (group 04). Deliberately declared
+     once, outside the light override: a cover is a printed artefact, not a
+     themed surface, so it renders identically in both themes. §4.2 permits
+     raw cyan/teal here because it is a large decorative fill, never text.
+     Per-category hue-rotate is applied by CoverArt.astro, not stored here. */
+  --cover-1: #04283a; /* gradient stop  0%   */
+  --cover-2: #075e6b; /* gradient stop 26%   */
+  --cover-3: #0e9aa0; /* gradient stop 58%   */
+  --cover-4: #14b8a6; /* gradient stop 82%   */
+  --cover-5: #22d3ee; /* gradient stop 100%  */
+  --cover-arc-1: #ffffff1a; /* inner concentric arc */
+  --cover-arc-2: #ffffff12; /* middle arc           */
+  --cover-arc-3: #ffffff0d; /* outer arc            */
+  --cover-grid: #ffffff0d; /* 52px engineering grid */
+  --cover-ink: #ffffffe0; /* glyph + category name */
+  --cover-ink-soft: #ffffffb0; /* cover kicker          */
+
+  /* --- Type — PLAN.md §4.4 ------------------------------------------------
+     One family. No serif anywhere. Self-hosted; no Google Fonts origin. */
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-hero: clamp(42px, 5.4vw, 78px);
+  --text-masthead: clamp(46px, 5.8vw, 84px);
+  --text-h1-article: clamp(34px, 4.4vw, 60px);
+  --text-h2: clamp(30px, 3.2vw, 44px);
+  --text-h3: clamp(20px, 1.6vw, 23px);
+  --text-body: 16.5px;
+  --text-prose: 17px;
+  --text-meta: 13.5px;
+  --text-kicker: 10.5px;
+  --text-mono: 13.5px;
+
+  /* --- Radii — PLAN.md §4.6. Deliberately larger than the mockups' 14px. -- */
+  --radius-card: 16px;
+  --radius-button: 12px;
+  --radius-pill: 999px;
+  --radius-sm: 8px;
+
+  /* --- Layout — PLAN.md §4.9 --------------------------------------------- */
+  --container: min(100% - 40px, 1100px);
+  --container-wide: min(100% - 40px, 1280px);
+  --header-h: 68px;
+  --section-y: clamp(96px, 9vw, 120px);
+
+  /* --- Space scale -------------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* --- Motion — PLAN.md §4.6 ---------------------------------------------
+     One easing curve for the whole site. 150–200ms for UI, 400–600ms for
+     reveals. The reduced-motion block in global.css zeroes these. */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur-ui: 180ms;
+  --dur-slow: 200ms;
+  --dur-reveal: 500ms;
+
+  /* Form controls and scrollbars follow the theme. */
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  /* --- Palette · light (opt-in override) — PLAN.md §4.2 -------------------
+     HARD RULE: #06B6D4 scores 2.43:1 on white and fails AA badly. It must
+     never be used for text, icons, or focus rings in light mode. The bright
+     cyan and teal survive here only inside large decorative fills — aurora
+     blobs and cover art — never as text or borders. */
+  --bg: #ffffff;
+  --surface: #f1f6fa;
+  --surface-raised: #ffffff;
+  --border: #dce7ee;
+  --border-strong: #c3d4e0;
+  --text: #05101c;
+  --muted: #4a6478;
+  --soft: #7a93a6;
+  --accent: #0e7490; /* 5.36:1 on white ✅ */
+  --accent-strong: #155e75; /* 7.27:1 on white ✅ */
+  --accent-2: #0f766e; /* darkened teal       */
+  --accent-soft: #e0f2f7;
+  --success: #059669;
+
+  /* --- Atmosphere · light — PLAN.md §4.3 --------------------------------- */
+  --glow-cyan: #06b6d422;
+  --glow-teal: #2dd4bf1c;
+  --glow-deep: #3b82f618;
+  --grid-line: #0e749010;
+  --header-bg: #ffffffd9;
+  --hero-bg: #f7fbfd;
+  --noise-opacity: 0.02;
+
+  /* --- Effects · light ---------------------------------------------------- */
+  --glow-cta: 0 8px 28px #0e749033;
+  --glow-cta-hover: 0 12px 34px #0e749040;
+  --glow-card-hover: 0 12px 40px #0e74901a;
+  --shadow-card: 0 10px 32px #23315214;
+  --edge-light: linear-gradient(90deg, transparent, #0e749033, transparent);
+  --on-accent: #ffffff;
+
+  color-scheme: light;
+}

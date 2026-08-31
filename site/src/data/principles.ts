@@ -1,12 +1,7 @@
 /**
  * The "How I Think & Work" section.
  *
- * Feeds: `components/home/Principles.astro`.
- *
- * Two exports:
- *   `principles` — the four numbered cards (typed, PLAN.md §5.3)
- *   `philosophy` — the two lead-in blocks above them (no type in §5.3, so it
- *                  ships an inferred type; see the note on that export)
+ * Feeds: `components/home/Philosophy.astro`, via `philosophy.ts`.
  *
  * The four principles below are general engineering positions rather than
  * biography, so they are usable as written. Read them and keep the ones you
@@ -38,26 +33,8 @@ export const principles = [
     title: 'Think beyond the task',
     body: 'I do not treat requirements as a checklist. I seek the intent behind the work, surface risks, challenge assumptions constructively, and propose ideas that can improve the product, architecture, or delivery.',
   },
-] as const satisfies readonly Principle[];
+] satisfies Principle[];
 
-/**
- * The two prose blocks above the numbered cards. These are autobiographical,
- * so both bodies are placeholders.
- *
- * PLAN.md §5.3 defines no type for this, so it exports an inferred one. If
- * group 00 adds a `Philosophy` interface later, switch to `satisfies`.
- */
-export const philosophy = [
-  {
-    kicker: 'Who I am',
-    headline: 'TODO: a short declarative line, e.g. "Curious by nature, accountable by choice."',
-    body: 'TODO: two or three sentences on what motivates you and how you approach unfamiliar problems. Write it as you would say it out loud.',
-  },
-  {
-    kicker: "What I'm building toward",
-    headline: 'TODO: a short line on the work you want next.',
-    body: 'TODO: two or three sentences on the kind of problem, scale, or organisation you are aiming at.',
-  },
-] as const;
-
-export type Philosophy = typeof philosophy;
+// The two prose blocks that sit above these cards live in `philosophy.ts`,
+// which is what the homepage imports. This module holds only the numbered
+// cards, so there is one place to edit each.

@@ -1,0 +1,176 @@
+---
+/** Two quote cards with a decorative glyph, plus an intro row linking out. */
+import type { Testimonial } from '../../types/portfolio';
+import Avatar from '../ui/Avatar.astro';
+import Icon from '../ui/Icon.astro';
+import Reveal from '../ui/Reveal.astro';
+import Section from './Section.astro';
+import SectionHeading from './SectionHeading.astro';
+import type { SectionCopy, TestimonialsIntro } from './types';
+import './home.css';
+
+interface Props {
+  heading: SectionCopy;
+  intro: TestimonialsIntro;
+  testimonials: Testimonial[];
+}
+
+const { heading, intro, testimonials } = Astro.props;
+---
+
+<Section band="bg">
+  <Reveal><SectionHeading {...heading} /></Reveal>
+
+  <Reveal>
+    <div class="intro">
+      <p>{intro.lead}</p>
+      <a href={intro.linkHref}>
+        {intro.linkLabel}
+        <Icon name="arrow-right" size={14} />
+      </a>
+    </div>
+  </Reveal>
+
+  <div class="grid">
+    {
+      testimonials.map((t, i) => (
+        <Reveal delay={i * 60}>
+          <figure class="quote h-card">
+            <span class="glyph" aria-hidden="true">
+              &ldquo;
+            </span>
+            <blockquote>{t.quote}</blockquote>
+            <figcaption>
+              <Avatar initials={t.initials} size={42} />
+              <span class="who">
+                <strong>{t.name}</strong>
+                <span class="role">{t.role}</span>
+                <span class="rel">{t.relationship}</span>
+              </span>
+            </figcaption>
+          </figure>
+        </Reveal>
+      ))
+    }
+  </div>
+</Section>
+
+<style>
+  .intro {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .intro p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15.5px;
+    line-height: 1.6;
+  }
+
+  .intro a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex: none;
+    color: var(--accent-strong);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    transition: gap 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+  }
+
+  .intro a:hover {
+    gap: 11px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 1.8vw, 22px);
+  }
+
+  .grid > :global(*) {
+    height: 100%;
+  }
+
+  .quote {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    padding: 28px 26px 26px;
+    overflow: hidden;
+  }
+
+  .glyph {
+    position: absolute;
+    top: -4px;
+    right: 18px;
+    color: var(--accent);
+    font-size: 118px;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.11;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  blockquote {
+    position: relative;
+    margin: 0;
+    color: var(--text);
+    font-size: 16.5px;
+    line-height: 1.66;
+    letter-spacing: -0.012em;
+    text-wrap: pretty;
+  }
+
+  figcaption {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-top: auto;
+    padding-top: 22px;
+  }
+
+  .who {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .who strong {
+    color: var(--text);
+    font-size: 14.5px;
+    font-weight: 650;
+    letter-spacing: -0.018em;
+  }
+
+  .role {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: -0.005em;
+  }
+
+  .rel {
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .intro {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+  }
+</style>

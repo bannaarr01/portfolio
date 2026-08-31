@@ -18,7 +18,7 @@ export const reading = [
   '100 Go Mistakes and How to Avoid Them',
   'Pro Go: The Complete Guide to Programming Reliable and Efficient Software Using Golang',
   'Zero To Production In Rust',
-] as const satisfies readonly string[];
+] satisfies string[];
 
 /** The paragraph above the list. */
 export const readingIntro =

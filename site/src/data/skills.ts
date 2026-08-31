@@ -20,6 +20,18 @@
 
 import type { SkillGroup } from '../types/portfolio';
 
+/**
+ * Re-exported so `index.astro` pulls the whole #skills section from one
+ * module. The marquee entries themselves live in `stack.ts`.
+ */
+export { stack } from './stack';
+
+/** Left-hand label on the marquee strip's header row. */
+export const stackTitle = 'Core technology stack';
+
+/** Right-hand label on the same row. */
+export const stackSubtitle = 'Backend · Cloud · Platform';
+
 export const skillGroups = [
   {
     title: 'Programming Languages',
@@ -83,4 +95,4 @@ export const skillGroups = [
       'Clear Written & Verbal Communication',
     ],
   },
-] as const satisfies readonly SkillGroup[];
+] satisfies SkillGroup[];

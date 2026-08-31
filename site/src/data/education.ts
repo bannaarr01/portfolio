@@ -18,7 +18,22 @@
  * card height.
  */
 
+import type { EducationCardCopy } from '../components/home/types';
 import type { Certification, Degree } from '../types/portfolio';
+
+/** Header for the left card. `icon` must be a valid `IconName`. */
+export const degreesCard = {
+  kicker: 'Academic background',
+  title: 'Education',
+  icon: 'graduation-cap',
+} satisfies EducationCardCopy;
+
+/** Header for the right card. */
+export const certificationsCard = {
+  kicker: 'Professional development',
+  title: 'Certifications',
+  icon: 'award',
+} satisfies EducationCardCopy;
 
 export const degrees = [
   {
@@ -39,7 +54,7 @@ export const degrees = [
       'TODO: anything else worth one line',
     ],
   },
-] as const satisfies readonly Degree[];
+] satisfies Degree[];
 
 export const certifications = [
   {
@@ -62,4 +77,4 @@ export const certifications = [
     issuer: 'TODO: Issuing body · Year',
     url: 'TODO: https://verification-url',
   },
-] as const satisfies readonly Certification[];
+] satisfies Certification[];

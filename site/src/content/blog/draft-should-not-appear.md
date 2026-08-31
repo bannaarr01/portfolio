@@ -1,10 +1,10 @@
 ---
-title: "DRAFT — should not appear in build"
-description: "Test fixture. If you can read this on the live site, the draft filter in getPublishedPosts() is broken."
+title: 'DRAFT — should not appear in build'
+description: 'Test fixture. If you can read this on the live site, the draft filter in getPublishedPosts() is broken.'
 category: backend-engineering
 publishDate: 2026-08-28
 draft: true
-tags: ["fixture"]
+tags: ['fixture']
 ---
 
 **This is a test fixture. Do not delete it.**

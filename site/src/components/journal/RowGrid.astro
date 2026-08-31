@@ -1,0 +1,160 @@
+---
+/**
+ * RowGrid — the bordered two-column row grid shared by SeriesShelf and
+ * DisciplineGrid. Numbered entries, hairline cells, hover lift to --surface.
+ *
+ * Ruling uses the same technique as CardGrid: every cell carries a top and
+ * right hairline, and the inner grid is offset 1px up and right so the outer
+ * rules fall outside the clipping frame. An odd row count therefore closes on
+ * its own — the frame's bottom border runs under the empty half — with no
+ * filler cell and no per-breakpoint nth-child arithmetic.
+ */
+import Icon from '../ui/Icon.astro';
+import { railNumber, type Row } from './taxonomy';
+
+interface Props {
+  rows: Row[];
+  variant?: 'arrow' | 'inline';
+}
+
+const { rows, variant = 'inline' } = Astro.props;
+---
+
+<div class="row-frame">
+  <div class:list={['row-grid', `is-${variant}`]}>
+    {
+      rows.map((row, i) => (
+        <a class="row" href={row.href}>
+          <span class="row-num">{railNumber(i + 1)}</span>
+          <span class="row-body">
+            <span class="row-title">{row.title}</span>
+            <span class="row-desc">{row.description}</span>
+            <span class="row-meta">
+              {row.meta}
+              {variant === 'inline' && <Icon name="arrow-right" size={13} />}
+            </span>
+          </span>
+          {variant === 'arrow' && (
+            <span class="row-arrow" aria-hidden="true">
+              <Icon name="arrow-right" size={17} />
+            </span>
+          )}
+        </a>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .row-frame {
+    margin-top: 26px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+
+  .row-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* Pull the outer hairlines under the frame's own border. */
+    margin: -1px -1px 0 0;
+  }
+
+  .row {
+    display: flex;
+    gap: 22px;
+    padding: 22px 20px;
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    transition: background var(--dur-ui) var(--ease);
+  }
+
+  .row:hover {
+    background: var(--surface);
+  }
+
+  .row-num {
+    flex: none;
+    padding-top: 3px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .row-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .row-title {
+    display: block;
+    font-size: 20px;
+    font-weight: 650;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  .row-desc {
+    display: block;
+    margin-top: 7px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .row-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .row-arrow {
+    align-self: center;
+    flex: none;
+    color: var(--accent);
+    transition: transform var(--dur-ui) var(--ease);
+  }
+
+  .row:hover .row-arrow,
+  .row:hover .row-meta :global(svg) {
+    transform: translateX(3px);
+  }
+
+  .row-meta :global(svg) {
+    transition: transform var(--dur-ui) var(--ease);
+  }
+
+  /* Surface sections invert the hover so the rows still separate from the band
+     they sit on. */
+  :global(.is-band) .row:hover {
+    background: var(--bg);
+  }
+
+  @media (min-width: 901px) {
+    .row-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .row {
+      padding: 26px 28px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .row:hover .row-arrow,
+    .row:hover .row-meta :global(svg) {
+      transform: none;
+    }
+  }
+</style>

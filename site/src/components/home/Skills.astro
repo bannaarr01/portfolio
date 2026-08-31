@@ -1,0 +1,63 @@
+---
+/** Skills: stack marquee strip, then a three-up grid of skill group cards. */
+import type { SkillGroup, StackItem } from '../../types/portfolio';
+import Reveal from '../ui/Reveal.astro';
+import Section from './Section.astro';
+import SectionHeading from './SectionHeading.astro';
+import SkillCard from './SkillCard.astro';
+import SkillMarquee from './SkillMarquee.astro';
+import type { SectionCopy } from './types';
+
+interface Props {
+  heading: SectionCopy;
+  stack: StackItem[];
+  stackTitle: string;
+  stackSubtitle: string;
+  groups: SkillGroup[];
+}
+
+const { heading, stack, stackTitle, stackSubtitle, groups } = Astro.props;
+---
+
+<Section id="skills" band="surface">
+  <Reveal><SectionHeading {...heading} /></Reveal>
+
+  <Reveal>
+    <SkillMarquee items={stack} title={stackTitle} subtitle={stackSubtitle} />
+  </Reveal>
+
+  <div class="grid">
+    {
+      groups.map((group, i) => (
+        <Reveal delay={(i % 3) * 60}>
+          <SkillCard group={group} />
+        </Reveal>
+      ))
+    }
+  </div>
+</Section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(14px, 1.6vw, 18px);
+    margin-top: clamp(28px, 3vw, 38px);
+  }
+
+  .grid > :global(*) {
+    height: 100%;
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 620px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

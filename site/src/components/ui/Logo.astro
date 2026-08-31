@@ -1,0 +1,157 @@
+---
+/**
+ * The brand mark, inline.
+ *
+ * This exists rather than `<img src="/logo.svg">` because the site's theme is a
+ * `data-theme` attribute on `<html>`, and an external SVG can never see it — it
+ * only gets `prefers-color-scheme`, which PLAN.md §4.5 deliberately ignores. An
+ * `<img>` would sit in dark colours on a light-toggled page whenever the OS is
+ * dark. Inline, the gradient stops read the real tokens and follow the toggle.
+ *
+ * `public/logo.svg` is the same mark for contexts outside the app (OG images,
+ * README, anywhere an inline component isn't possible). If you change one,
+ * change both.
+ *
+ * Because the stops are tokens, light mode swaps to the darkened cyan/teal on
+ * its own. That is what keeps the mark legal there: the bright cyan scores
+ * 2.43:1 on white and is barred from icons (PLAN.md §4.2). Values live in
+ * tokens.css — deliberately not repeated here, so this file stays clean under
+ * the no-hardcoded-colour check.
+ *
+ * The gradient IDs are stable rather than per-instance. Two Logos on one page
+ * emit duplicate IDs, which is technically invalid but renders correctly
+ * everywhere because both definitions are identical.
+ */
+interface Props {
+  size?: number;
+  /** Drops the badge fill and ring, leaving just the hub, spokes and nodes. */
+  bare?: boolean;
+  /**
+   * Force the engraved initials on or off. Left alone they appear from 28px up,
+   * which covers the header mark. The floor exists because the letters are
+   * drawn inside nodes that are themselves a fraction of the mark: below ~28
+   * CSS px the strokes stop resolving and fog the nodes instead of reading as
+   * B, J and A.
+   */
+  initials?: boolean;
+  title?: string;
+  class?: string;
+}
+
+const {
+  size = 32,
+  bare = false,
+  initials,
+  title = 'Boluwaji Joshua Adedigba',
+  class: className,
+}: Props = Astro.props;
+
+const showInitials = initials ?? size >= 28;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 400 400"
+  width={size}
+  height={size}
+  role="img"
+  aria-label={title}
+  class:list={['logo', className]}
+>
+  <title>{title}</title>
+
+  <defs>
+    <linearGradient
+      id="logo-mark"
+      x1="70"
+      y1="70"
+      x2="330"
+      y2="330"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="var(--accent-strong)"></stop>
+      <stop offset="1" stop-color="var(--accent-2)"></stop>
+    </linearGradient>
+    <linearGradient
+      id="logo-ring"
+      x1="60"
+      y1="40"
+      x2="340"
+      y2="360"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="var(--accent-strong)"></stop>
+      <stop offset="1" stop-color="var(--accent-2)" stop-opacity="0.5"></stop>
+    </linearGradient>
+  </defs>
+
+  {
+    !bare && (
+      <path
+        d="M372 200 286 349H114L28 200 114 51h172Z"
+        fill="var(--surface)"
+        stroke="url(#logo-ring)"
+        stroke-width="9"
+      />
+    )
+  }
+
+  {
+    !bare && (
+      <circle
+        cx="200"
+        cy="200"
+        r="104"
+        fill="none"
+        stroke="url(#logo-mark)"
+        stroke-width="7"
+        opacity="0.5"
+      />
+    )
+  }
+
+  <g stroke="url(#logo-mark)" stroke-width="16" stroke-linecap="round" fill="none">
+    <path d="M200 200V96"></path>
+    <path d="M200 200 290 252"></path>
+    <path d="M200 200 110 252"></path>
+  </g>
+
+  <g fill="url(#logo-mark)">
+    <circle cx="200" cy="200" r="28"></circle>
+    <circle cx="200" cy="96" r="38"></circle>
+    <circle cx="290" cy="252" r="38"></circle>
+    <circle cx="110" cy="252" r="38"></circle>
+  </g>
+
+  {
+    showInitials && (
+      <g
+        fill="none"
+        stroke="var(--surface)"
+        stroke-width="20"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.62"
+      >
+        <g transform="translate(200 96) scale(0.33) translate(-59 -77)">
+          <path d="M26 138C24 96 28 52 34 16C70 8 92 26 88 48C84 68 58 76 32 76C66 76 96 86 94 110C92 134 58 146 26 138" />
+        </g>
+        <g transform="translate(290 252) scale(0.33) translate(-53 -83)">
+          <path d="M22 26C46 14 76 16 92 24" />
+          <path d="M66 20C68 62 66 104 60 126C54 150 20 152 14 124" />
+        </g>
+        <g transform="translate(110 252) scale(0.35) translate(-51 -76)">
+          <path d="M10 140C26 100 46 52 62 12C72 46 82 98 92 140" />
+          <path d="M30 102C50 96 72 96 86 102" />
+        </g>
+      </g>
+    )
+  }
+</svg>
+
+<style>
+  .logo {
+    display: block;
+    flex: none;
+  }
+</style>

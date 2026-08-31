@@ -1,0 +1,121 @@
+---
+/**
+ * StructuredData — JSON-LD, dropped into BaseLayout's `head` slot. Group 06.
+ *
+ *   <StructuredData slot="head" person />                        homepage
+ *   <StructuredData slot="head" article={…} breadcrumbs={…} />   articles
+ *   <StructuredData slot="head" breadcrumbs={…} />               taxonomy pages
+ *
+ * Everything goes into one `@graph` so a page never ships two competing script
+ * blocks and `author` can reference the Person node by `@id` instead of
+ * restating it.
+ *
+ * `jobTitle`, `sameAs`, and `email` are omitted until group 07 lands
+ * `src/data/*` — an invented social profile is worse than an absent one, and
+ * Google treats all three as optional. See the group 06 report.
+ */
+import { SITE_OWNER } from '../layout/nav';
+import { OG_DEFAULT } from './meta';
+
+export interface Crumb {
+  name: string;
+  /** Path or absolute URL; resolved against `Astro.site`. */
+  url: string;
+}
+
+export interface ArticleNode {
+  title: string;
+  description: string;
+  url: string;
+  image: string;
+  publishDate: Date;
+  updatedDate?: Date;
+  section?: string;
+  tags?: readonly string[];
+}
+
+interface Props {
+  person?: boolean;
+  article?: ArticleNode;
+  breadcrumbs?: readonly Crumb[];
+}
+
+const { person = false, article, breadcrumbs } = Astro.props;
+
+const site = Astro.site;
+if (!site) {
+  throw new Error('StructuredData.astro: `site` is not set in astro.config.mjs.');
+}
+
+const abs = (path: string) => new URL(path, site).href;
+const PERSON_ID = `${abs('/')}#person`;
+
+/** Google truncates `headline` past 110 characters. Doing it here keeps the cut
+ *  on a word boundary rather than mid-syllable. */
+function headline(value: string, limit = 110): string {
+  if (value.length <= limit) return value;
+  const cut = value.slice(0, limit - 1);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > limit * 0.6 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
+
+const graph: Record<string, unknown>[] = [];
+
+if (person) {
+  graph.push({
+    '@type': 'Person',
+    '@id': PERSON_ID,
+    name: SITE_OWNER,
+    url: abs('/'),
+    // A raster URL, not the SVG mark: validators are inconsistent about SVG in
+    // structured data and the generated card costs nothing to point at.
+    image: abs(OG_DEFAULT),
+  });
+}
+
+if (article) {
+  graph.push({
+    '@type': 'BlogPosting',
+    '@id': `${abs(article.url)}#article`,
+    headline: headline(article.title),
+    name: article.title,
+    description: article.description,
+    url: abs(article.url),
+    image: [abs(article.image)],
+    datePublished: article.publishDate.toISOString(),
+    dateModified: (article.updatedDate ?? article.publishDate).toISOString(),
+    inLanguage: 'en-GB',
+    author: person
+      ? { '@id': PERSON_ID }
+      : { '@type': 'Person', name: SITE_OWNER, url: abs('/') },
+    publisher: { '@type': 'Person', name: SITE_OWNER, url: abs('/') },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': abs(article.url) },
+    ...(article.section ? { articleSection: article.section } : {}),
+    ...(article.tags?.length ? { keywords: article.tags.join(', ') } : {}),
+  });
+}
+
+if (breadcrumbs?.length) {
+  graph.push({
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbs.map((crumb, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: crumb.name,
+      item: abs(crumb.url),
+    })),
+  });
+}
+
+// A literal `</script>` inside a JSON string would close this block early.
+// Escaping `<` is the standard defence and stays valid JSON.
+const json =
+  graph.length > 0
+    ? JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(
+        /</g,
+        '\\u003c'
+      )
+    : null;
+---
+
+{json && <script type="application/ld+json" is:inline set:html={json} />}

@@ -1,17 +1,17 @@
 ---
-title: "Cloud Computing Models and Deployment Strategies"
-description: "AWS Cloud Practitioner study notes on IaaS, PaaS, SaaS, public cloud, hybrid, on-premises, and multi-cloud deployments."
+title: 'Cloud Computing Models and Deployment Strategies'
+description: 'AWS Cloud Practitioner study notes on IaaS, PaaS, SaaS, public cloud, hybrid, on-premises, and multi-cloud deployments.'
 category: aws-cloud
 series: aws-cloud-practitioner-study-notes
 part: 2
 publishDate: 2026-08-14
 draft: false
-tags: ["aws", "cloud-fundamentals", "study-notes"]
+tags: ['aws', 'cloud-fundamentals', 'study-notes']
 heroGlyph: cloud
 ---
 
-Two axes get confused constantly in exam questions: *what layer you rent* and
-*where the hardware lives*. They are independent, and questions frequently
+Two axes get confused constantly in exam questions: _what layer you rent_ and
+_where the hardware lives_. They are independent, and questions frequently
 combine them to see whether you have noticed.
 
 ## The service models

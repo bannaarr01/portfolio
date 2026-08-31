@@ -1,0 +1,154 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import JournalLayout from '../../../layouts/JournalLayout.astro';
+import CategoryTabs from '../../../components/journal/CategoryTabs.astro';
+import SectionRail from '../../../components/journal/SectionRail.astro';
+import CardGrid from '../../../components/journal/CardGrid.astro';
+import EmptyState from '../../../components/journal/EmptyState.astro';
+import Icon from '../../../components/ui/Icon.astro';
+import { getPostsByCategory } from '../../../lib';
+
+/**
+ * Every category gets a page, including the ones with no published posts —
+ * the tabs and the discipline grid both link to all four, so filtering empty
+ * ones out here would produce dead links.
+ */
+export const getStaticPaths = (async () => {
+  const categories = await getCollection('categories');
+  return categories.map((entry) => ({
+    params: { category: entry.data.slug },
+    props: { entry },
+  }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { slug, title, description } = entry.data;
+
+const posts = await getPostsByCategory(slug);
+---
+
+<JournalLayout title={`${title} — The Engineering Journal`} description={description}>
+  <section class="category-hero">
+    <div class="site-container">
+      <a class="hero-back" href="/blog/">
+        <Icon name="arrow-left" size={15} /> All writing
+      </a>
+      <p class="kicker">
+        Category edition &middot; {posts.length}
+        {posts.length === 1 ? ' article' : ' articles'}
+      </p>
+      <h1 class="archive-title">{title}</h1>
+      <p class="archive-dek">{description}</p>
+    </div>
+  </section>
+
+  <div class="tabs-band">
+    <div class="site-container">
+      <CategoryTabs active={slug} />
+    </div>
+  </div>
+
+  <section class="category-archive site-container" aria-labelledby="archive-heading">
+    <SectionRail
+      kicker="From the archive"
+      heading={`All ${title} articles`}
+      id="archive-heading"
+      note={posts.length > 0 ? `${posts.length} filed` : 'Empty'}
+    />
+
+    {
+      posts.length > 0 ? (
+        <CardGrid posts={posts} />
+      ) : (
+        <EmptyState slug={slug} title={title} description={description} />
+      )
+    }
+  </section>
+</JournalLayout>
+
+<style>
+  .category-hero {
+    position: relative;
+    padding: calc(var(--header-h) + 56px) 0 58px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--hero-bg), var(--bg));
+  }
+
+  /* A 74px drafting grid — wider than the cover art's 52px so the hero reads as
+     the page it sits on rather than as a large piece of cover art. */
+  .category-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 74px),
+      repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 74px);
+  }
+
+  .category-hero > :global(.site-container) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    transition: color var(--dur-ui) var(--ease);
+  }
+
+  .hero-back:hover {
+    color: var(--accent-strong);
+  }
+
+  .category-hero .kicker {
+    display: block;
+    margin-top: 52px;
+  }
+
+  .archive-title {
+    margin-top: 12px;
+    font-size: clamp(40px, 6.4vw, 82px);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+  }
+
+  .archive-dek {
+    margin-top: 20px;
+    max-width: 58ch;
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .tabs-band {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .category-archive {
+    padding: 66px 0 88px;
+  }
+
+  @media (max-width: 900px) {
+    .category-hero {
+      padding: calc(var(--header-h) + 36px) 0 44px;
+    }
+
+    .category-hero .kicker {
+      margin-top: 36px;
+    }
+
+    .category-archive {
+      padding: 44px 0 64px;
+    }
+  }
+</style>

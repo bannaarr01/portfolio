@@ -1,0 +1,190 @@
+---
+/**
+ * EmptyState — shown when a category has no published articles.
+ *
+ * The original site put a bare heading over blank space and dead-ended the
+ * reader. This does three things instead: it still shows the discipline's cover
+ * art, so an empty archive is a designed page rather than a hole; it says what
+ * will land there, using the category's own description; and it routes onward to
+ * the disciplines that do have writing.
+ */
+import CoverArt from './CoverArt.astro';
+import Icon from '../ui/Icon.astro';
+import { getOrderedCategories } from './taxonomy';
+import { getCategoryCounts } from '../../lib';
+import type { CategorySlug } from '../../types/content';
+
+interface Props {
+  slug: CategorySlug;
+  title: string;
+  description: string;
+}
+
+const { slug, title, description } = Astro.props;
+
+const [categories, counts] = await Promise.all([
+  getOrderedCategories(),
+  getCategoryCounts(),
+]);
+
+const elsewhere = categories.filter((c) => c.data.slug !== slug && counts[c.data.slug] > 0);
+---
+
+<div class="empty">
+  <div class="empty-art" aria-hidden="true">
+    <CoverArt category={slug} variant="card" />
+  </div>
+
+  <div class="empty-copy">
+    <p class="kicker"><Icon name="book-open" size={13} /> Nothing filed here yet</p>
+    <h3>No {title} articles have been published</h3>
+    <p class="empty-dek">{description}</p>
+
+    {
+      elsewhere.length > 0 && (
+        <>
+          <p class="empty-label">Currently writing in</p>
+          <ul class="empty-links">
+            {elsewhere.map((c) => (
+              <li>
+                <a href={`/blog/category/${c.data.slug}/`}>
+                  {c.data.title}
+                  <span class="n">
+                    {counts[c.data.slug]}
+                    {counts[c.data.slug] === 1 ? ' article' : ' articles'}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )
+    }
+
+    <a class="empty-cta" href="/blog/">
+      Browse all writing <Icon name="arrow-right" size={15} />
+    </a>
+  </div>
+</div>
+
+<style>
+  .empty {
+    display: grid;
+    grid-template-columns: minmax(0, 0.62fr) minmax(0, 1fr);
+    gap: 40px;
+    align-items: center;
+    margin-top: 34px;
+    padding: 34px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background:
+      radial-gradient(circle at 12% 0%, var(--glow-teal), transparent 42%), var(--surface);
+  }
+
+  .empty-art {
+    opacity: 0.62;
+  }
+
+  .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  h3 {
+    margin-top: 12px;
+    font-size: clamp(24px, 2.6vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+
+  .empty-dek {
+    margin-top: 12px;
+    max-width: 46ch;
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .empty-label {
+    margin-top: 26px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .empty-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+    list-style: none;
+  }
+
+  .empty-links a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 9px;
+    padding: 9px 15px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--bg);
+    font-size: 13.5px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    transition:
+      border-color var(--dur-ui) var(--ease),
+      color var(--dur-ui) var(--ease);
+  }
+
+  .empty-links a:hover {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+  }
+
+  .empty-links .n {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .empty-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 26px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--accent);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-strong);
+  }
+
+  .empty-cta :global(svg) {
+    transition: transform var(--dur-ui) var(--ease);
+  }
+
+  .empty-cta:hover :global(svg) {
+    transform: translateX(3px);
+  }
+
+  @media (max-width: 900px) {
+    .empty {
+      grid-template-columns: 1fr;
+      gap: 26px;
+      padding: 24px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .empty-cta:hover :global(svg) {
+      transform: none;
+    }
+  }
+</style>

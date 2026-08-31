@@ -1,10 +1,10 @@
 ---
-title: "AWS Disaster Recovery Strategies: RTO, RPO, and the Four Recovery Patterns"
-description: "Detailed study notes explaining RTO, RPO, backup and restore, pilot light, warm standby, and active-active DR."
+title: 'AWS Disaster Recovery Strategies: RTO, RPO, and the Four Recovery Patterns'
+description: 'Detailed study notes explaining RTO, RPO, backup and restore, pilot light, warm standby, and active-active DR.'
 category: aws-cloud
 publishDate: 2026-08-21
 draft: false
-tags: ["aws", "reliability", "disaster-recovery"]
+tags: ['aws', 'reliability', 'disaster-recovery']
 heroGlyph: shield
 ---
 

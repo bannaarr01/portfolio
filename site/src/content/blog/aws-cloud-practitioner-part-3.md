@@ -1,13 +1,13 @@
 ---
-title: "Six Advantages of Cloud Computing"
-description: "AWS Cloud Practitioner study notes on the six advantages of cloud computing, from variable costs and elasticity to global deployment."
+title: 'Six Advantages of Cloud Computing'
+description: 'AWS Cloud Practitioner study notes on the six advantages of cloud computing, from variable costs and elasticity to global deployment.'
 category: aws-cloud
 series: aws-cloud-practitioner-study-notes
 part: 3
 publishDate: 2026-08-16
 updatedDate: 2026-08-22
 draft: false
-tags: ["aws", "cloud-fundamentals", "study-notes"]
+tags: ['aws', 'cloud-fundamentals', 'study-notes']
 heroGlyph: cloud
 ---
 

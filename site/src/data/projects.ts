@@ -13,12 +13,23 @@
 
 import type { Project } from '../types/portfolio';
 
+/**
+ * Re-exported so `index.astro` pulls the whole #projects section from one
+ * module. The entries themselves live in `case-studies.ts`.
+ */
+export { caseStudies } from './case-studies';
+
+/** Kicker above each featured case-study card. */
+export const caseStudyKicker = 'Selected case study';
+
+/** Subheading introducing the four-card grid below the case studies. */
+export const projectsSubheading = 'Additional projects';
+
 export const projects = [
   {
     title: 'TODO: Project one',
     company: 'TODO: Employer or client',
-    summary:
-      'TODO: one sentence on what this project was and what you did on it.',
+    summary: 'TODO: one sentence on what this project was and what you did on it.',
     highlights: [
       'TODO: the first thing worth knowing about it.',
       'TODO: the second.',
@@ -59,4 +70,4 @@ export const projects = [
     ],
     tech: ['NestJS', 'Keycloak', 'IoT', 'Real-time Analytics', 'RBAC'],
   },
-] as const satisfies readonly Project[];
+] satisfies Project[];

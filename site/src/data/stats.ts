@@ -14,4 +14,4 @@ export const stats = [
   { label: 'Companies', value: 'TODO: 3' },
   { label: 'Featured Projects', value: 'TODO: 6' },
   { label: 'Technologies', value: 'TODO: 25+' },
-] as const satisfies readonly Stat[];
+] satisfies Stat[];
