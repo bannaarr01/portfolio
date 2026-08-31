@@ -138,8 +138,10 @@ jobs:
       # severity threshold was raised above it. MEDIUM is in the gate for the
       # same reason: CloudFront access logging is a MEDIUM finding and is off
       # on purpose (§15), which should be recorded, not filtered.
+      # The tag is `v0.28.0` — this action's releases carry the `v` prefix, and
+      # `@0.28.0` fails at action-resolution time, before any step runs.
       - name: trivy config
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           scan-type: config
           scan-ref: infra
