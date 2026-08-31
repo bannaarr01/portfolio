@@ -1,0 +1,22 @@
+---
+// STUB: owned by group 01 (01-layout-chrome).
+// BaseLayout + the journal footer, which is deliberately distinct from the
+// portfolio one — with the serif gone, layout carries the whole identity
+// split between the two halves of the site (PLAN.md §4.7).
+import JournalFooter from '../components/layout/JournalFooter.astro';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  noindex?: boolean;
+  wide?: boolean;
+}
+---
+
+<BaseLayout {...Astro.props}>
+  <!-- STUB: owned by group 01 -->
+  <slot />
+  <JournalFooter slot="footer" />
+</BaseLayout>

@@ -1,0 +1,6 @@
+# PLACEHOLDER — group 07 owns src/content/** and replaces this wholesale.
+# Here only so collection queries return something during Wave 2.
+slug: go
+title: Go
+description: Concurrency, tooling, and writing Go that survives production.
+order: 1

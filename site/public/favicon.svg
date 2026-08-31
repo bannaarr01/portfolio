@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="Boluwaji Joshua Adedigba">
+  <title>Boluwaji Joshua Adedigba</title>
+
+  <!--
+    The quorum wheel, retuned for small sizes: nodes pulled in to radius 92 and
+    enlarged, strokes heavier, badge outline thinner. Same mark as logo.svg —
+    only the proportions differ, because geometry that reads at 400px goes to
+    mush at 32.
+
+    The initials survive down to 32px, which covers hidpi tab bars and every
+    bookmark and touch-icon context. Below that they cannot: at 16px the whole
+    400-unit viewBox maps to 16 device pixels, so a letter stroke lands at well
+    under one pixel. gen-icons.mjs strips this group for the 16px entry in
+    favicon.ico and keeps it for 32 and 48 — which is exactly what per-size
+    entries in an ICO are for. The group is matched by its class, so keep it.
+
+    Colours are literal, not var(): rasterisers do not resolve custom
+    properties and the mark would render empty. The badge stays opaque navy in
+    both themes — browser chrome composites favicons over backgrounds this file
+    cannot know about, and a white badge on a light tab bar leaves only a
+    hairline ring.
+  -->
+
+  <defs>
+    <linearGradient id="fav-mark" x1="70" y1="70" x2="330" y2="330" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE" />
+      <stop offset="1" stop-color="#2DD4BF" />
+    </linearGradient>
+    <linearGradient id="fav-ring" x1="60" y1="40" x2="340" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE" />
+      <stop offset="1" stop-color="#2DD4BF" stop-opacity="0.55" />
+    </linearGradient>
+  </defs>
+
+  <path
+    d="M372 200 286 349H114L28 200 114 51h172Z"
+    fill="#0A1826"
+    stroke="url(#fav-ring)"
+    stroke-width="12"
+  />
+
+  <circle cx="200" cy="200" r="92" fill="none" stroke="url(#fav-mark)" stroke-width="8" opacity="0.5" />
+
+  <g stroke="url(#fav-mark)" stroke-width="20" stroke-linecap="round" fill="none">
+    <path d="M200 200V108" />
+    <path d="M200 200 280 246" />
+    <path d="M200 200 120 246" />
+  </g>
+
+  <g fill="url(#fav-mark)">
+    <circle cx="200" cy="200" r="30" />
+    <circle cx="200" cy="108" r="40" />
+    <circle cx="280" cy="246" r="40" />
+    <circle cx="120" cy="246" r="40" />
+  </g>
+
+  <g
+    class="engrave"
+    fill="none"
+    stroke="#0A1826"
+    stroke-width="30"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.72"
+  >
+    <g transform="translate(200 108) scale(0.35) translate(-59 -77)">
+      <path
+        d="M26 138C24 96 28 52 34 16C70 8 92 26 88 48C84 68 58 76 32 76C66 76 96 86 94 110C92 134 58 146 26 138"
+      />
+    </g>
+    <g transform="translate(280 246) scale(0.35) translate(-53 -83)">
+      <path d="M22 26C46 14 76 16 92 24" />
+      <path d="M66 20C68 62 66 104 60 126C54 150 20 152 14 124" />
+    </g>
+    <g transform="translate(120 246) scale(0.37) translate(-51 -76)">
+      <path d="M10 140C26 100 46 52 62 12C72 46 82 98 92 140" />
+      <path d="M30 102C50 96 72 96 86 102" />
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,5 @@
+# PLACEHOLDER — group 07 owns src/content/** and replaces this wholesale.
+slug: backend-engineering
+title: Backend Engineering
+description: APIs, queues, data access, and the unglamorous work that keeps them up.
+order: 4

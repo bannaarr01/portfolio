@@ -1,0 +1,94 @@
+---
+/**
+ * Scroll-reveal wrapper: fade in with a 12px rise, once, then stop watching.
+ *
+ * Every instance on the page shares a *single* IntersectionObserver. Astro
+ * hoists and de-duplicates the script below, so a hundred `<Reveal>`s still
+ * cost one observer and one copy of the code.
+ *
+ * `delay` staggers a group — 60ms increments are the house rhythm (PLAN.md
+ * §4.6). It only delays the transition, never the observer, so a stagger never
+ * leaves content stranded off-screen.
+ *
+ * Under `prefers-reduced-motion: reduce` the observer is never constructed and
+ * everything renders in its final state immediately. Without JavaScript the
+ * hidden state is never applied at all — the `scripting: enabled` query means
+ * content degrades to fully visible rather than invisible.
+ */
+interface Props {
+  /** Milliseconds of stagger. */
+  delay?: number;
+  as?: 'div' | 'section' | 'li' | 'article';
+  class?: string;
+}
+
+const { delay = 0, as: Tag = 'div', class: className }: Props = Astro.props;
+---
+
+<Tag
+  class:list={['reveal', className]}
+  data-reveal
+  style={delay ? `--reveal-delay:${delay}ms` : undefined}
+>
+  <slot />
+</Tag>
+
+<style>
+  @media (scripting: enabled) {
+    .reveal {
+      opacity: 0;
+      transform: translateY(12px);
+      transition:
+        opacity var(--dur-reveal) var(--ease) var(--reveal-delay, 0ms),
+        transform var(--dur-reveal) var(--ease) var(--reveal-delay, 0ms);
+    }
+
+    .reveal[data-reveal='shown'] {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Belt and braces: the script also short-circuits, but if it never runs the
+     content must still be visible. */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* Printing never scrolls, so anything still below the fold would come out
+     blank. A résumé site that prints half a page is a bad look. */
+  @media print {
+    .reveal {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+</style>
+
+<script>
+  const nodes = document.querySelectorAll<HTMLElement>('[data-reveal]');
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    for (const node of nodes) node.dataset.reveal = 'shown';
+  } else {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          (entry.target as HTMLElement).dataset.reveal = 'shown';
+          observer.unobserve(entry.target);
+        }
+      },
+      // threshold 0 + a negative bottom margin fires as the element's top edge
+      // clears the fold. A fractional threshold would never trigger on an
+      // element taller than the viewport.
+      { rootMargin: '0px 0px -10% 0px', threshold: 0 }
+    );
+
+    for (const node of nodes) observer.observe(node);
+  }
+</script>

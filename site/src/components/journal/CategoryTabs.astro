@@ -1,0 +1,58 @@
+---
+// STUB: owned by group 04 (04-journal-taxonomy).
+// The active tab carries a thin cyan rule beneath it (PLAN.md §4.7).
+// Counts come from getCategoryCounts(), never from a stored field.
+import { getCategoryCounts } from '../../lib';
+import type { CategorySlug } from '../../types/content';
+import { CATEGORY_SLUGS } from '../../types/content';
+
+interface Props {
+  active?: CategorySlug | 'latest';
+}
+
+const { active = 'latest' } = Astro.props;
+const counts = await getCategoryCounts();
+---
+
+<nav class="category-tabs" aria-label="Journal categories">
+  <!-- STUB: owned by group 04 -->
+  <ul>
+    <li>
+      <a href="/blog/" aria-current={active === 'latest' ? 'page' : undefined}>Latest</a>
+    </li>
+    {
+      CATEGORY_SLUGS.map((slug) => (
+        <li>
+          <a
+            href={`/blog/category/${slug}/`}
+            aria-current={active === slug ? 'page' : undefined}
+          >
+            {slug} ({counts[slug]})
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+  }
+
+  a {
+    display: inline-block;
+    padding-bottom: var(--space-2);
+    border-bottom: 2px solid transparent;
+    font-size: var(--text-meta);
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  a[aria-current='page'] {
+    border-bottom-color: var(--accent);
+    color: var(--text);
+  }
+</style>

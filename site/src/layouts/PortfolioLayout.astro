@@ -1,0 +1,20 @@
+---
+// STUB: owned by group 01 (01-layout-chrome).
+// BaseLayout + the portfolio footer.
+import SiteFooter from '../components/layout/SiteFooter.astro';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  noindex?: boolean;
+  wide?: boolean;
+}
+---
+
+<BaseLayout {...Astro.props}>
+  <!-- STUB: owned by group 01 -->
+  <slot />
+  <SiteFooter slot="footer" />
+</BaseLayout>

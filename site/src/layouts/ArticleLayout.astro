@@ -1,0 +1,72 @@
+---
+// STUB: owned by group 01 (01-layout-chrome).
+// JournalLayout + the TOC/prose two-column shell. `headings` comes from
+// `await entry.render()` in the article page (group 05); the TOC collapses
+// above the prose below 1000px.
+import type { MarkdownHeading } from 'astro';
+
+import JournalLayout from './JournalLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  noindex?: boolean;
+  wide?: boolean;
+  headings: MarkdownHeading[];
+}
+
+const { headings, ...base } = Astro.props;
+---
+
+<JournalLayout {...base}>
+  <!-- STUB: owned by group 01 -->
+  <div class="article-shell site-container is-wide">
+    <nav class="toc" aria-label="Table of contents">
+      <ul>
+        {
+          headings.map((heading) => (
+            <li data-depth={heading.depth}>
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <article>
+      <slot />
+    </article>
+  </div>
+</JournalLayout>
+
+<style>
+  .article-shell {
+    display: grid;
+    gap: var(--space-7);
+    padding-block: var(--space-8);
+  }
+
+  .toc a {
+    color: var(--muted);
+    font-size: var(--text-meta);
+  }
+
+  @media (min-width: 1000px) {
+    .article-shell {
+      grid-template-columns: 1fr 220px;
+    }
+
+    .toc {
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      top: calc(var(--header-h) + var(--space-5));
+      align-self: start;
+    }
+
+    .article-shell > article {
+      grid-column: 1;
+      grid-row: 1;
+    }
+  }
+</style>

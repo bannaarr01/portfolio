@@ -1,0 +1,27 @@
+---
+// STUB: owned by group 01 (01-layout-chrome). The portfolio footer.
+import Container from '../ui/Container.astro';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <!-- STUB: owned by group 01 -->
+  <Container>
+    <p>&copy; {year} — portfolio footer</p>
+  </Container>
+</footer>
+
+<style>
+  .site-footer {
+    padding-block: var(--space-6);
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  p {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--soft);
+  }
+</style>

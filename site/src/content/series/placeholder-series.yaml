@@ -1,0 +1,6 @@
+# PLACEHOLDER — group 07 owns src/content/** and replaces this wholesale.
+# Exists so getSeriesParts() and getAdjacentInSeries() have something to walk.
+slug: placeholder-series
+title: Placeholder Series
+description: A two-part stub so series navigation has something to resolve during Wave 2.
+category: aws-cloud

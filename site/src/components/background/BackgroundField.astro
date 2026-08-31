@@ -1,0 +1,35 @@
+---
+// STUB: owned by group 02 (02-animated-background).
+// The aurora + drifting stack-glyph field. `density: 'subtle'` is the
+// reduced variant used behind interior pages; `icons` overrides which stack
+// glyphs drift. Must freeze entirely under prefers-reduced-motion.
+import type { IconName } from '../../types/icons';
+
+interface Props {
+  density?: 'full' | 'subtle';
+  icons?: IconName[];
+}
+
+const { density = 'full' } = Astro.props;
+---
+
+<div class="background-field" data-density={density} aria-hidden="true">
+  <!-- STUB: owned by group 02 -->
+</div>
+
+<style>
+  .background-field {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(60% 50% at 20% 0%, var(--glow-cyan), transparent 70%),
+      radial-gradient(50% 45% at 85% 15%, var(--glow-teal), transparent 70%),
+      linear-gradient(180deg, var(--hero-bg), var(--bg));
+  }
+
+  .background-field[data-density='subtle'] {
+    opacity: 0.55;
+  }
+</style>

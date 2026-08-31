@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="Boluwaji Joshua Adedigba">
+  <title>Boluwaji Joshua Adedigba</title>
+
+  <!--
+    Quorum wheel. Hub, three spokes, and a rim linking three nodes — a
+    three-node cluster in the same trace-and-node vocabulary as the site's
+    stack glyphs. Each node carries one initial knocked out of the bright fill,
+    so B, J and A are physically linked by the rim rather than set side by side
+    as type. Clockwise from the top: B, J, A.
+
+    The letters are drawn as strokes, never as <text>. A standalone SVG has no
+    access to Geist, so a text element would silently fall back to whatever the
+    viewer has installed and render differently per machine.
+
+    The engraved letters use the badge colour, so they invert for free: dark
+    letters on a bright node in dark mode, light letters on a deep teal node in
+    light mode.
+
+    COLOURS ARE LITERAL, NOT var(). Presentation attributes like stop-color
+    accept custom properties in browsers, but rasterisers (resvg, which backs
+    sharp and the OG image pipeline) do not resolve them — the whole mark
+    renders empty. Dark is the base so a rasteriser gets the site's default
+    theme; light is a prefers-color-scheme override, which only browsers apply.
+
+    THEME: being standalone, this file can only follow the OS. The site's own
+    toggle is a data-theme attribute no external SVG can see, so the in-page
+    mark is a separate inline component (components/ui/Logo.astro) driven by the
+    real tokens. Use this file for OG images, README, and anywhere outside the
+    app. public/ is not processed by Vite, so a palette change in tokens.css has
+    to be mirrored here by hand.
+  -->
+
+  <style>
+    @media (prefers-color-scheme: light) {
+      .badge { fill: #ffffff; }
+      .engrave { stroke: #ffffff; }
+      .c1 { stop-color: #0e7490; }
+      .c2 { stop-color: #0f766e; }
+    }
+  </style>
+
+  <defs>
+    <linearGradient id="quorum-mark" x1="70" y1="70" x2="330" y2="330" gradientUnits="userSpaceOnUse">
+      <stop class="c1" stop-color="#22D3EE" />
+      <stop class="c2" offset="1" stop-color="#2DD4BF" />
+    </linearGradient>
+    <linearGradient id="quorum-ring" x1="60" y1="40" x2="340" y2="360" gradientUnits="userSpaceOnUse">
+      <stop class="c1" stop-color="#22D3EE" />
+      <stop class="c2" offset="1" stop-color="#2DD4BF" stop-opacity="0.5" />
+    </linearGradient>
+  </defs>
+
+  <!-- Badge -->
+  <path
+    class="badge"
+    d="M372 200 286 349H114L28 200 114 51h172Z"
+    fill="#0A1826"
+    stroke="url(#quorum-ring)"
+    stroke-width="9"
+  />
+
+  <!-- Rim: what links the three initials -->
+  <circle
+    cx="200"
+    cy="200"
+    r="104"
+    fill="none"
+    stroke="url(#quorum-mark)"
+    stroke-width="7"
+    opacity="0.5"
+  />
+
+  <!-- Spokes -->
+  <g stroke="url(#quorum-mark)" stroke-width="16" stroke-linecap="round" fill="none">
+    <path d="M200 200V96" />
+    <path d="M200 200 290 252" />
+    <path d="M200 200 110 252" />
+  </g>
+
+  <!-- Hub and the three lettered nodes -->
+  <g fill="url(#quorum-mark)">
+    <circle cx="200" cy="200" r="28" />
+    <circle cx="200" cy="96" r="38" />
+    <circle cx="290" cy="252" r="38" />
+    <circle cx="110" cy="252" r="38" />
+  </g>
+
+  <!--
+    Initials engraved into the nodes. Monoline script capitals, drawn by hand as
+    curves rather than traced from a typeface — the uneven lean and the way each
+    stroke tapers into its neighbour is what stops the mark reading as three
+    letters typed in a circle. Geometry is shared with Logo.astro.
+  -->
+  <g
+    class="engrave"
+    fill="none"
+    stroke="#0A1826"
+    stroke-width="20"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.62"
+  >
+    <g transform="translate(200 96) scale(0.33) translate(-59 -77)">
+      <path
+        d="M26 138C24 96 28 52 34 16C70 8 92 26 88 48C84 68 58 76 32 76C66 76 96 86 94 110C92 134 58 146 26 138"
+      />
+    </g>
+    <g transform="translate(290 252) scale(0.33) translate(-53 -83)">
+      <path d="M22 26C46 14 76 16 92 24" />
+      <path d="M66 20C68 62 66 104 60 126C54 150 20 152 14 124" />
+    </g>
+    <g transform="translate(110 252) scale(0.35) translate(-51 -76)">
+      <path d="M10 140C26 100 46 52 62 12C72 46 82 98 92 140" />
+      <path d="M30 102C50 96 72 96 86 102" />
+    </g>
+  </g>
+</svg>
