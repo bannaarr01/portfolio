@@ -1,2 +1,8 @@
 ./idea
 .idea
+.claude/session-log.md
+.claude/settings.local.json
+.claude/worktrees/
+
+# Carries the AWS account id, hosted zone id, and cert ARN. Local only.
+domain.md
