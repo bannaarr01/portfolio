@@ -22,11 +22,21 @@ import Testimonials from '../components/home/Testimonials.astro';
 
 import { about, stats } from '../data/about';
 import { contact } from '../data/contact';
-import { certifications, certificationsCard, degrees, degreesCard } from '../data/education';
+import {
+  certifications,
+  certificationsCard,
+  degrees,
+  degreesCard,
+} from '../data/education';
 import { jobs } from '../data/experience';
 import { hero } from '../data/hero';
 import { philosophy, principles } from '../data/philosophy';
-import { caseStudies, caseStudyKicker, projects, projectsSubheading } from '../data/projects';
+import {
+  caseStudies,
+  caseStudyKicker,
+  projects,
+  projectsSubheading,
+} from '../data/projects';
 import { meta } from '../data/site';
 import { headings } from '../data/sections';
 import { skillGroups, stack, stackSubtitle, stackTitle } from '../data/skills';
@@ -62,11 +72,7 @@ import { testimonials, testimonialsIntro } from '../data/testimonials';
     testimonials={testimonials}
   />
 
-  <Philosophy
-    heading={headings.philosophy}
-    content={philosophy}
-    principles={principles}
-  />
+  <Philosophy heading={headings.philosophy} content={philosophy} principles={principles} />
 
   <Education
     heading={headings.education}

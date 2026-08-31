@@ -82,13 +82,7 @@ const { items, title, subtitle, duration = 46 } = Astro.props;
     margin-top: 18px;
     /* Fade the ends so items enter and leave instead of being clipped.
        `black` here is mask alpha, not a palette colour. */
-    mask-image: linear-gradient(
-      90deg,
-      transparent,
-      black 7%,
-      black 93%,
-      transparent
-    );
+    mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
   }
 
   .rail {

@@ -1,0 +1,9 @@
+Owned by group 03 (03-homepage).
+
+Group 00 creates the directory but no stubs: nothing in PLAN.md §6 lists a
+home/* component as a cross-group dependency, so no other group needs to
+typecheck against one. Hero, About, Timeline, JobCard, CaseStudy, ProjectCard,
+StackMarquee, SkillCard, Testimonial, Principle, ReadingList, EducationCard,
+CertList and ContactSection all land here.
+
+Delete this file once the directory has real contents.

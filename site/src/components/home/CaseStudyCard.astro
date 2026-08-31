@@ -41,7 +41,13 @@ const { study, kicker } = Astro.props;
   <p class="arch"><span>Architecture</span>{study.architecture}</p>
 
   <ul class="h-tags tech">
-    {study.tech.map((t) => <Tag label={t} />)}
+    {
+      study.tech.map((t) => (
+        <li>
+          <Tag label={t} />
+        </li>
+      ))
+    }
   </ul>
 </article>
 

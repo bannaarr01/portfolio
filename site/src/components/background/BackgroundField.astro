@@ -1,0 +1,86 @@
+---
+/**
+ * BackgroundField — the four-layer animated backdrop.
+ *
+ *   LAYER 3   drifting tech icons        rAF, DOM transforms   (DriftLayer)
+ *   LAYER 2   grid overlay, masked       static CSS            (GridLayer)
+ *   LAYER 1   three aurora blobs         CSS keyframes, GPU    (AuroraLayer)
+ *   LAYER 0   --hero-bg over --bg        static gradient       (here)
+ *
+ * The noise overlay that sits above everything belongs to `body` (group 00)
+ * and is deliberately not duplicated here.
+ *
+ * Fills its nearest positioned ancestor at `z-index: 0`. Consumers put their
+ * content above it with `position: relative; z-index: 1`.
+ *
+ *   density='full'    aurora + grid + icons — the homepage hero
+ *   density='subtle'  aurora + grid only, dialled back — interior pages
+ */
+
+import type { IconName } from '../../types/icons';
+import AuroraLayer from './AuroraLayer.astro';
+import GridLayer from './GridLayer.astro';
+import DriftLayer from './DriftLayer.astro';
+import { DEFAULT_ICONS } from './seed';
+
+interface Props {
+  density?: 'full' | 'subtle';
+  icons?: IconName[];
+}
+
+const { density = 'full', icons = DEFAULT_ICONS } = Astro.props;
+---
+
+<div class="field" data-density={density} aria-hidden="true">
+  <AuroraLayer />
+  <GridLayer />
+  {density === 'full' && <DriftLayer icons={icons} />}
+</div>
+
+<style>
+  .field {
+    /* Atmosphere strength. Every layer multiplies its opacity by this, so
+       'subtle' dials the whole composition back from one place. */
+    --atmos: 1;
+
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--bg);
+    /* Isolate the animating subtree from the rest of the page's layout and
+       paint work. `paint` also clips, which is what `overflow: hidden` is
+       for on browsers that skip containment. */
+    contain: layout paint style;
+  }
+
+  .field[data-density='subtle'] {
+    --atmos: 0.55;
+  }
+
+  /*
+   * The `--glow-*` tokens weaken in light mode, but not by as much as the
+   * perceptual change deserves: a wash that reads as *glow* on near-black
+   * reads as *tint* on white, and three of them stack. Pulling the atmosphere
+   * back keeps light mode crisp instead of washed. This dials the component,
+   * not the tokens.
+   */
+  :global([data-theme='light']) .field {
+    --atmos: 0.72;
+  }
+
+  :global([data-theme='light']) .field[data-density='subtle'] {
+    --atmos: 0.4;
+  }
+
+  /* LAYER 0 — the --hero-bg → --bg wash. Small, deliberate lift off the page
+     background so the gradient reads as depth and not as a flat band. */
+  .field::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(128% 82% at 50% 0%, var(--hero-bg), transparent 68%);
+    opacity: var(--atmos);
+  }
+</style>

@@ -55,7 +55,13 @@ const { job } = Astro.props;
   }
 
   <ul class="h-tags tech">
-    {job.tech.map((t) => <Tag label={t} />)}
+    {
+      job.tech.map((t) => (
+        <li>
+          <Tag label={t} />
+        </li>
+      ))
+    }
   </ul>
 </article>
 

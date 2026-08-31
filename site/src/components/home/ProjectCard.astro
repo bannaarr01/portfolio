@@ -21,7 +21,13 @@ const { project } = Astro.props;
   </ul>
 
   <ul class="h-tags tech">
-    {project.tech.map((t) => <Tag label={t} />)}
+    {
+      project.tech.map((t) => (
+        <li>
+          <Tag label={t} />
+        </li>
+      ))
+    }
   </ul>
 </article>
 

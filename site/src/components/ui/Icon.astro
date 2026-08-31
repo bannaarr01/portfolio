@@ -1,0 +1,45 @@
+---
+/**
+ * The one icon component. Every glyph on the site comes from here.
+ *
+ * Add icons to `icon-paths.ts` — `IconName` follows automatically, so passing
+ * an unregistered name is a compile error rather than a blank square.
+ *
+ * Icons are decorative by default (`aria-hidden`). An icon that carries
+ * meaning on its own — a lone link with no text — needs a label on the
+ * *interactive parent*, not here.
+ */
+import { ICON_PATHS } from './icon-paths';
+import type { IconName } from '../../types/icons';
+
+interface Props {
+  name: IconName;
+  size?: number;
+  class?: string;
+}
+
+const { name, size = 24, class: className } = Astro.props;
+---
+
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class:list={['icon', className]}
+  aria-hidden="true"
+  set:html={ICON_PATHS[name]}
+/>
+
+<style>
+  .icon {
+    display: inline-block;
+    flex: none;
+    vertical-align: middle;
+  }
+</style>

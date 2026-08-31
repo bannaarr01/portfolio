@@ -1,0 +1,8 @@
+Owned by group 05 (05-article).
+
+Group 00 creates the directory but no stubs: nothing in PLAN.md §6 lists an
+article/* component as a cross-group dependency. ArticleHero, ArticleToc,
+Byline, AuthorBox and RelatedGrid land here. `src/styles/prose.css` is also
+group 05's — global.css stays with group 00.
+
+Delete this file once the directory has real contents.

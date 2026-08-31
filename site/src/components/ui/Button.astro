@@ -1,0 +1,102 @@
+---
+/**
+ * Renders an `<a>` when `href` is present and a `<button>` otherwise — one
+ * component, correct semantics either way. Extra attributes (download, rel,
+ * target, aria-*, data-*) pass straight through.
+ *
+ *   primary   gradient fill, cyan glow, lifts on hover
+ *   secondary bordered glass over the raised surface
+ *   ghost     text only until hovered
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+type Props = {
+  variant: 'primary' | 'secondary' | 'ghost';
+  href?: string;
+  type?: 'button' | 'submit' | 'reset';
+  class?: string;
+} & Omit<HTMLAttributes<'a'> & HTMLAttributes<'button'>, 'type'>;
+
+const { variant, href, type = 'button', class: className, ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : type}
+  class:list={['button', `button-${variant}`, className]}
+  {...rest}
+>
+  <slot />
+</Tag>
+
+<style>
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 13px 22px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-button);
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    text-align: center;
+    cursor: pointer;
+    transition:
+      transform var(--dur-fast) var(--ease),
+      box-shadow var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
+  }
+
+  .button-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: var(--on-accent);
+    box-shadow: var(--glow-cta);
+  }
+
+  .button-secondary {
+    background: var(--surface-raised);
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .button-ghost {
+    background: transparent;
+    color: var(--muted);
+    padding-inline: 14px;
+  }
+
+  @media (hover: hover) {
+    .button-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--glow-cta-hover);
+    }
+
+    .button-secondary:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-strong);
+      box-shadow: var(--glow-card-hover);
+    }
+
+    .button-ghost:hover {
+      background: var(--surface);
+      color: var(--text);
+    }
+  }
+
+  .button:active {
+    transform: translateY(0);
+  }
+
+  /* The lift is motion; the colour change is not. Keep the affordance. */
+  @media (prefers-reduced-motion: reduce) {
+    .button:hover {
+      transform: none;
+    }
+  }
+</style>

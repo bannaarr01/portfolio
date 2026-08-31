@@ -1,0 +1,13 @@
+---
+// BaseLayout + the quiet portfolio footer. PLAN.md §6.
+import SiteFooter from '../components/layout/SiteFooter.astro';
+import BaseLayout, { type Props as BaseProps } from './BaseLayout.astro';
+
+export type Props = BaseProps;
+---
+
+<BaseLayout {...Astro.props}>
+  <slot name="head" slot="head" />
+  <slot />
+  <SiteFooter slot="footer" />
+</BaseLayout>

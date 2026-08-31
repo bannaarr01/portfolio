@@ -22,7 +22,13 @@ const { group } = Astro.props;
   </div>
 
   <ul class="h-tags items">
-    {group.items.map((item) => <Tag label={item} />)}
+    {
+      group.items.map((item) => (
+        <li>
+          <Tag label={item} />
+        </li>
+      ))
+    }
   </ul>
 </article>
 
