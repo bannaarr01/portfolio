@@ -36,9 +36,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Version comes from site/.nvmrc so CI and local development cannot
+      # drift. They did: CI pinned 22 (npm 10) while the lockfile was being
+      # generated on 24 (npm 11), and the two disagree about whether peer
+      # dependencies need explicit lockfile entries. `npm ci` then failed here
+      # and nowhere else. One file, both environments.
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: site/.nvmrc
           cache: npm
           cache-dependency-path: site/package-lock.json
 
