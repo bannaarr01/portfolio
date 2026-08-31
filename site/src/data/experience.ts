@@ -3,13 +3,24 @@
  *
  * Feeds: `components/home/Experience.astro` (the `#experience` section).
  *
- * ── EDITING ──────────────────────────────────────────────────────────────
- * The *shape* here is deliberate and worth keeping while you swap copy in:
+ * ── SOURCE ───────────────────────────────────────────────────────────────
+ * Every role, date, location, and bullet here comes from
+ * `Boluwaji_Joshua_Adedigba_resume.pdf` (revision dated 01/2026). This
+ * replaced a placeholder timeline that claimed an Electrolux role and a
+ * Xeersoft role, neither of which appears in the resume.
  *
- *   - three roles, newest first (the timeline renders in array order)
- *   - the middle role carries three `blocks`, which is the case that proves
- *     multi-project roles render correctly. Do not flatten it to one block
- *     until you have a real role that needs only one.
+ * Career start is therefore 07/2020 (DDL Associates), not 2022 — which is the
+ * figure `hud.ts` derives its level and XP from. Changing a date here without
+ * checking `CAREER_START` there will put the two out of step.
+ *
+ * ── EDITING ──────────────────────────────────────────────────────────────
+ * The *shape* is deliberate and worth keeping while you swap copy in:
+ *
+ *   - four roles, newest first (the timeline renders in array order)
+ *   - the first two roles carry multiple `blocks`, which is the case that
+ *     proves multi-project roles render as nested groups rather than one flat
+ *     list. Both genuinely have several distinct projects, so this is real
+ *     structure and not a fixture.
  *   - `end: 'Present'` is the sentinel for a current role. Anything else is
  *     printed verbatim, so keep the `MM/YYYY` format consistent.
  *
@@ -22,107 +33,142 @@ import type { Job } from '../types/portfolio';
 
 export const jobs = [
   {
-    role: 'Backend & Cloud Software Engineer',
-    company: 'Electrolux Home Appliance Sdn Bhd',
-    location: 'Selangor, Malaysia',
-    start: '05/2026',
+    role: 'Researcher, Digital Backend & Cloud',
+    company: 'Telekom Research & Development',
+    location: 'Cyberjaya, Malaysia',
+    start: '09/2022',
     end: 'Present',
     blocks: [
       {
-        heading: 'Cloud Platform Modernization',
+        heading: 'Sales Intelligence & Workforce Automation',
         bullets: [
-          'Participated in migrating enterprise backend services from Microsoft Azure to AWS, improving cloud scalability and simplifying long-term infrastructure management',
-          'Re-engineered existing backend microservices in Go to improve performance, maintainability, and resource utilization',
-          'Implemented Infrastructure as Code with Terraform for repeatable cloud provisioning and consistent environments',
-          'Developed event-driven integrations with Kafka and Azure Event Hubs for reliable asynchronous communication',
-          'Implemented automatic Azure IoT Hub SKU scaling based on real-time capacity utilization, reducing infrastructure cost while preventing service throttling',
-          'Optimized backend services and cloud resources through performance tuning, monitoring, and architectural improvements',
+          'Architected and developed backend microservices for nationwide Sales Intelligence and Workforce Automation systems using Node.js (NestJS and Express) and the Golang Gin framework, ensuring seamless pod communication within a Kubernetes cluster',
+          'Optimized database schemas and queries in MySQL and MongoDB, improving performance and scalability',
+          'Collaborated with frontend teams to integrate user interfaces with server-side logic across multiple project modules',
+        ],
+      },
+      {
+        heading: 'Operational Safety & TM UNIFI Sales Support',
+        bullets: [
+          'Implemented and optimized RESTful APIs for internal and third-party integrations in a national operational safety system and the TM UNIFI Sales Support Ticket Management software',
+          'Configured and integrated Single Sign-On solutions and developed a dedicated private library to streamline authentication, reducing login overhead by 30% and improving overall workflow efficiency',
+          'Researched and implemented secure, efficient large-dataset download solutions with on-demand capabilities',
+        ],
+      },
+      {
+        heading: 'Delivery Engineering & Research',
+        bullets: [
+          'Engineered CI/CD pipelines for Kubernetes deployments, increasing development velocity by 40%',
+          'Performed code reviews to enhance code quality and performance, using SonarQube for static analysis in the deployment pipeline',
+          'Conducted research on exploratory projects including a generative-AI retrieval-augmented generation application, gRPC implementation, and other innovative technical solutions',
+          'Actively participated in Agile development processes, including sprint planning, daily stand-ups, and reviews',
         ],
       },
     ],
     tech: [
       'Go',
-      'Python',
-      'Java',
-      'AWS',
-      'Azure',
-      'Terraform',
-      'MongoDB',
-      'Kafka',
+      'Golang Gin',
+      'Node.js',
+      'NestJS',
+      'Express.js',
+      'TypeScript',
       'Kubernetes',
       'Docker',
+      'MySQL',
+      'MongoDB',
+      'gRPC',
+      'SonarQube',
+      'CI/CD',
+      'SSO',
     ],
   },
   {
-    // Three blocks. This is the fixture that proves a role with several
-    // distinct projects renders as nested groups rather than one flat list.
-    role: 'Backend Software Engineer',
-    company: 'Telekom Research & Development Sdn Bhd',
-    location: 'Selangor, Malaysia',
-    start: '05/2023',
-    end: '05/2026',
+    role: 'Full Stack Engineer & Solution Architect',
+    company: 'Freelance',
+    location: 'Remote — Japan',
+    start: '01/2022',
+    end: '09/2022',
     blocks: [
       {
-        heading: 'HR Systems (ERA/JESSICA)',
+        heading: 'Cloud Architecture & Platform Migration',
         bullets: [
-          'Spearheaded backend enhancement and refactoring of a legacy HR system, improving scalability, maintainability, and performance by 3× to support more than 3,000 concurrent users',
-          'Proposed and led the company’s first Go-based microservice REST API, secured supervisor approval, and delivered the initial service to validate Go for production use',
-          'Developed secure REST APIs with Multi-Factor Authentication and Google reCAPTCHA integration',
-          'Implemented RabbitMQ-based asynchronous employee data synchronization and task scheduling',
-          'Integrated the LinkedIn API into the learning module for employee training and development insights',
-          'Instrumented services and metrics dashboards with Prometheus and Grafana',
+          'Architected and developed a scalable retrieval-augmented generation AI solution integrating OpenAI, the Weaviate vector database, NestJS, and AWS services (ECS, S3, SES, RDS) with RabbitMQ for asynchronous processing',
+          'Spearheaded migration of a legacy PHP codebase to NestJS microservices architecture, reducing cloud infrastructure costs by 65% while implementing enhanced security using Casdoor and resource-based access policies',
+          'Accelerated API response times by 75% through comprehensive optimization of RESTful endpoints, database query restructuring, and implementation of efficient caching strategies',
+          'Established robust CI/CD pipelines using AWS CodePipeline, CodeBuild, and CodeDeploy, automating deployment processes and ensuring consistent delivery workflows',
         ],
       },
       {
-        heading: 'Smart Forestry Platform',
+        heading: 'Product Delivery & Technical Leadership',
         bullets: [
-          'Built data-driven dashboard APIs serving real-time animal population and environmental metrics',
-          'Designed Apache Airflow pipelines for automated SFTP data retrieval and processing',
-          'Created DAGs for end-to-end orchestration from extraction to centralized storage',
-        ],
-      },
-      {
-        heading: 'IoT Water Monitoring (SWIMS2.0)',
-        bullets: [
-          'Implemented Keycloak authentication with Role-Based Access Control for secure user management',
-          'Developed high-performance REST APIs for real-time and historical water quality visualization and analysis',
+          'Delivered complete end-to-end solutions including backend services, front-end dashboards, and deployment pipelines, improving client MVP delivery time by 40%',
+          'Mentored and conducted comprehensive code reviews for the technical team, establishing best practices and improving overall code quality standards',
+          'Built a Flutter and PHP-based SaaS application including subscription management, user analytics, and cloud-based configuration dashboards',
+          'Developed a LINE chatbot integration for an e-commerce platform using PHP and LINE Messaging API webhooks, enabling real-time user interaction and order processing automation',
+          'Developed and maintained a pitch evaluation and eye-contact scoring tool for recorded video presentations using Python and AWS Rekognition for gesture analysis, face landmark detection, and attention metrics',
         ],
       },
     ],
     tech: [
       'NestJS',
       'TypeScript',
-      'Node.js',
-      'Go',
-      'PostgreSQL',
-      'MySQL',
+      'PHP',
+      'Python',
+      'Flutter',
+      'AWS ECS',
+      'AWS RDS',
+      'AWS S3',
+      'AWS Rekognition',
+      'AWS CodePipeline',
       'RabbitMQ',
-      'Apache Airflow',
-      'Kubernetes',
-      'Docker',
-      'Keycloak',
-      'OAuth',
-      'Prometheus',
-      'Grafana',
-      'Jest',
+      'OpenAI',
+      'Weaviate',
+      'Casdoor',
     ],
   },
   {
-    role: 'Software Developer',
-    company: 'Xeersoft Sdn Bhd',
+    role: 'Backend Systems Engineer (Contract)',
+    company: 'Karisma System Sdn Bhd',
     location: 'Kuala Lumpur, Malaysia',
-    start: '05/2022',
-    end: '04/2023',
+    start: '01/2021',
+    end: '01/2022',
     blocks: [
       {
-        heading: 'ERP Platform',
+        heading: 'IoT Truck Weight Monitoring',
         bullets: [
-          'Contributed to accounting-platform upgrades and feature improvements using modern web technologies',
-          'Developed and maintained PHP Slim 4 REST APIs for web and mobile application integrations',
-          'Implemented performance optimizations that improved ERP system efficiency and user satisfaction',
+          'Developed and maintained scalable backend microservices for an IoT-enabled truck weight monitoring system using Node.js (Express) and MongoDB, integrating real-time sensor data processing with AWS IoT Core, EventBridge, Lambda functions, and SNS for cloud-based analytics and event-driven notifications',
+          'Implemented event-driven architecture using Redis-based queues for asynchronous data processing, improving system throughput by handling high-volume sensor data streams efficiently',
+          'Designed user-friendly dashboards using React for fleet managers to monitor truck load weights',
         ],
       },
     ],
-    tech: ['PHP', 'Slim 4', 'MySQL', 'JavaScript', 'jQuery', 'Bootstrap', 'HTML', 'CSS'],
+    tech: [
+      'Node.js',
+      'Express.js',
+      'MongoDB',
+      'Redis',
+      'AWS IoT Core',
+      'AWS EventBridge',
+      'AWS Lambda',
+      'Amazon SNS',
+      'React',
+    ],
+  },
+  {
+    role: 'Backend Developer (Contract)',
+    company: 'DDL Associates Sdn Bhd',
+    location: 'Petaling Jaya, Malaysia',
+    start: '07/2020',
+    end: '12/2020',
+    blocks: [
+      {
+        heading: 'Digital Transformation Platform',
+        bullets: [
+          'Developed a comprehensive digital transformation web application using PHP and Next.js, enhancing the firm’s efficiency, productivity, and cost savings by transitioning daily tasks to an online platform',
+          'Leveraged a contemporary tech stack for scalability and seamless feature expansion',
+        ],
+      },
+    ],
+    tech: ['PHP', 'Next.js', 'JavaScript'],
   },
 ] satisfies Job[];

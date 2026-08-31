@@ -36,8 +36,13 @@ const { heading, degreesCard, degrees, certificationsCard, certifications } = As
         {
           degrees.map((degree) => (
             <div class="degree">
+              {/* `period` is optional in practice: a resume often dates jobs
+                  but not degrees. Joining on a filtered array keeps the
+                  middot a *separator* rather than a prefix — with an empty
+                  period the hardcoded ` · ` used to render as a dangling dot
+                  before the location. */}
               <p class="h-meta">
-                {degree.period} &middot; {degree.location}
+                {[degree.period, degree.location].filter(Boolean).join(' · ')}
               </p>
               <h4>{degree.qualification}</h4>
               <p class="inst">{degree.institution}</p>

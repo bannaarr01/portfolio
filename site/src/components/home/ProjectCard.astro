@@ -2,6 +2,7 @@
 /** Secondary project card — two-up grid beneath the case studies. */
 import type { Project } from '../../types/portfolio';
 import Tag from '../ui/Tag.astro';
+import ProjectLinks from './ProjectLinks.astro';
 import './home.css';
 
 interface Props {
@@ -13,7 +14,7 @@ const { project } = Astro.props;
 
 <article class="project h-card">
   <h3 class="h-card-title">{project.title}</h3>
-  <p class="company">Company &middot; {project.company}</p>
+  <p class="company">{project.companyLabel ?? 'Company'} &middot; {project.company}</p>
   <p class="h-body summary">{project.summary}</p>
 
   <ul class="h-bullets">
@@ -29,6 +30,8 @@ const { project } = Astro.props;
       ))
     }
   </ul>
+
+  <ProjectLinks links={project.links} />
 </article>
 
 <style>

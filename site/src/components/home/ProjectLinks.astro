@@ -1,0 +1,86 @@
+---
+/**
+ * Outbound links on a project card — repository, package, live site.
+ *
+ * Shared by CaseStudyCard and ProjectCard so the two never drift. Renders
+ * nothing at all when a project has no links, which is the common case: only
+ * publicly reachable work has somewhere to point.
+ *
+ * Every link leaves the site, so each one is `target="_blank"` with
+ * `rel="noopener noreferrer"` and an accessible name that says so — otherwise
+ * a screen-reader user meets a new tab with no warning.
+ */
+import type { ProjectLink } from '../../types/portfolio';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  links?: ProjectLink[];
+  class?: string;
+}
+
+const { links, class: className } = Astro.props;
+---
+
+{
+  links && links.length > 0 && (
+    <ul class:list={['links', className]}>
+      {links.map((link) => (
+        <li>
+          <a href={link.href} target="_blank" rel="noopener noreferrer">
+            <Icon name={link.icon} size={14} />
+            <span>{link.label}</span>
+            <span class="visually-hidden">(opens in a new tab)</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: 0;
+    margin: 18px 0 0;
+    list-style: none;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px 6px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      border-color 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      color 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      background-color 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+  }
+
+  a:hover,
+  a:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  /* The house lift is motion, the colour change is not — same split as
+     Button.astro, so the affordance survives a reduced-motion preference. */
+  @media (prefers-reduced-motion: no-preference) {
+    a {
+      transition-property: border-color, color, background-color, transform;
+    }
+
+    a:hover,
+    a:focus-visible {
+      transform: translateY(-1px);
+    }
+  }
+</style>

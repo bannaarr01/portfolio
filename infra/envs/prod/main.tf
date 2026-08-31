@@ -22,7 +22,12 @@ data "aws_route53_zone" "primary" {
 }
 
 locals {
-  www_domain = "www.${var.domain_name}"
+  # The host this environment actually serves. Composed the same way staging
+  # composes its own, so the two environments differ by a tfvars value rather
+  # than by module shape.
+  site_host = var.subdomain == null ? var.domain_name : "${var.subdomain}.${var.domain_name}"
+
+  www_domain = "www.${local.site_host}"
 
   hosted_zone_id = (
     var.hosted_zone_id != null
@@ -42,14 +47,15 @@ module "site" {
   project     = var.project
   environment = "prod"
 
-  primary_domain_name     = var.domain_name
+  primary_domain_name     = local.site_host
   additional_domain_names = var.serve_www ? [local.www_domain] : []
   hosted_zone_id          = local.hosted_zone_id
 
   # Both names are aliases on one distribution, so without a canonical host
   # they would serve two indexable copies of every page. The viewer-request
-  # function 301s www to the apex — at the edge, free, and before the cache.
-  canonical_host = var.serve_www ? var.domain_name : null
+  # function 301s www to the bare host — at the edge, free, before the cache.
+  # With serve_www off there is one name and nothing to canonicalise.
+  canonical_host = var.serve_www ? local.site_host : null
 
   noindex           = false
   price_class       = var.price_class

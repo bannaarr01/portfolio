@@ -40,39 +40,63 @@ export interface Profile {
   location: string;
   email: string;
   phone: string;
-  /** Served from `public/resume.pdf`. Replace the PDF, not this path. */
+  /**
+   * Where a resume PDF is expected to live: `public/resume.pdf`. Drop the file
+   * in and it is served at this path — replace the PDF, not this string.
+   *
+   * Nothing links it at the moment. The hero's "Request My Resume" button
+   * scrolls to the contact section instead, so the resume is asked for rather
+   * than downloaded anonymously, and `public/resume.pdf` is not currently in
+   * the tree. Kept as the one place any future link should read the path from.
+   */
   resumeUrl: string;
   socials: ProfileSocial[];
 }
 
 export const profile = {
   name: 'Boluwaji Joshua Adedigba',
-  role: 'Backend & Cloud Software Engineer',
+
+  /**
+   * The resume is headed "Senior Software Engineer" and its summary frames the
+   * work as full-stack. This takes the seniority from the resume and keeps the
+   * backend/cloud specialism the site is built around (AGENTS.md § the two
+   * constraints), which is the deliberate resolution of that conflict rather
+   * than an oversight. The frontend stack is real and is present in
+   * `skills.ts`; it is simply not what the site leads with.
+   */
+  role: 'Senior Backend & Cloud Software Engineer',
   tagline: 'Backend and cloud systems built for scale.',
   availability: 'Available for opportunities',
 
-  lead: 'I design scalable Go microservices and cloud-native platforms across AWS and Azure, with a focus on event-driven systems, infrastructure automation, reliability, and cost optimization.',
+  lead: 'I build backend microservices and cloud-native platforms in Go and Node.js, with more than six years across REST API architecture, database optimization, event-driven processing, and Kubernetes delivery pipelines.',
 
   about: [
-    'I’m a backend and cloud software engineer with more than four years of experience modernizing enterprise systems across cloud platforms, HR technology, environmental monitoring, IoT, and ERP.',
-    'My work spans Azure-to-AWS migration, Go microservice re-engineering, Terraform automation, Kafka-based integration, API architecture, observability, and Kubernetes deployments.',
-    'Recent work includes automating Azure IoT Hub capacity to control cost and prevent throttling. Earlier, I increased HR-platform throughput 3× to support more than 3,000 concurrent users and led a first Go microservice initiative.',
+    'I’m a senior backend and cloud software engineer with more than six years of hands-on experience designing, delivering, and maintaining production systems across telecoms research, IoT, and enterprise web platforms.',
+    'My work spans Go and Node.js microservices on Kubernetes, REST API architecture for internal and third-party integrations, single sign-on, message-driven processing, and CI/CD delivery. I have also architected retrieval-augmented generation services and led migrations off legacy PHP.',
+    'Current work at Telekom R&D covers nationwide sales intelligence and workforce automation systems, where SSO consolidation cut login overhead 30% and Kubernetes CI/CD raised development velocity 40%. Earlier, freelancing out of Japan, I cut cloud infrastructure cost 65% by migrating a legacy PHP codebase to NestJS microservices and accelerated API responses 75%.',
   ],
 
-  location: 'Malaysia',
+  location: 'Kuala Lumpur, Malaysia',
   email: 'joshboluwaji6@gmail.com',
-  phone: '+601128557317',
+  phone: '+60 1128 557 317',
   resumeUrl: '/resume.pdf',
 
   /**
-   * The mockup left every social `href` as `#`, so the profile URLs are the one
-   * thing here that is genuinely not known. An empty `href` is rendered as a
-   * disabled control rather than a dead link — see `Contact.astro`. Fill these
-   * in and the buttons activate with no other change.
+   * Taken from the hyperlinks embedded in the resume PDF; these were empty
+   * placeholders before. The GitHub link drops the resume's
+   * `?tab=repositories` query — it is a UI state of the profile page, not part
+   * of the identity.
+   *
+   * An empty `href` is rendered as a disabled control rather than a dead link
+   * — see `Contact.astro`.
    */
   socials: [
-    { label: 'GitHub', href: '', icon: 'github' },
-    { label: 'LinkedIn', href: '', icon: 'linkedin' },
+    { label: 'GitHub', href: 'https://github.com/bannaarr01', icon: 'github' },
+    {
+      label: 'LinkedIn',
+      href: 'https://www.linkedin.com/in/b-joshua-adedigba-a96231211/',
+      icon: 'linkedin',
+    },
     { label: 'Email', href: 'mailto:joshboluwaji6@gmail.com', icon: 'mail' },
   ],
 } satisfies Profile;

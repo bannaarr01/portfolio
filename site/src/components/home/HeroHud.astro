@@ -1,0 +1,433 @@
+---
+/**
+ * The hero's stat readout — six proficiency meters over a row of unlocked
+ * achievements, in one glass panel.
+ *
+ * ── ZERO CLIENT JS ───────────────────────────────────────────────────────
+ * Every moving part here is CSS. The bars grow with `transform: scaleX()`
+ * from a per-row `--v`, and the figures count up via a registered
+ * `@property --n` driving a CSS counter. Nothing hydrates, so this stays
+ * outside the homepage's 9 KB JS budget entirely.
+ *
+ * ── LCP ──────────────────────────────────────────────────────────────────
+ * No text in this component starts at `opacity: 0`. Chrome drops fully
+ * transparent elements from Largest Contentful Paint candidacy and never
+ * reconsiders them, which is what made the homepage report NO_LCP once
+ * before — the long version of that story is in `Hero.astro`. Bars scale and
+ * text rises; nothing fades.
+ *
+ * ── ACCESSIBILITY ────────────────────────────────────────────────────────
+ * The counted figures are `::after` content on an `aria-hidden` span, since
+ * assistive tech reads generated content inconsistently. Each meter carries
+ * a `.visually-hidden` sentence with the real number, so a screen reader
+ * gets "Node.js / TS: 95 out of 100" regardless. Bars are decoration.
+ */
+import Icon from '../ui/Icon.astro';
+import type { HeroHud } from './types';
+
+interface Props {
+  hud: HeroHud;
+  location: string;
+}
+
+const { hud, location } = Astro.props;
+---
+
+<div class="hud">
+  <div class="head">
+    <span class="kicker">Core stats</span>
+    <span class="note">self-assessed</span>
+    <span class="where">
+      <Icon name="map-pin" size={13} />
+      {location}
+    </span>
+  </div>
+
+  <ul class="meters">
+    {
+      hud.stats.map((stat, i) => (
+        <li class="meter" style={`--v: ${stat.value}; --row: ${i}`}>
+          <span class="mhead">
+            <span class="mlabel">
+              <Icon name={stat.icon} size={14} />
+              {stat.label}
+            </span>
+            <span class="mval" aria-hidden="true" />
+            <span class="visually-hidden">{stat.value} out of 100</span>
+          </span>
+          <span class="track" aria-hidden="true">
+            <span class="fill" />
+          </span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <ul class="badges">
+    {
+      hud.achievements.map((a, i) => (
+        <li class="badge" style={`--row: ${i}`}>
+          {/* `title` is the hover affordance; the same string is exposed to
+              assistive tech below, because `title` alone is not reliable. */}
+          <span class="chip" title={a.detail}>
+            <Icon name={a.icon} size={13} />
+            {a.label}
+          </span>
+          <span class="visually-hidden">{a.detail}</span>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  /* --------------------------------------------------------------- panel -- */
+
+  /*
+    The panel is a grid, not a stack, and that is a vertical-space decision
+    rather than an aesthetic one.
+
+    Stacked — head, then six meters, then a chip row — the panel ran about
+    200px and pushed the scroll cue below the fold on a 1280×800 laptop,
+    which is the one thing the cue exists not to do. Side by side, the six
+    meters (3 columns × 2 rows) and the four chips (2 × 2) are both two rows
+    tall, so they cost the height of one block instead of two.
+
+    Below 1000px there is no room for that, and the layout falls back to the
+    stack — see the responsive block at the bottom.
+  */
+  .hud {
+    display: grid;
+    width: 100%;
+    max-width: 940px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin: 20px 0 0;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--header-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    text-align: left;
+  }
+
+  /* ---------------------------------------------------------------- head -- */
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    grid-column: 1 / -1;
+    margin-bottom: 12px;
+  }
+
+  .kicker {
+    color: var(--accent-strong);
+    font-family: var(--font-mono);
+    font-size: var(--text-kicker);
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  /* Says out loud that the meters are a self-rating, so the panel isn't
+     read as measured data. Small, but it's the reason the meters are
+     defensible at all. */
+  .note {
+    padding: 2px 7px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .where {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+  }
+
+  /* -------------------------------------------------------------- meters -- */
+
+  .meters,
+  .badges {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .meters {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px 22px;
+  }
+
+  .meter {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .mhead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .mlabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+  }
+
+  .mlabel :global(.icon) {
+    color: var(--soft);
+    transition: color var(--dur-ui) var(--ease);
+  }
+
+  /*
+    The counter, not a text node.
+
+    `--n` is registered below as an `<integer>`, which is what makes it
+    interpolable — an unregistered custom property animates discretely and
+    would flip 0 → 95 halfway through instead of counting. The element sets
+    `--n: var(--v)` as its own value and the keyframe supplies only `from`,
+    so the implicit `to` is the real figure. Same from-only shape as the
+    `rise` entrance in `Hero.astro`.
+
+    Where `@property` is unsupported the animation simply does not apply and
+    `counter-reset` still resolves `--v`, so the final number renders
+    statically. That is the intended degradation, not a bug.
+  */
+  .mval {
+    --n: var(--v);
+    flex: none;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    counter-reset: n var(--n);
+  }
+
+  .mval::after {
+    content: counter(n);
+  }
+
+  .track {
+    position: relative;
+    display: block;
+    height: 5px;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--border-strong);
+  }
+
+  /*
+    `scaleX` on a full-width child rather than an animated `width`, so the
+    fill runs on the compositor and never triggers layout. The transform
+    origin is the left edge; `--v` is a 0–100 integer, hence the /100.
+  */
+  .fill {
+    position: absolute;
+    inset: 0;
+    display: block;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transform: scaleX(calc(var(--v) / 100));
+    transform-origin: left center;
+  }
+
+  /* House style: hover lift with a cyan glow (AGENTS.md § Design system).
+     On a meter that reads as the row "powering up". */
+  .meter:hover .fill {
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  .meter:hover .mlabel {
+    color: var(--text);
+  }
+
+  .meter:hover .mlabel :global(.icon) {
+    color: var(--accent-strong);
+  }
+
+  /* ------------------------------------------------------------- badges -- */
+
+  /* 2 × 2, so the chip block is the same two rows tall as the meter grid
+     beside it. `min-content` columns keep each chip to its own text width
+     rather than stretching the short ones. */
+  .badges {
+    display: grid;
+    align-content: center;
+    grid-template-columns: repeat(2, min-content);
+    gap: 7px;
+    margin-left: 20px;
+    padding-left: 20px;
+    border-left: 1px solid var(--border);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--accent-soft);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    cursor: help;
+    transition:
+      color var(--dur-ui) var(--ease),
+      border-color var(--dur-ui) var(--ease),
+      transform var(--dur-ui) var(--ease),
+      box-shadow var(--dur-ui) var(--ease);
+  }
+
+  .chip :global(.icon) {
+    color: var(--accent);
+  }
+
+  .chip:hover {
+    border-color: var(--accent);
+    box-shadow: var(--glow-card-hover);
+    color: var(--text);
+    transform: translateY(-2px);
+  }
+
+  /* -------------------------------------------------------------- motion -- */
+
+  @property --n {
+    syntax: '<integer>';
+    initial-value: 0;
+    inherits: false;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Bars sweep out left to right, one row after the next, then the badges
+       land. Delays are keyed off `--row` so the order is the markup order.
+       The whole sequence is under 1.5s including the hero's own stagger. */
+    .fill {
+      animation: sweep 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: calc(400ms + var(--row) * 80ms);
+    }
+
+    .mval {
+      animation: count 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: calc(400ms + var(--row) * 80ms);
+    }
+
+    .badge {
+      animation: pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation-delay: calc(900ms + var(--row) * 70ms);
+    }
+  }
+
+  @keyframes sweep {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  @keyframes count {
+    from {
+      --n: 0;
+    }
+  }
+
+  /*
+    Scale-from-0.9, deliberately not opacity — same LCP reasoning as the
+    hero entrance. A chip is small enough that it will never be the LCP
+    element itself, but keeping one rule for "how things enter" here means
+    nobody has to remember which components are exempt.
+  */
+  @keyframes pop {
+    from {
+      transform: scale(0.9);
+    }
+  }
+
+  /* ---------------------------------------------------------- responsive -- */
+
+  /* Back to the stack: the chip block gets its own full-width row under the
+     meters, with the divider back on top where it started. */
+  @media (max-width: 1000px) {
+    .hud {
+      max-width: 720px;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      margin-left: 0;
+      padding-top: 12px;
+      padding-left: 0;
+      border-top: 1px solid var(--border);
+      border-left: 0;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .meters {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* The location has the hero's own `.loc` row nowhere else to go on mobile,
+     but the head is already three items wide; let it drop rather than
+     squeeze the kicker. */
+  @media (max-width: 560px) {
+    .hud {
+      padding: 14px 14px 12px;
+    }
+
+    .head {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .where {
+      margin-left: 0;
+    }
+
+    .meters {
+      gap: 11px 16px;
+    }
+  }
+
+  /*
+    One column only on genuinely narrow phones.
+
+    This breakpoint was at 420px, which put a 390px phone into a single
+    column: six stacked meters ran the hero to 1082px and buried the CTAs
+    several hundred pixels below the fold. Two columns hold "Node.js / TS 95"
+    — the longest label — at 153px, so the split is worth keeping down to
+    here, and the hero comes back about 120px.
+  */
+  @media (max-width: 340px) {
+    .meters {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

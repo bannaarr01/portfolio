@@ -2,13 +2,28 @@
 /**
  * Experience timeline.
  *
- * ≥901px: cards alternate either side of a centre rail.
- * ≤900px: rail moves to the left edge and every card takes full width.
+ * ≥901px: cards alternate sides, and the connector traces around them rather
+ * than running straight down the middle — down the card's inner lane, a
+ * rounded turn, then a horizontal run back beneath the card to the opposite
+ * lane, where the next card picks it up. A circuit trace, which is the right
+ * metaphor for this particular CV.
  *
- * Dot geometry, desktop: each item is `calc(50% - var(--gap))` wide and flush
- * to its side, so its inner edge sits exactly `--gap` from the rail. The dot
- * is offset by `--gap + half the dot` on that inner edge, which lands its
- * centre on the rail regardless of container width.
+ * ── GEOMETRY ─────────────────────────────────────────────────────────────
+ * There are exactly two vertical lanes, and every measurement derives from
+ * them. With cards at `--card-w` of the container:
+ *
+ *   left  card spans 0 → card-w         its lane sits at  card-w + lane
+ *   right card spans 100%-card-w → 100% its lane sits at  100% - card-w - lane
+ *
+ * `.item` stays full width — only the card inside is narrowed — so those
+ * percentages resolve against the container and both lanes are addressable
+ * from either kind of row. The trace box spans lane to lane, which is why its
+ * width is `2·card-w - 100% + 2·lane`; at the default 62% that is a 24% + 60px
+ * horizontal run. It draws only two borders, so the part of that box sitting
+ * behind the card is never painted.
+ *
+ * Widening the cards past ~68% collapses that run to nothing. Below ~54% the
+ * horizontal grows longer than the card is tall and the rhythm goes slack.
  */
 import type { Job } from '../../types/portfolio';
 import Reveal from '../ui/Reveal.astro';
@@ -32,9 +47,12 @@ const { heading, jobs } = Astro.props;
     {
       jobs.map((job, i) => (
         <article class:list={['item', { right: i % 2 === 1 }]}>
-          <Reveal delay={i * 60}>
-            <JobCard job={job} />
-          </Reveal>
+          <span class="trace" aria-hidden="true" />
+          <div class="card">
+            <Reveal delay={i * 60}>
+              <JobCard job={job} />
+            </Reveal>
+          </div>
         </article>
       ))
     }
@@ -43,49 +61,109 @@ const { heading, jobs } = Astro.props;
 
 <style>
   .timeline {
-    --gap: 40px;
+    /* The four numbers the whole figure is built from. */
+    --card-w: 62%;
+    --lane: 30px;
+    --row: clamp(34px, 4vw, 56px);
     --dot: 11px;
+    /* Radius of the turn. Roughly half the row gap reads as a drawn corner
+       rather than a rounded rectangle that happens to be missing two sides. */
+    --elbow: 18px;
+    /* Where the dot sits down the card, matched to the card's own top padding
+       so the trace starts level with the role title rather than the border. */
+    --entry: 38px;
 
     position: relative;
     display: grid;
-    gap: clamp(26px, 3.4vw, 44px);
+    gap: var(--row);
   }
 
-  /* The rail. */
-  .timeline::before {
-    content: '';
-    position: absolute;
-    top: 6px;
-    bottom: 6px;
-    left: 50%;
-    width: 1px;
-    background: linear-gradient(
-      to bottom,
-      transparent,
-      var(--border) 4%,
-      var(--border) 96%,
-      transparent
-    );
-    transform: translateX(-50%);
-  }
-
+  /* Full width on purpose — see the geometry note above. Only `.card` is
+     narrowed, which keeps both lanes addressable from every row. */
   .item {
     position: relative;
-    width: calc(50% - var(--gap));
+  }
+
+  .card {
+    width: var(--card-w);
     margin-right: auto;
   }
 
-  .item.right {
+  .item.right .card {
     margin-right: 0;
     margin-left: auto;
   }
 
-  /* Marker, ringed in the band colour published by Section.astro. */
+  /* ------------------------------------------------------------ trace -- */
+
+  /* Spans lane to lane and hangs half a row gap below the card, so the
+     horizontal run lands centred in the space between two cards. */
+  .trace {
+    position: absolute;
+    top: var(--entry);
+    bottom: calc(-1 * var(--row) / 2);
+    left: calc(100% - var(--card-w) - var(--lane));
+    width: calc(2 * var(--card-w) - 100% + 2 * var(--lane));
+    pointer-events: none;
+  }
+
+  /* Two borders and one rounded corner: the vertical down the near lane, the
+     turn, and the horizontal back under the card. The remaining two sides are
+     never drawn, so the box may overlap the card freely. */
+  .trace::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-right: 1px solid var(--border-strong);
+    border-bottom: 1px solid var(--border-strong);
+    border-bottom-right-radius: var(--elbow);
+  }
+
+  .item.right .trace::before {
+    border-right: 0;
+    border-bottom-right-radius: 0;
+    border-left: 1px solid var(--border-strong);
+    border-bottom-left-radius: var(--elbow);
+  }
+
+  /* The last card connects to nothing below it, so the trace stops being a
+     path and becomes a tail — vertical only, fading out. */
+  .item:last-child .trace {
+    bottom: auto;
+    height: 72px;
+    mask-image: linear-gradient(to bottom, black 30%, transparent);
+  }
+
+  .item:last-child .trace::before {
+    border-bottom: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  /* Current leaving the via: a short accent gradient riding the top of the
+     vertical, so the eye is pulled down the lane from each marker. */
+  .trace::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 58px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+  }
+
+  .item.right .trace::after {
+    right: auto;
+    left: 0;
+  }
+
+  /* Marker, ringed in the band colour published by Section.astro. Centred on
+     the lane, which is the card edge plus `--lane`. */
   .item::after {
     content: '';
     position: absolute;
-    top: 34px;
-    right: calc(-1 * (var(--gap) + var(--dot) / 2));
+    top: calc(var(--entry) - var(--dot) / 2);
+    left: calc(var(--card-w) + var(--lane) - var(--dot) / 2);
     width: var(--dot);
     height: var(--dot);
     border-radius: 50%;
@@ -97,32 +175,51 @@ const { heading, jobs } = Astro.props;
   }
 
   .item.right::after {
-    right: auto;
-    left: calc(-1 * (var(--gap) + var(--dot) / 2));
+    left: calc(100% - var(--card-w) - var(--lane) - var(--dot) / 2);
   }
 
   /* ------------------------------------------------- left rail ≤900px -- */
 
+  /* No room to weave. The trace straightens into a single left-edge rail and
+     the cards go full width — the same layout this section always had here. */
   @media (max-width: 900px) {
     .timeline {
-      --gap: 0px;
+      --lane: 0px;
     }
 
-    .timeline::before {
-      left: calc(var(--dot) / 2);
-      transform: none;
+    .item {
+      padding-left: calc(var(--dot) + 21px);
     }
 
-    .item,
-    .item.right {
+    .card,
+    .item.right .card {
       width: 100%;
       margin: 0;
-      padding-left: calc(var(--dot) + 21px);
+    }
+
+    .trace {
+      top: 0;
+      left: calc(var(--dot) / 2);
+      width: 0;
+    }
+
+    .trace::before,
+    .item.right .trace::before {
+      border-right: 0;
+      border-bottom: 0;
+      border-radius: 0;
+      border-left: 1px solid var(--border-strong);
+    }
+
+    .trace::after,
+    .item.right .trace::after {
+      right: auto;
+      left: 0;
+      top: var(--entry);
     }
 
     .item::after,
     .item.right::after {
-      right: auto;
       left: 0;
     }
   }

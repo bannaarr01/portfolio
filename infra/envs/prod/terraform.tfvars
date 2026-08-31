@@ -3,25 +3,18 @@ region  = "ap-southeast-1"
 
 # Must match envs/shared and envs/staging.
 #
-# ⚠ UNRESOLVED — this does not yet describe the documented production host.
+# RESOLVED — option (b): production serves `joshua.naijora.com`, which is what
+# README.md, AGENTS.md, domain.md §"Site domain" and astro.config.mjs have all
+# stated throughout. The environment now takes the same optional `subdomain`
+# staging has, rather than the docs being rewritten around the apex.
 #
-# README.md and AGENTS.md both state production is `joshua.naijora.com`, but
-# this module has no `subdomain` variable the way staging does: it derives its
-# aliases as `domain_name` plus optionally `www.<domain_name>`. As written it
-# would serve the apex `naijora.com` and `www.naijora.com`.
-#
-# `serve_www` is therefore false rather than true: the issued wildcard covers
-# `*.naijora.com` and the apex, but NOT a second-level name, so if a subdomain
-# is adopted below then `www.joshua.naijora.com` would need a new certificate
-# rather than an edit (AGENTS.md gotcha 8).
-#
-# Pick one before the first prod apply:
-#   a) serve the apex — keep this as-is and correct the docs, or
-#   b) serve joshua.naijora.com — give this module the same optional
-#      `subdomain` variable staging already has.
-#
-# Left unapplied deliberately; group 09 does not guess a production hostname.
+# `serve_www` stays false, and `variables.tf` now enforces that rather than
+# leaving it to a comment: `www.joshua.naijora.com` is two labels deep, the
+# issued `*.naijora.com` wildcard matches exactly one, and ACM SANs are
+# immutable — so covering it would mean a new certificate, not an edit
+# (domain.md, AGENTS.md gotcha 8).
 domain_name = "naijora.com"
+subdomain   = "joshua"
 serve_www   = false
 
 github_owner = "bannaarr01"
@@ -29,19 +22,28 @@ github_repo  = "portfolio"
 
 price_class = "PriceClass_100"
 
-# TODO(owner): 5xx alarm has no subscriber until this is set.
-alert_emails = []
+# Subscribers to the budget alert and the CloudFront 5xx alarm. Taken from
+# src/data/profile.ts, which is the owner address the site itself publishes.
+# AWS emails a confirmation link on first apply; the subscription stays
+# `PendingConfirmation` and delivers nothing until it is clicked.
+alert_emails = ["joshboluwaji6@gmail.com"]
 
-# TODO(group 09): the SHA-256 of the inline theme-init script in <head>.
-# Compute it from the built HTML — see infra/README.md § CSP hash. Until it is
-# set, script-src is 'self' only and the theme script is blocked.
+# SHA-256 of every inline script Astro emits, the theme-init snippet in <head>
+# among them. Generated — do not hand-edit:
+#
+#   cd site && npm run build && cd .. && node scripts/csp-hashes.mjs --write
+#
+# `--check` runs in CI after every build and fails the PR when this list drifts
+# from the built HTML. A stale pin blocks the script in the browser with
+# nothing failing server-side.
 csp_script_hashes = [
   "sha256-4b9oPjnUUFRdUeURwjjgOhE4RGFwav0SBb/1r09o1sQ=",
+  "sha256-4Q3t86Dj7+regSv2Z6VYmWgD72jwbPj0OGsA+wIDCg0=",
   "sha256-7ST4PMH3SR2NzfTY4F5QiKna6vk8A1VxXX2/TL2/WZ8=",
   "sha256-D0LuMSQpGipcjhwPR3saVlPQ6guxc4nxIrnBJpcRWLc=",
-  "sha256-IvGIzIu8xArW/Th+1gKQaK+PpS1NemQ/53EaVP5gmU0=",
-  "sha256-joyFwfzrzSxamAIxaZLQaxfHzIsBx7iMMkI++PS47Z8=",
+  "sha256-egG+mnX9wgbLFXB7l7/Wc9YR+IT61wR2SbapZ9pgkwY=",
   "sha256-Lrtr52O2Ae71clf8Hd/4yaV35HQYwgHvoL01pAwk14Y=",
+  "sha256-zA0JuV0MXfOPHoPioJqzttJHu3WTE+CHpqtYWIyOHZY=",
   "sha256-ZNaHmJ9768xvoLielXhyLSF21BEBr1B8/aulYAmYnWQ=",
 ]
 

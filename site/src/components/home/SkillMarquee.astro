@@ -1,13 +1,29 @@
 ---
 /**
- * Continuous horizontal stack marquee.
+ * Continuous horizontal stack marquee, draggable.
  *
- * The rail holds the track twice and translates by exactly -50%, so the loop
- * is seamless. Each track carries its own trailing gap as padding-right,
- * otherwise the seam between the two copies would be a gap short.
+ * The rail holds the track twice, so scrolling past one track width can be
+ * rewound by exactly that width with nothing visibly changing. Each track
+ * carries its own trailing gap as padding-right, otherwise the seam between
+ * the two copies would be a gap short.
  *
- * Transform only — no `left`, no `margin` animation. Pauses on hover and on
- * keyboard focus within, and does not run at all under reduced motion.
+ * ── WHY THIS IS A SCROLLER AND NOT A KEYFRAME ────────────────────────────
+ * This used to be `animation: slide` on a transform. That reads well and
+ * costs no JavaScript, but a transform is not a scroll position: there is
+ * nothing for a finger, a trackpad, or an arrow key to move. Making the
+ * viewport a real overflow container means the browser supplies touch
+ * swiping, two-finger trackpad panning, shift+wheel, and keyboard scrolling
+ * for free, and the auto-advance becomes something that nudges `scrollLeft`
+ * between user gestures rather than the only way the strip can move.
+ *
+ * Mouse drag is the one thing a scroll container does not give you, so that
+ * part is implemented below.
+ *
+ * The strip pauses while hovered, while focus is inside it, while dragging,
+ * for a moment after any manual scroll, when off-screen, and when the tab is
+ * hidden. Under `prefers-reduced-motion: reduce` the loop never starts at all
+ * — but the strip stays scrollable, because moving it yourself is not motion
+ * the page inflicted on you.
  */
 import type { StackItem } from '../../types/portfolio';
 import Icon from '../ui/Icon.astro';
@@ -30,9 +46,39 @@ const { items, title, subtitle, duration = 46 } = Astro.props;
     <span class="sub">{subtitle}</span>
   </div>
 
-  <div class="viewport" role="region" aria-label={title}>
-    <div class="rail" style={`--dur:${duration}s`}>
-      <ul class="track">
+  {
+    /* tabindex so a keyboard user can reach the scroll region and pan it with
+      the arrow keys — a scrollable box that cannot be focused is a trap for
+      anyone not using a pointer. */
+  }
+  <div
+    class="viewport"
+    role="region"
+    aria-label={title}
+    tabindex="0"
+    data-marquee
+    data-duration={duration}
+  >
+    <div class="rail">
+      <ul class="track" data-track>
+        {
+          items.map((item) => (
+            <li>
+              <Icon name={item.icon} size={14} />
+              {item.name}
+            </li>
+          ))
+        }
+      </ul>
+      {
+        /* Three copies, not two, and the reason is the scroll clamp.
+          `scrollLeft` cannot go below zero, so a strip resting at the start
+          has nowhere to travel when someone drags it backwards. Rendering the
+          list three times and parking the resting position in the middle copy
+          means the loop wraps by one track width in either direction without
+          ever reaching an edge the browser would clamp. */
+      }
+      <ul class="track" aria-hidden="true">
         {
           items.map((item) => (
             <li>
@@ -83,6 +129,38 @@ const { items, title, subtitle, duration = 46 } = Astro.props;
     /* Fade the ends so items enter and leave instead of being clipped.
        `black` here is mask alpha, not a palette colour. */
     mask-image: linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
+
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Panning to the end of the strip must not start scrolling the page
+       behind it, or a horizontal swipe turns into a navigation gesture. */
+    overscroll-behavior-x: contain;
+    /* global.css sets smooth scrolling on the document. Inherited or not,
+       being explicit matters here: the auto-advance writes `scrollLeft` every
+       frame, and a smooth scroller would animate towards each write and
+       fight the loop. */
+    scroll-behavior: auto;
+    cursor: grab;
+
+    /* The strip is its own affordance — the fade at both ends says there is
+       more. A scrollbar under it would read as chrome. */
+    scrollbar-width: none;
+  }
+
+  .viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .viewport[data-dragging] {
+    cursor: grabbing;
+    /* Otherwise a drag across the pills selects their text. */
+    user-select: none;
+  }
+
+  /* The region is focusable, so it must show focus like everything else. */
+  .viewport:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
   }
 
   .rail {
@@ -117,23 +195,6 @@ const { items, title, subtitle, duration = 46 } = Astro.props;
     color: var(--accent);
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .rail {
-      animation: slide var(--dur) linear infinite;
-    }
-
-    .viewport:hover .rail,
-    .viewport:focus-within .rail {
-      animation-play-state: paused;
-    }
-  }
-
-  @keyframes slide {
-    to {
-      transform: translateX(-50%);
-    }
-  }
-
   @media (max-width: 560px) {
     .head {
       flex-direction: column;
@@ -142,3 +203,165 @@ const { items, title, subtitle, duration = 46 } = Astro.props;
     }
   }
 </style>
+
+<script>
+  for (const viewport of document.querySelectorAll<HTMLElement>('[data-marquee]')) {
+    const track = viewport.querySelector<HTMLElement>('[data-track]');
+    if (!track) continue;
+
+    /** One track width. Set by measure() below, which also parks the strip. */
+    let span = 0;
+
+    // Matches the old keyframe's feel: one full pass in `duration` seconds.
+    const seconds = Number(viewport.dataset.duration) || 46;
+    const pxPerSecond = () => span / seconds;
+
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+    let raf = 0;
+    let last = 0;
+    /** Timestamp until which the auto-advance yields to the reader. */
+    let quietUntil = 0;
+    let dragging = false;
+    let onScreen = true;
+
+    /**
+     * Hold the offset inside the middle copy — the band [span, 2 × span).
+     * All three copies are identical, so correcting by exactly one track width
+     * is invisible, and because the band sits a full copy away from both ends
+     * the browser's own clamp at 0 and at the far edge is never reached. An
+     * earlier version wrapped inside [0, span) and deadlocked: wrapping
+     * forward landed exactly on 0, which immediately satisfied the backward
+     * condition, and the strip ping-ponged on the boundary forever.
+     */
+    function wrap() {
+      if (span <= 0) return;
+      const x = viewport.scrollLeft;
+      if (x >= span * 2) viewport.scrollLeft = x - span;
+      else if (x < span) viewport.scrollLeft = x + span;
+    }
+
+    function paused(now: number) {
+      return (
+        dragging ||
+        !onScreen ||
+        document.hidden ||
+        now < quietUntil ||
+        viewport.matches(':hover') ||
+        // `:focus-visible`, not `contains(activeElement)`. Pressing the mouse
+        // on a focusable element focuses it, so plain focus meant one drag
+        // paused the strip permanently. Focus-visible is true for the keyboard
+        // user who is about to arrow-scroll and false for the one who dragged.
+        viewport.matches(':focus-visible')
+      );
+    }
+
+    function tick(now: number) {
+      const dt = last ? Math.min((now - last) / 1000, 0.05) : 0;
+      last = now;
+
+      if (!paused(now)) viewport.scrollLeft += pxPerSecond() * dt;
+
+      // Unconditionally, not only when advancing: a touch fling keeps
+      // scrolling after the finger is gone, and that has to stay in band too.
+      wrap();
+
+      raf = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      if (raf || reduced.matches) return;
+      last = 0;
+      raf = requestAnimationFrame(tick);
+    }
+
+    function stop() {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+
+    /** Hand the strip back to the reader for a beat after they move it. */
+    const yield_ = (ms = 1600) => {
+      quietUntil = performance.now() + ms;
+    };
+
+    // ---- mouse drag ------------------------------------------------------
+    // Touch and trackpad panning come free with the scroll container; a mouse
+    // gets nothing, so press-and-drag is wired up by hand.
+    let startX = 0;
+    let startScroll = 0;
+
+    viewport.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      // Touch already drags natively; intercepting it would be worse.
+      if (e.pointerType !== 'mouse') return;
+
+      dragging = true;
+      startX = e.clientX;
+      startScroll = viewport.scrollLeft;
+      viewport.setPointerCapture(e.pointerId);
+      viewport.setAttribute('data-dragging', '');
+    });
+
+    viewport.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      e.preventDefault();
+      viewport.scrollLeft = startScroll - (e.clientX - startX);
+      wrap();
+    });
+
+    const endDrag = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      viewport.removeAttribute('data-dragging');
+      if (viewport.hasPointerCapture(e.pointerId)) viewport.releasePointerCapture(e.pointerId);
+      yield_();
+    };
+
+    viewport.addEventListener('pointerup', endDrag);
+    viewport.addEventListener('pointercancel', endDrag);
+
+    // ---- any other manual movement ---------------------------------------
+    // Deliberately listening for the *input*, not for `scroll`. The
+    // auto-advance writes `scrollLeft` every frame, so a scroll listener
+    // cannot tell the reader's gesture from the strip's own movement — an
+    // earlier version yielded to itself and never advanced again. These four
+    // only ever fire because a person did something.
+    for (const type of ['wheel', 'touchstart', 'touchmove', 'keydown']) {
+      viewport.addEventListener(type, () => yield_(), { passive: true });
+    }
+
+    // Under reduced motion there is no rAF loop to keep the band, so wrapping
+    // has to hang off the scroll itself. Harmless when the loop is running:
+    // wrap() is idempotent inside the band.
+    viewport.addEventListener('scroll', wrap, { passive: true });
+
+    // ---- lifecycle -------------------------------------------------------
+    new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry!.isIntersecting;
+      },
+      { threshold: 0 }
+    ).observe(viewport);
+
+    // Fonts and icons settle after first paint, so measure late and again on
+    // resize — a stale `span` makes the loop jump instead of wrap.
+    const measure = () => {
+      const previous = span;
+      span = track.offsetWidth;
+      // Park in the middle copy on first measure; afterwards keep the reader's
+      // relative position rather than snapping the strip back to the start.
+      if (!previous) viewport.scrollLeft = span;
+      wrap();
+    };
+
+    measure();
+
+    addEventListener('resize', measure, { passive: true });
+    if (document.fonts?.ready) document.fonts.ready.then(measure);
+
+    reduced.addEventListener('change', () => (reduced.matches ? stop() : start()));
+
+    start();
+  }
+</script>

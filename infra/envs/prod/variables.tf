@@ -11,8 +11,14 @@ variable "region" {
 }
 
 variable "domain_name" {
-  description = "Apex domain. Served alongside its www SAN."
+  description = "Registered domain and the name of the hosted zone. Serving the apex itself is the `subdomain = null` case."
   type        = string
+}
+
+variable "subdomain" {
+  description = "Label prefixed to domain_name for this environment, matching how staging composes its host. Null serves the apex. `joshua` serves joshua.naijora.com, which is what README.md, AGENTS.md, domain.md and astro.config.mjs all declare production to be."
+  type        = string
+  default     = null
 }
 
 variable "hosted_zone_id" {
@@ -22,9 +28,14 @@ variable "hosted_zone_id" {
 }
 
 variable "serve_www" {
-  description = "Whether www.<domain> is an alias on the distribution and a SAN on the certificate. When true, canonical_host 301s it to the apex."
+  description = "Whether www.<host> is an alias on the distribution and a SAN on the certificate. When true, canonical_host 301s it to the bare host. Only legal when serving the apex: `www.joshua.naijora.com` is two labels deep, which no `*.naijora.com` wildcard matches (domain.md, AGENTS.md gotcha 8), and ACM SANs cannot be edited after issue."
   type        = bool
   default     = true
+
+  validation {
+    condition     = !(var.serve_www && var.subdomain != null)
+    error_message = "serve_www must be false when subdomain is set: www.<subdomain>.<domain> is a second-level name that the wildcard certificate does not cover, so it would need a separate certificate rather than an added SAN."
+  }
 }
 
 variable "github_owner" {

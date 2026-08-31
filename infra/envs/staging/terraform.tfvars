@@ -11,20 +11,26 @@ github_repo  = "portfolio"
 
 price_class = "PriceClass_100"
 
-# TODO(owner): 5xx alarm has no subscriber until this is set.
-alert_emails = []
+# Subscribers to the budget alert and the CloudFront 5xx alarm. Same address as
+# prod: staging is where a broken headers policy or a bad rewrite should surface
+# first, so it is the environment whose alarms most need to reach someone.
+# AWS emails a confirmation link on first apply.
+alert_emails = ["joshboluwaji6@gmail.com"]
 
-# Filled by group 09 once the theme-init script text is final. Empty means
-# script-src is 'self' only, so the inline theme script is blocked and staging
-# shows a flash of the wrong theme — which is the intended failure mode: it is
-# visible here rather than in prod.
+# SHA-256 of every inline script Astro emits. Generated, byte-identical to
+# prod's list because both environments serve the same build:
+#
+#   cd site && npm run build && cd .. && node scripts/csp-hashes.mjs --write
+#
+# Do not hand-edit. `--check` runs in CI and fails the PR on drift.
 csp_script_hashes = [
   "sha256-4b9oPjnUUFRdUeURwjjgOhE4RGFwav0SBb/1r09o1sQ=",
+  "sha256-4Q3t86Dj7+regSv2Z6VYmWgD72jwbPj0OGsA+wIDCg0=",
   "sha256-7ST4PMH3SR2NzfTY4F5QiKna6vk8A1VxXX2/TL2/WZ8=",
   "sha256-D0LuMSQpGipcjhwPR3saVlPQ6guxc4nxIrnBJpcRWLc=",
-  "sha256-IvGIzIu8xArW/Th+1gKQaK+PpS1NemQ/53EaVP5gmU0=",
-  "sha256-joyFwfzrzSxamAIxaZLQaxfHzIsBx7iMMkI++PS47Z8=",
+  "sha256-egG+mnX9wgbLFXB7l7/Wc9YR+IT61wR2SbapZ9pgkwY=",
   "sha256-Lrtr52O2Ae71clf8Hd/4yaV35HQYwgHvoL01pAwk14Y=",
+  "sha256-zA0JuV0MXfOPHoPioJqzttJHu3WTE+CHpqtYWIyOHZY=",
   "sha256-ZNaHmJ9768xvoLielXhyLSF21BEBr1B8/aulYAmYnWQ=",
 ]
 

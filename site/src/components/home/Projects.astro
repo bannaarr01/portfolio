@@ -87,6 +87,13 @@ const { heading, caseStudies, caseStudyKicker, secondaryHeading, projects } = As
     height: 100%;
   }
 
+  /* An odd number of projects used to leave a hole beside the last card, which
+     meant the count could not change without someone re-checking the layout.
+     Letting a lone trailing card span the row closes the grid at any count. */
+  .grid > :global(*:last-child:nth-child(odd)) {
+    grid-column: 1 / -1;
+  }
+
   @media (max-width: 900px) {
     .grid {
       grid-template-columns: minmax(0, 1fr);

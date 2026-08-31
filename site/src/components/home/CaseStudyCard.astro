@@ -5,6 +5,7 @@
  */
 import type { CaseStudy } from '../../types/portfolio';
 import Tag from '../ui/Tag.astro';
+import ProjectLinks from './ProjectLinks.astro';
 import './home.css';
 
 interface Props {
@@ -20,7 +21,7 @@ const { study, kicker } = Astro.props;
 
   <p class="h-kicker">{kicker}</p>
   <h3>{study.title}</h3>
-  <p class="company">Company &middot; {study.company}</p>
+  <p class="company">{study.companyLabel ?? 'Company'} &middot; {study.company}</p>
   <p class="h-body summary">{study.summary}</p>
 
   <dl class="par">
@@ -49,6 +50,8 @@ const { study, kicker } = Astro.props;
       ))
     }
   </ul>
+
+  <ProjectLinks links={study.links} />
 </article>
 
 <style>

@@ -31,6 +31,14 @@ export default defineConfig({
 
   output: 'static',
 
+  // The floating island/audit toolbar `astro dev` injects at the bottom of the
+  // viewport. It never ships — it exists only in dev — but it overlaps the
+  // hero's scroll cue and the contact CTAs, which is precisely where this site
+  // most needs to be looked at honestly. Off for everyone on the project.
+  // Individuals can re-enable it for themselves with
+  // `npx astro preferences enable devToolbar`, which does not touch this file.
+  devToolbar: { enabled: false },
+
   // `format: 'directory'` and `trailingSlash: 'always'` must agree. Together
   // they produce /blog/index.html served at /blog/, which is what the
   // CloudFront viewer-request function in astro.md §11.1 rewrites for.

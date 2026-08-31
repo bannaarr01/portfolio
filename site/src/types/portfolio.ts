@@ -29,23 +29,44 @@ export interface Job {
   tech: string[];
 }
 
+/**
+ * An outbound link on a project card — a repository, a package, a live site.
+ * Only work that is publicly reachable carries these; client and employer work
+ * has nothing to link to, which is why the field is optional on both types.
+ */
+export interface ProjectLink {
+  label: string;
+  href: string;
+  icon: IconName;
+}
+
 export interface CaseStudy {
   title: string;
   company: string;
+  /**
+   * Overrides the "Company" prefix on the card. Open-source work has no
+   * employer, and labelling a package "Company · Open source" is just wrong.
+   * Defaults to "Company" when omitted.
+   */
+  companyLabel?: string;
   summary: string;
   problem: string;
   approach: string;
   result: string;
   architecture: string;
   tech: string[];
+  links?: ProjectLink[];
 }
 
 export interface Project {
   title: string;
   company: string;
+  /** See `CaseStudy.companyLabel`. Defaults to "Company". */
+  companyLabel?: string;
   summary: string;
   highlights: string[];
   tech: string[];
+  links?: ProjectLink[];
 }
 
 export interface SkillGroup {

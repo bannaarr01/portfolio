@@ -17,14 +17,21 @@ export { principles } from './principles';
 export const philosophy = {
   intro: [
     {
-      kicker: 'Who I am',
-      title: 'Curious by nature, accountable by choice.',
-      body: 'I’m motivated by visible professional growth and by becoming the engineer a team can trust with unfamiliar, complex problems. I don’t stop at completing an assigned task: I work to understand why it matters, contribute ideas, and identify better ways forward. I learn quickly, take ownership, and keep going until I understand not only how something works, but how to make it useful, reliable, and better.',
+      /**
+       * "Six years in" is the one hand-written copy of a figure the rest of
+       * the site derives: `hud.ts` computes it from CAREER_START (2020-07-01)
+       * and `stats.ts` prints "6+" from the same employment dates. Prose
+       * cannot interpolate cleanly, so this is the place that goes stale.
+       * When the derived figure ticks over, change it here too.
+       */
+      kicker: 'Where I sit now',
+      title: 'The work that arrives without a shape.',
+      body: "Six years in, most of what reaches me hasn't been scoped by anyone yet: a service that got slow for reasons nobody can name, or a migration everyone agrees is necessary and nobody wants to start. I take it apart, decide what we're actually solving, and stay with it past the point the ticket closes. A good half of what I know I learned twice, once building it and again defending it in review to someone who deserved a better answer than habit.",
     },
     {
-      kicker: "What I'm building toward",
-      title: 'Engineering that creates value at scale.',
-      body: 'I want to work on technology that produces meaningful value and impact. I’m especially drawn to ambitious, large-scale organizations where strong engineering decisions can improve systems used by many people.',
+      kicker: 'How I lead',
+      title: 'Fewer decisions routed through me.',
+      body: "I've trained juniors who now push back on my designs, and that is the outcome I was after. Leading is mostly writing things down, handing over the parts I'd have enjoyed keeping, and reviewing with reasons instead of verdicts, so the standard holds once I'm not the one enforcing it. What I want next is the same job on larger systems, where getting the architecture wrong costs enough to be interesting.",
     },
   ],
 

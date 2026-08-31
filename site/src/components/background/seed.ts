@@ -54,7 +54,6 @@ export const DEFAULT_ICONS: IconName[] = [
   'kubernetes',
   'terraform',
   'docker',
-  'kafka',
   'postgres',
   'prometheus',
   'typescript',

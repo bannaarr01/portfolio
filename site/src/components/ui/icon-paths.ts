@@ -97,8 +97,6 @@ export const ICON_PATHS = {
     '<path d="M2.5 11.5h19c0 4.4-3 7.5-7.5 7.5H9a6.5 6.5 0 0 1-6.5-6.5Z"/><path d="M6 11.5V8h3.5v3.5"/><path d="M11.5 11.5V8H15v3.5"/><path d="M11.5 8V4.5H15V8"/><path d="M17.5 9c1.6-1.4 3.2-.2 3.2-.2"/>',
   kubernetes:
     '<path d="m12 2.4 8.2 4v7.2l-8.2 4-8.2-4V6.4Z"/><circle cx="12" cy="10" r="2.6"/><path d="M12 4.4V7.4"/><path d="m17.4 8-3.1 1.4"/><path d="m15.6 15-1.9-2.6"/><path d="m8.4 15 1.9-2.6"/><path d="M6.6 8l3.1 1.4"/>',
-  kafka:
-    '<circle cx="7.5" cy="4.8" r="2.3"/><circle cx="7.5" cy="19.2" r="2.3"/><circle cx="16.5" cy="12" r="2.6"/><path d="M9.4 6.1 14.4 10.4"/><path d="M9.4 17.9 14.4 13.6"/><path d="M7.5 7.1v9.8"/>',
   postgres:
     '<path d="M4 10.5a8 8 0 0 1 16 0c0 3-1.4 5-3 6.1V21"/><path d="M6.8 16.4V21"/><path d="M11 21v-3.6"/><path d="M12.6 9.6c0 2.6 1 4.6 3 5.6"/><path d="M8.5 9h.01"/>',
   prometheus:

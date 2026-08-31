@@ -12,11 +12,34 @@ const year = new Date().getFullYear();
 
 <footer class="site-footer">
   <Container class="footer-row">
-    <p>
-      &copy; {year}
-      {SITE_OWNER}. Built with Astro &middot; Deployed on AWS &middot; Managed with
-      Terraform.
-    </p>
+    {
+      /* `{year}{' '}` rather than a newline between the two expressions: Astro
+         strips whitespace *between* adjacent expressions, so `{year}` on one
+         line and `{SITE_OWNER}` on the next rendered as "2026Boluwaji". */
+    }
+    {
+      /* Grouped, because `.footer-row` is `space-between`: as three loose
+         children the credits would be stranded in the middle of a 1200px row
+         instead of sitting with the copyright they belong to. */
+    }
+    <div class="footer-main">
+      <p class="footer-legal">
+        &copy; {year}{' '}{SITE_OWNER}
+      </p>
+
+      {
+        /* A real list, so the separators are drawn by CSS rather than typed
+           into the sentence. Literal middots between strings space unevenly
+           and get read aloud by screen readers; a `::before` is decorative,
+           and hanging it off `li + li` means no stray leading dot when the
+           list wraps to its own line. */
+      }
+      <ul class="credits">
+        <li>Built with Astro</li>
+        <li>Deployed on AWS</li>
+        <li>Managed with Terraform</li>
+      </ul>
+    </div>
     <p class="footer-note">
       <Icon name="server" size={14} />
       Backend and cloud systems built for scale.
@@ -43,11 +66,45 @@ const year = new Date().getFullYear();
   /* --muted, not --soft. PLAN.md §4.1 caps --soft (~4.0:1) at large or bold
      meta text — ≥18.66px bold or ≥24px regular. At 12.5px it fails AA, which
      Lighthouse flags as a colour-contrast error. */
-  p {
+  p,
+  .credits {
     font-size: 12.5px;
     font-weight: 600;
     line-height: 1.5;
     color: var(--muted);
+  }
+
+  /* Copyright and credits read as one unit, wrapping to two lines together
+     rather than the credits jumping the row on their own. */
+  .footer-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .credits {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    /* row 8px keeps the lines apart once the list wraps at narrow widths;
+       column 12px matches the gap inside each item, so the spacing either
+       side of a separator is even. */
+    gap: var(--space-2) var(--space-3);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .credits li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .credits li + li::before {
+    color: var(--border-strong);
+    content: '\00B7';
   }
 
   .footer-note {

@@ -451,6 +451,108 @@ const { active } = Astro.props;
     ).observe(sentinel);
   }
 
+  /* ------------------------------------------------------------- spy --
+     Highlight the nav item whose section currently sits under the header.
+
+     Same discipline as the border above: an observer watching a thin band
+     rather than a `scroll` listener doing geometry on every frame. The band
+     is the viewport collapsed to roughly one line just below the header, via
+     rootMargin — whichever section crosses that line is the one being read.
+
+     Only the in-page links take part. `/blog/` has no anchor to match, so on
+     the journal `sections` comes back empty, the whole block no-ops, and the
+     server-rendered `active="blog"` stands untouched. */
+  const spyLinks = new Map<string, HTMLAnchorElement[]>();
+
+  for (const link of document.querySelectorAll<HTMLAnchorElement>(
+    '.nav-link, .mobile-nav-link'
+  )) {
+    const id = link.getAttribute('href')?.match(/^\/?#(.+)$/)?.[1];
+    if (!id) continue;
+    const found = spyLinks.get(id);
+    if (found) found.push(link);
+    else spyLinks.set(id, [link]);
+  }
+
+  // Map insertion order is DOM order, which is nav order, which is page order.
+  const sections = [...spyLinks.keys()]
+    .map((id) => document.getElementById(id))
+    .filter((el): el is HTMLElement => el !== null);
+
+  if (sections.length > 0) {
+    const visible = new Set<string>();
+    let observer: IntersectionObserver | null = null;
+
+    /** Where the band sits: just clear of the fixed header. */
+    const bandTop = () => (header?.offsetHeight ?? 0) + 8;
+
+    function resolve(): string {
+      const inBand = sections.find((s) => visible.has(s.id));
+      if (inBand) return inBand.id;
+
+      /* Nothing in the band means we are either above the first section (the
+         hero) or below the last (Contact, which has no nav link of its own).
+         Falling back to the first item would snap the highlight back to About
+         at the bottom of the page, so resolve by geometry instead and keep
+         whichever section we have most recently scrolled past. */
+      const line = bandTop();
+      let last = sections[0]!.id;
+      for (const s of sections) {
+        if (s.getBoundingClientRect().top <= line) last = s.id;
+      }
+      return last;
+    }
+
+    function paint() {
+      const active = resolve();
+      for (const [id, links] of spyLinks) {
+        const on = id === active;
+        for (const link of links) {
+          link.classList.toggle('is-active', on);
+          if (on) link.setAttribute('aria-current', 'page');
+          else link.removeAttribute('aria-current');
+        }
+      }
+    }
+
+    function build() {
+      observer?.disconnect();
+      // disconnect() fires no exit callbacks, so stale ids would linger.
+      visible.clear();
+
+      const line = bandTop();
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) visible.add(entry.target.id);
+            else visible.delete(entry.target.id);
+          }
+          paint();
+        },
+        {
+          rootMargin: `-${line}px 0px -${Math.max(0, innerHeight - line - 1)}px 0px`,
+          threshold: 0,
+        }
+      );
+
+      for (const section of sections) observer.observe(section);
+    }
+
+    build();
+
+    // The band is expressed in pixels, so both the header height and the
+    // viewport height changing under it invalidate the margins.
+    let resizeTimer = 0;
+    addEventListener(
+      'resize',
+      () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(build, 150);
+      },
+      { passive: true }
+    );
+  }
+
   if (dialog && openBtn) {
     // Remembered explicitly rather than trusting the browser to restore it.
     let restoreTo: HTMLElement | null = null;

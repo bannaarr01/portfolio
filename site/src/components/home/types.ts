@@ -33,6 +33,45 @@ export interface SectionCopy {
   accent: string;
 }
 
+/**
+ * One proficiency meter in the hero HUD: a label, a brand glyph, and a
+ * self-assessed 0–100 fill. Not derived from anything — see `data/hud.ts`.
+ */
+export interface HudStat {
+  label: string;
+  icon: IconName;
+  /** 0–100. Drives the bar width and the counted-up figure. */
+  value: number;
+}
+
+/**
+ * An "unlocked achievement" chip. `label` is the chip face; `detail` is the
+ * hover tooltip and the screen-reader text, so it must be a full sentence
+ * that restates a real claim from `experience.ts` or `case-studies.ts`.
+ */
+export interface HudAchievement {
+  icon: IconName;
+  label: string;
+  detail: string;
+}
+
+/**
+ * The hero's stat readout. `level`, `xp`, and `xpLabel` are build-time
+ * derivations of a career start date; `stats` and `achievements` are authored.
+ */
+export interface HeroHud {
+  /** Whole years shipped. Rendered zero-padded. */
+  level: number;
+  /** Progress through the current year, 0–100. The XP bar's fill. */
+  xp: number;
+  /** Caption beside the XP bar, e.g. "4.3 yrs shipped". */
+  xpLabel: string;
+  /** Six entries — the grid is 3 → 2 → 1 columns. */
+  stats: HudStat[];
+  /** Four entries — more than four pushes the hero past the fold. */
+  achievements: HudAchievement[];
+}
+
 export interface HeroContent {
   /** Text inside the availability pill, e.g. "Available for opportunities". */
   availability: string;
@@ -45,6 +84,8 @@ export interface HeroContent {
   /** Lead paragraph, held to ~62ch. */
   lead: string;
   location: string;
+  /** The stat readout under the lead. See `data/hud.ts`. */
+  hud: HeroHud;
   primaryCta: Cta;
   secondaryCta: Cta;
   /** Accessible label for the scroll cue anchor. */
@@ -63,11 +104,17 @@ export interface PhilosophyCard {
   body: string;
 }
 
+/** One entry in the reading list. `author` is optional so a title can stand alone. */
+export interface Book {
+  title: string;
+  author?: string;
+}
+
 export interface ReadingContent {
   kicker: string;
   title: string;
   body: string;
-  books: string[];
+  books: Book[];
 }
 
 export interface PullQuote {

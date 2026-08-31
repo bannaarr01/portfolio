@@ -63,7 +63,10 @@ const { heading, content, principles } = Astro.props;
           content.reading.books.map((book) => (
             <li>
               <Icon name="book-open" size={14} />
-              <span>{book}</span>
+              <span class="book">
+                {book.title}
+                {book.author && <span class="by">{book.author}</span>}
+              </span>
             </li>
           ))
         }
@@ -192,6 +195,25 @@ const { heading, content, principles } = Astro.props;
     margin-top: 2px;
     flex: none;
     color: var(--accent);
+  }
+
+  /* Title takes the reading weight; the author sits under it as an attribution
+     rather than as a second title. */
+  .book {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--text);
+  }
+
+  /* --muted, not --soft. PLAN.md §4.1 caps --soft (~4.0:1) at ≥18.66px bold
+     or ≥24px regular; at 11.5px it fails AA and Lighthouse reports it as a
+     contrast error. The title above is --text, so the hierarchy survives. */
+  .by {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: -0.005em;
   }
 
   /* ------------------------------------------------------- pull quote -- */

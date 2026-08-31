@@ -75,7 +75,11 @@ const imageAlt = `${title} — ${SITE_OWNER}`;
 
 {
   /* Dark is the site default (PLAN.md §4.5), so browser chrome defaults to it.
-     ThemeToggle swaps this on flip — see the group 06 report. */
+     A `media="(prefers-color-scheme: light)"` variant would be wrong here: the
+     theme is a stored choice, not an OS preference, and a light-OS visitor who
+     has not chosen anything still gets the dark site. Keeping the tag honest is
+     therefore ThemeToggle's job, which rewrites `content` on load and on every
+     flip — see note 3 in components/layout/ThemeToggle.astro. */
 }
 <meta name="theme-color" content={THEME_COLOR.dark} />
 <meta name="color-scheme" content="dark light" />

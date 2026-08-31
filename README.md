@@ -165,10 +165,10 @@ A budget alert and a CloudFront 5xx alarm are defined in Terraform rather than c
 
 ### Before the first apply
 
-Nothing has been applied yet. Two decisions are outstanding, both recorded in `infra/envs/prod/terraform.tfvars`:
+Nothing has been applied yet, but the configuration is complete — both decisions that used to be open are now settled in `infra/envs/prod/terraform.tfvars`:
 
-1. **What production actually serves.** The docs say `joshua.naijora.com`. The prod Terraform module has no `subdomain` variable the way staging does — it derives its aliases as `domain_name` plus optionally `www.<domain_name>`, so as written it would serve the apex `naijora.com`. Either serve the apex and correct the docs, or give the prod module the same optional `subdomain` staging already has. `serve_www` is set to `false` in the meantime, because the issued wildcard covers `*.naijora.com` and the apex but **not** a second-level name like `www.joshua.naijora.com` — that would need a new certificate, not an edit.
-2. **`alert_emails` is empty**, so the budget alert and the 5xx alarm currently have no subscriber.
+1. **What production serves.** `joshua.naijora.com`, matching every other document in the repo. `envs/prod` takes the same optional `subdomain` variable staging has, so the two environments differ by a tfvars value rather than by shape. `serve_www` is `false` and `variables.tf` now rejects any attempt to set it alongside a subdomain: `www.joshua.naijora.com` is two labels deep, the issued `*.naijora.com` wildcard matches exactly one, and ACM SANs are immutable — covering it would mean a new certificate, not an edit.
+2. **`alert_emails`** is set to the owner address from `src/data/profile.ts` in both environments. AWS sends a confirmation email on first apply; until that link is clicked the subscription sits in `PendingConfirmation` and delivers nothing, so check for it after applying.
 
 Then, staging first:
 
