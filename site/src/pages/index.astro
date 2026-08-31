@@ -1,227 +1,86 @@
 ---
-// STUB: owned by group 03 (03-homepage). Replace this file wholesale.
-//
-// Until then it is the foundation's own smoke test: every UI primitive, both
-// palettes, the collection queries, and the reveal observer on one route, so
-// a regression in the contract layer is visible rather than theoretical.
-import BackgroundField from '../components/background/BackgroundField.astro';
-import BlogCard from '../components/journal/BlogCard.astro';
-import CategoryTabs from '../components/journal/CategoryTabs.astro';
-import Avatar from '../components/ui/Avatar.astro';
-import Button from '../components/ui/Button.astro';
-import Container from '../components/ui/Container.astro';
-import Icon from '../components/ui/Icon.astro';
-import Logo from '../components/ui/Logo.astro';
-import Reveal from '../components/ui/Reveal.astro';
-import Tag from '../components/ui/Tag.astro';
-import { ICON_PATHS } from '../components/ui/icon-paths';
+/**
+ * Homepage.
+ *
+ * Every string on this page comes from `src/data/*` (group 07). Nothing is
+ * hardcoded here — the content is being replaced wholesale.
+ *
+ * Bands alternate --bg / --surface from About down, so the page never shows
+ * more than one section-height of flat navy.
+ */
 import PortfolioLayout from '../layouts/PortfolioLayout.astro';
-import { getCategoryCounts, getPublishedPosts, getSeriesParts } from '../lib';
 
-const posts = await getPublishedPosts();
-const seriesParts = await getSeriesParts('placeholder-series');
-const counts = await getCategoryCounts();
-const iconNames = Object.keys(ICON_PATHS) as (keyof typeof ICON_PATHS)[];
+import About from '../components/home/About.astro';
+import Contact from '../components/home/Contact.astro';
+import Education from '../components/home/Education.astro';
+import Experience from '../components/home/Experience.astro';
+import Hero from '../components/home/Hero.astro';
+import Philosophy from '../components/home/Philosophy.astro';
+import Projects from '../components/home/Projects.astro';
+import Skills from '../components/home/Skills.astro';
+import Testimonials from '../components/home/Testimonials.astro';
+
+import { about, stats } from '../data/about';
+import { contact } from '../data/contact';
+import {
+  certifications,
+  certificationsCard,
+  degrees,
+  degreesCard,
+} from '../data/education';
+import { jobs } from '../data/experience';
+import { hero } from '../data/hero';
+import { philosophy, principles } from '../data/philosophy';
+import {
+  caseStudies,
+  caseStudyKicker,
+  projects,
+  projectsSubheading,
+} from '../data/projects';
+import { meta } from '../data/site';
+import { headings } from '../data/sections';
+import { skillGroups, stack, stackSubtitle, stackTitle } from '../data/skills';
+import { testimonials, testimonialsIntro } from '../data/testimonials';
 ---
 
-<PortfolioLayout
-  title="Foundation — contract layer"
-  description="Group 00 smoke page. Every primitive, both palettes, the collection queries."
->
-  <!-- STUB: owned by group 03 -->
-  <section class="hero">
-    <BackgroundField density="full" />
-    <Container class="hero-inner">
-      <p class="kicker">Group 00 · Wave 1</p>
-      <h1>The contract layer</h1>
-      <p class="lede">
-        Tokens, types, content schemas, UI primitives, query helpers, and a working stub for
-        every cross-group component. Seven agents typecheck against this.
-      </p>
-      <div class="actions">
-        <Button variant="primary" href="/blog/">
-          Read the journal <Icon name="arrow-right" size={16} />
-        </Button>
-        <Button variant="secondary" href="#primitives">
-          Primitives <Icon name="arrow-down" size={16} />
-        </Button>
-        <Button variant="ghost">Ghost</Button>
-      </div>
-    </Container>
-  </section>
+<PortfolioLayout title={meta.title} description={meta.description} active="about">
+  <Hero content={hero} />
 
-  <section id="primitives" class="band">
-    <Container>
-      <Reveal>
-        <p class="kicker">Primitives</p>
-        <h2 class="section-heading">Tags, <em>avatars</em>, icons</h2>
-        <div class="section-rule"></div>
-      </Reveal>
+  <About heading={headings.about} content={about} stats={stats} />
 
-      <Reveal delay={60}>
-        <ul class="tag-row">
-          {
-            ['Go', 'AWS', 'Terraform', 'Kubernetes', 'PostgreSQL'].map((label) => (
-              <li>
-                <Tag label={label} />
-              </li>
-            ))
-          }
-        </ul>
-      </Reveal>
+  <Experience heading={headings.experience} jobs={jobs} />
 
-      <Reveal delay={120}>
-        <div class="avatars">
-          <Avatar initials="BJ" />
-          <Avatar initials="LT" size={56} />
-          <Logo size={96} />
-          <Logo size={40} />
-        </div>
-      </Reveal>
+  <Projects
+    heading={headings.projects}
+    caseStudies={caseStudies}
+    caseStudyKicker={caseStudyKicker}
+    secondaryHeading={projectsSubheading}
+    projects={projects}
+  />
 
-      <Reveal delay={180}>
-        <ul class="icon-grid">
-          {
-            iconNames.map((name) => (
-              <li title={name}>
-                <Icon name={name} size={22} />
-              </li>
-            ))
-          }
-        </ul>
-        <p class="count">{iconNames.length} icons registered</p>
-      </Reveal>
-    </Container>
-  </section>
+  <Skills
+    heading={headings.skills}
+    stack={stack}
+    stackTitle={stackTitle}
+    stackSubtitle={stackSubtitle}
+    groups={skillGroups}
+  />
 
-  <section class="band is-alt">
-    <Container>
-      <Reveal>
-        <p class="kicker">Content layer</p>
-        <h2 class="section-heading">Collection <em>queries</em></h2>
-        <div class="section-rule"></div>
-        <CategoryTabs active="latest" />
-      </Reveal>
+  <Testimonials
+    heading={headings.testimonials}
+    intro={testimonialsIntro}
+    testimonials={testimonials}
+  />
 
-      <Reveal delay={60}>
-        <ul class="card-grid">
-          {
-            posts.map((post) => (
-              <li>
-                <BlogCard post={post} />
-              </li>
-            ))
-          }
-        </ul>
-      </Reveal>
+  <Philosophy heading={headings.philosophy} content={philosophy} principles={principles} />
 
-      <Reveal delay={120}>
-        <dl class="assertions">
-          <dt>getPublishedPosts()</dt>
-          <dd>{posts.length} published — the draft placeholder must not appear</dd>
-          <dt>getSeriesParts('placeholder-series')</dt>
-          <dd>{seriesParts.map((p) => `part ${p.data.part}`).join(' → ')}</dd>
-          <dt>getCategoryCounts()</dt>
-          <dd>{JSON.stringify(counts)}</dd>
-        </dl>
-      </Reveal>
-    </Container>
-  </section>
+  <Education
+    heading={headings.education}
+    degreesCard={degreesCard}
+    degrees={degrees}
+    certificationsCard={certificationsCard}
+    certifications={certifications}
+  />
+
+  <Contact content={contact} />
 </PortfolioLayout>
-
-<style>
-  .hero {
-    position: relative;
-    isolation: isolate;
-    padding-block: var(--section-y);
-  }
-
-  .hero :global(.hero-inner) {
-    position: relative;
-    z-index: 1;
-  }
-
-  h1 {
-    margin-top: var(--space-3);
-    font-size: var(--text-hero);
-    letter-spacing: -0.045em;
-    line-height: 1.02;
-  }
-
-  .lede {
-    max-width: 56ch;
-    margin-top: var(--space-4);
-    color: var(--muted);
-  }
-
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-    margin-top: var(--space-6);
-  }
-
-  .band {
-    padding-block: var(--section-y);
-  }
-
-  .band.is-alt {
-    background: var(--surface);
-    border-block: 1px solid var(--border);
-  }
-
-  .tag-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-  }
-
-  .avatars {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
-    margin-top: var(--space-5);
-  }
-
-  .icon-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
-    gap: var(--space-2);
-    margin-top: var(--space-5);
-  }
-
-  .icon-grid li {
-    display: grid;
-    place-items: center;
-    aspect-ratio: 1;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface-raised);
-    color: var(--accent-strong);
-  }
-
-  .count,
-  .assertions {
-    margin-top: var(--space-4);
-    font-size: var(--text-meta);
-    color: var(--soft);
-  }
-
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--space-5);
-    margin-top: var(--space-6);
-  }
-
-  .assertions dt {
-    margin-top: var(--space-3);
-    font-family: var(--font-mono);
-    color: var(--accent);
-  }
-
-  .assertions dd {
-    margin: 0;
-    color: var(--muted);
-  }
-</style>

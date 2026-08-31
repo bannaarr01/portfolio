@@ -1,0 +1,186 @@
+/**
+ * Shared homepage primitives.
+ *
+ * Astro scopes <style> per component, which would mean re-declaring the card
+ * treatment in nine files and letting them drift. PLAN.md §4.6 requires the
+ * hover lift + cyan glow to be identical on every card type, so it is
+ * declared once here and imported by the components that need it.
+ *
+ * Owned by group 03; scoped to the homepage by virtue of only being imported
+ * from `src/components/home/**`. Tokens only — no literal colours.
+ */
+
+/* ---------------------------------------------------------------- cards -- */
+
+.h-card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-raised);
+  transition:
+    transform 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+    border-color 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+    box-shadow 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.h-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-strong);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .h-card:hover {
+    transform: none;
+  }
+}
+
+/* Featured cards only (§4.6 "card edge light"). */
+.h-card-lit::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent-strong) 25%, transparent),
+    transparent
+  );
+}
+
+/**
+ * Viewfinder corner ticks. The house decorative motif — reserved for the two
+ * case-study cards and the philosophy pull-quote so it stays a signal.
+ *
+ * Rendered as its own inset <span> rather than pseudo-elements on the card,
+ * because `.h-card-lit` already claims the card's ::before.
+ */
+.h-ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.h-ticks::before,
+.h-ticks::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.h-ticks::before {
+  top: 13px;
+  left: 13px;
+  border-width: 1px 0 0 1px;
+}
+
+.h-ticks::after {
+  right: 13px;
+  bottom: 13px;
+  border-width: 0 1px 1px 0;
+}
+
+/* --------------------------------------------------------------- typography */
+
+/* Mono kicker — the second voice that replaces the dropped serif (§4.4). */
+.h-kicker {
+  margin: 0;
+  color: var(--accent-strong);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+/* Meta rows: dates, locations, company lines. */
+.h-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  font-variant-numeric: tabular-nums;
+}
+
+.h-card-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 21px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.h-body {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15.5px;
+  line-height: 1.68;
+}
+
+/* ------------------------------------------------------------------ lists -- */
+
+/* Bullet list with markers in --accent (§ brief 3). */
+.h-bullets {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.h-bullets > li {
+  position: relative;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.h-bullets > li::before {
+  content: '';
+  position: absolute;
+  top: 0.62em;
+  left: 2px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Tag rows are <ul> wrappers around group 00's <Tag> (which renders an <li>). */
+.h-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ------------------------------------------------------------- icon badge -- */
+
+.h-badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}

@@ -1,0 +1,115 @@
+---
+/** About: prose column + 2×2 stat grid, collapsing to one column at 900px. */
+import type { Stat } from '../../types/portfolio';
+import Reveal from '../ui/Reveal.astro';
+import Section from './Section.astro';
+import SectionHeading from './SectionHeading.astro';
+import type { AboutContent, SectionCopy } from './types';
+import './home.css';
+
+interface Props {
+  heading: SectionCopy;
+  content: AboutContent;
+  stats: Stat[];
+}
+
+const { heading, content, stats } = Astro.props;
+---
+
+<Section id="about" band="bg">
+  <Reveal><SectionHeading {...heading} /></Reveal>
+
+  <div class="grid">
+    <Reveal>
+      <div class="copy">
+        {content.paragraphs.map((p) => <p>{p}</p>)}
+      </div>
+    </Reveal>
+
+    <dl class="stats">
+      {
+        stats.map((stat, i) => (
+          <Reveal delay={i * 60}>
+            <div class="stat h-card">
+              <dd>{stat.value}</dd>
+              <dt>{stat.label}</dt>
+            </div>
+          </Reveal>
+        ))
+      }
+    </dl>
+  </div>
+</Section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+    gap: clamp(32px, 4.4vw, 60px);
+  }
+
+  .copy {
+    display: grid;
+    gap: 18px;
+  }
+
+  .copy :global(p) {
+    margin: 0;
+    color: var(--muted);
+    font-size: 16.5px;
+    line-height: 1.72;
+  }
+
+  /* Stretches to the height of the copy column so the two sides balance. */
+  .stats {
+    display: grid;
+    height: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 0;
+  }
+
+  /* Reveal wraps each cell; the card fills it so the 2×2 stays even. */
+  .stats > :global(*) {
+    height: 100%;
+  }
+
+  .stat {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    padding: 24px 22px;
+  }
+
+  .stat dd {
+    margin: 0;
+    color: var(--accent-strong);
+    font-family: var(--font-mono);
+    font-size: 34px;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat dt {
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 420px) {
+    .stats {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
