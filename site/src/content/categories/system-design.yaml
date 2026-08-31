@@ -1,0 +1,5 @@
+# PLACEHOLDER — group 07 owns src/content/** and replaces this wholesale.
+slug: system-design
+title: System Design
+description: Trade-offs, failure modes, and the architecture decisions worth defending.
+order: 3

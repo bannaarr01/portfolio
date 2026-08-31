@@ -1,0 +1,45 @@
+---
+/**
+ * LAYER 2 — grid.
+ *
+ * A 52px drafting grid with a 208px major rule (every fourth line). The major
+ * lines are drawn on top of the minor ones using the same `--grid-line` token,
+ * so their alpha simply compounds — a two-weight technical grid with no second
+ * colour token and no hardcoded value.
+ *
+ * A radial mask fades it out toward the edges so it never meets a hard border.
+ * Mask stops are `black`/`transparent`: a mask samples only the alpha channel,
+ * so these are opacity keywords rather than palette colours and there is no
+ * token that could express them.
+ * Entirely static; nothing here animates.
+ */
+---
+
+<div class="grid"></div>
+
+<style>
+  .grid {
+    position: absolute;
+    inset: 0;
+    opacity: var(--atmos, 1);
+    background-image:
+      /* major rule, every 4th line — compounds with the minor grid below */
+      repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 208px),
+      repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 208px),
+      /* minor grid */
+      repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 52px),
+      repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 52px);
+    -webkit-mask-image: radial-gradient(
+      ellipse 76% 70% at 50% 42%,
+      black 0%,
+      black 34%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 76% 70% at 50% 42%,
+      black 0%,
+      black 34%,
+      transparent 100%
+    );
+  }
+</style>

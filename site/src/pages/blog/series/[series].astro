@@ -6,7 +6,7 @@ import SectionRail from '../../../components/journal/SectionRail.astro';
 import CardGrid from '../../../components/journal/CardGrid.astro';
 import Icon from '../../../components/ui/Icon.astro';
 import { categoryTitle } from '../../../components/journal/taxonomy';
-import { getSeriesParts } from '../../../lib/content';
+import { getSeriesParts } from '../../../lib';
 
 export const getStaticPaths = (async () => {
   const series = await getCollection('series');
@@ -111,7 +111,7 @@ const catTitle = await categoryTitle(category);
     height: 44px;
     margin-top: 52px;
     border: 1px solid var(--border-strong);
-    border-radius: var(--r-control);
+    border-radius: var(--radius-button);
     background: var(--accent-soft);
     color: var(--accent-strong);
   }
@@ -165,7 +165,7 @@ const catTitle = await categoryTitle(category);
     margin-top: 34px;
     padding: 40px 28px;
     border: 1px solid var(--border);
-    border-radius: var(--r-card);
+    border-radius: var(--radius-card);
     background: var(--surface);
     font-size: 15.5px;
     color: var(--muted);

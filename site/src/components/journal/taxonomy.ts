@@ -1,5 +1,5 @@
 import { getCollection } from 'astro:content';
-import { ICONS } from '../ui/icon-registry';
+
 import type { CategorySlug } from '../../types/content';
 import type { IconName } from '../../types/icons';
 
@@ -45,16 +45,6 @@ export async function findSeries(slug: string | undefined) {
   if (!slug) return undefined;
   const all = await getCollection('series');
   return all.find((s) => s.data.slug === slug);
-}
-
-/**
- * `heroGlyph` is a free-form string in the schema (PLAN.md §5.2), so it has to
- * be narrowed before it can reach a component typed on `IconName`. An unknown
- * name falls back to the category glyph rather than rendering an empty SVG.
- */
-export function asIconName(value: string | undefined): IconName | undefined {
-  if (value && value in ICONS) return value as IconName;
-  return undefined;
 }
 
 /** One entry in a RowGrid (series shelf / discipline grid). */

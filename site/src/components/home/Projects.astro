@@ -1,0 +1,95 @@
+---
+/** Projects: two featured case studies, then a two-up grid of four others. */
+import type { CaseStudy, Project } from '../../types/portfolio';
+import Reveal from '../ui/Reveal.astro';
+import CaseStudyCard from './CaseStudyCard.astro';
+import ProjectCard from './ProjectCard.astro';
+import Section from './Section.astro';
+import SectionHeading from './SectionHeading.astro';
+import type { SectionCopy } from './types';
+
+interface Props {
+  heading: SectionCopy;
+  caseStudies: CaseStudy[];
+  caseStudyKicker: string;
+  secondaryHeading: string;
+  projects: Project[];
+}
+
+const { heading, caseStudies, caseStudyKicker, secondaryHeading, projects } = Astro.props;
+---
+
+<Section id="projects" band="bg">
+  <Reveal><SectionHeading {...heading} /></Reveal>
+
+  <div class="cases">
+    {
+      caseStudies.map((study, i) => (
+        <Reveal delay={i * 60}>
+          <CaseStudyCard study={study} kicker={caseStudyKicker} />
+        </Reveal>
+      ))
+    }
+  </div>
+
+  <Reveal>
+    <h3 class="sub">
+      <span class="hair" aria-hidden="true"></span>
+      {secondaryHeading}
+    </h3>
+  </Reveal>
+
+  <div class="grid">
+    {
+      projects.map((project, i) => (
+        <Reveal delay={i * 60}>
+          <ProjectCard project={project} />
+        </Reveal>
+      ))
+    }
+  </div>
+</Section>
+
+<style>
+  .cases {
+    display: grid;
+    gap: clamp(20px, 2.4vw, 30px);
+  }
+
+  .sub {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: clamp(48px, 5vw, 68px) 0 24px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .hair {
+    width: 22px;
+    height: 1px;
+    flex: none;
+    background: var(--accent);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 1.8vw, 22px);
+  }
+
+  .grid > :global(*) {
+    height: 100%;
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

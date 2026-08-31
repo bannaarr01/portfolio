@@ -1,0 +1,129 @@
+---
+/**
+ * Experience timeline.
+ *
+ * ≥901px: cards alternate either side of a centre rail.
+ * ≤900px: rail moves to the left edge and every card takes full width.
+ *
+ * Dot geometry, desktop: each item is `calc(50% - var(--gap))` wide and flush
+ * to its side, so its inner edge sits exactly `--gap` from the rail. The dot
+ * is offset by `--gap + half the dot` on that inner edge, which lands its
+ * centre on the rail regardless of container width.
+ */
+import type { Job } from '../../types/portfolio';
+import Reveal from '../ui/Reveal.astro';
+import JobCard from './JobCard.astro';
+import Section from './Section.astro';
+import SectionHeading from './SectionHeading.astro';
+import type { SectionCopy } from './types';
+
+interface Props {
+  heading: SectionCopy;
+  jobs: Job[];
+}
+
+const { heading, jobs } = Astro.props;
+---
+
+<Section id="experience" band="surface">
+  <Reveal><SectionHeading {...heading} /></Reveal>
+
+  <div class="timeline">
+    {
+      jobs.map((job, i) => (
+        <article class:list={['item', { right: i % 2 === 1 }]}>
+          <Reveal delay={i * 60}>
+            <JobCard job={job} />
+          </Reveal>
+        </article>
+      ))
+    }
+  </div>
+</Section>
+
+<style>
+  .timeline {
+    --gap: 40px;
+    --dot: 11px;
+
+    position: relative;
+    display: grid;
+    gap: clamp(26px, 3.4vw, 44px);
+  }
+
+  /* The rail. */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 50%;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      var(--border) 4%,
+      var(--border) 96%,
+      transparent
+    );
+    transform: translateX(-50%);
+  }
+
+  .item {
+    position: relative;
+    width: calc(50% - var(--gap));
+    margin-right: auto;
+  }
+
+  .item.right {
+    margin-right: 0;
+    margin-left: auto;
+  }
+
+  /* Marker, ringed in the band colour published by Section.astro. */
+  .item::after {
+    content: '';
+    position: absolute;
+    top: 34px;
+    right: calc(-1 * (var(--gap) + var(--dot) / 2));
+    width: var(--dot);
+    height: var(--dot);
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow:
+      0 0 0 4px var(--band, var(--bg)),
+      0 0 0 5px var(--border-strong),
+      0 0 14px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+
+  .item.right::after {
+    right: auto;
+    left: calc(-1 * (var(--gap) + var(--dot) / 2));
+  }
+
+  /* ------------------------------------------------- left rail ≤900px -- */
+
+  @media (max-width: 900px) {
+    .timeline {
+      --gap: 0px;
+    }
+
+    .timeline::before {
+      left: calc(var(--dot) / 2);
+      transform: none;
+    }
+
+    .item,
+    .item.right {
+      width: 100%;
+      margin: 0;
+      padding-left: calc(var(--dot) + 21px);
+    }
+
+    .item::after,
+    .item.right::after {
+      right: auto;
+      left: 0;
+    }
+  }
+</style>

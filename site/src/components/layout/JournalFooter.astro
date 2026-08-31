@@ -1,0 +1,141 @@
+---
+/**
+ * Journal footer.
+ *
+ * With the serif gone, this is one of the few places left that can say "you
+ * are reading a publication, not a portfolio page" (PLAN.md §4.7). So it is
+ * built as a masthead rather than a credit line: the publication name at
+ * heading scale with the accent word in the cyan→teal gradient, a standfirst,
+ * a real nav, a rule, then the copyright.
+ *
+ * If you are tempted to make this quieter, compare it against SiteFooter
+ * first — the contrast between the two is the point.
+ */
+import Container from '../ui/Container.astro';
+import Icon from '../ui/Icon.astro';
+import { CONTACT_HREF, SITE_OWNER } from './nav';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="journal-footer">
+  <Container>
+    <div class="journal-footer-top">
+      <div>
+        <p class="kicker">Published continuously</p>
+        <h2>The Engineering <span class="gradient-word">Journal</span></h2>
+        <p class="standfirst">
+          Notes on backend systems, cloud platforms, and the decisions behind reliable
+          software.
+        </p>
+      </div>
+
+      <nav class="journal-footer-nav" aria-label="Journal">
+        <a href="/">Portfolio</a>
+        <a href="/blog/">All articles</a>
+        <a href={CONTACT_HREF}>Contact</a>
+        <a href="/rss.xml" class="rss-link">
+          <Icon name="rss" size={14} />
+          RSS
+        </a>
+      </nav>
+    </div>
+
+    <p class="journal-footer-base">&copy; {year} {SITE_OWNER}</p>
+  </Container>
+</footer>
+
+<style>
+  .journal-footer {
+    position: relative;
+    margin-top: auto;
+    padding: 62px 0 30px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  /* The same edge light the header wears, so the two ends of the page rhyme. */
+  .journal-footer::before {
+    content: '';
+    position: absolute;
+    inset: -1px 0 auto;
+    height: 1px;
+    background: var(--edge-light);
+  }
+
+  .journal-footer-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--space-6);
+    padding-bottom: 26px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kicker {
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: clamp(28px, 3.4vw, 38px);
+    letter-spacing: -0.035em;
+    line-height: 1.08;
+  }
+
+  .gradient-word {
+    background: linear-gradient(100deg, var(--accent-strong), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .standfirst {
+    max-width: 46ch;
+    margin-top: var(--space-3);
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .journal-footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 26px;
+    padding-top: 6px;
+  }
+
+  .journal-footer-nav a {
+    font-size: var(--text-meta);
+    font-weight: 700;
+    color: var(--muted);
+    transition: color var(--dur-ui) var(--ease);
+  }
+
+  .journal-footer-nav a:hover {
+    color: var(--accent-strong);
+  }
+
+  .rss-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .journal-footer-base {
+    padding-top: var(--space-5);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--soft);
+  }
+
+  @media (max-width: 899px) {
+    .journal-footer {
+      padding-top: var(--space-7);
+    }
+
+    .journal-footer-nav {
+      gap: 18px 22px;
+    }
+  }
+</style>

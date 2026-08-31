@@ -1,0 +1,23 @@
+---
+/**
+ * Horizontal gutter and max-width. `wide` swaps 1100px for 1280px — used by
+ * the journal grid and the article shell, not by portfolio sections.
+ *
+ * `as` lets a section own its own landmark without an extra wrapper div.
+ *
+ * `.site-container` and `.is-wide` live in global.css rather than a scoped
+ * block here: two unrelated groups need the same gutter, which is the test for
+ * whether a rule belongs to group 00.
+ */
+interface Props {
+  wide?: boolean;
+  as?: 'div' | 'section' | 'header' | 'footer' | 'nav' | 'main';
+  class?: string;
+}
+
+const { wide = false, as: Tag = 'div', class: className }: Props = Astro.props;
+---
+
+<Tag class:list={['site-container', { 'is-wide': wide }, className]}>
+  <slot />
+</Tag>

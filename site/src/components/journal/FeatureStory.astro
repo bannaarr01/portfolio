@@ -8,29 +8,26 @@
 import CoverArt from './CoverArt.astro';
 import Icon from '../ui/Icon.astro';
 import Avatar from '../ui/Avatar.astro';
-import { asIconName, categoryTitle } from './taxonomy';
-import { readingMinutes } from './reading-time';
-import { formatDate } from '../../lib/format';
-import type { CollectionEntry } from 'astro:content';
+import { categoryTitle } from './taxonomy';
+import { formatDate, getMinutesRead } from '../../lib';
+import type { Post } from '../../types/content';
 
 interface Props {
-  post: CollectionEntry<'blog'>;
+  post: Post;
 }
 
 const { post } = Astro.props;
 const { title, description, category, publishDate, heroGlyph } = post.data;
 
-const [catTitle, minutes] = await Promise.all([
-  categoryTitle(category),
-  readingMinutes(post),
-]);
+const catTitle = await categoryTitle(category);
+const minutes = getMinutesRead(post);
 
 const href = `/blog/${post.id}/`;
 ---
 
 <div class="feature-layout">
   <a class="feature-cover" href={href} tabindex="-1" aria-hidden="true">
-    <CoverArt category={category} variant="lead" glyph={asIconName(heroGlyph)} />
+    <CoverArt category={category} variant="lead" glyph={heroGlyph} />
   </a>
 
   <div class="feature-copy">
@@ -68,7 +65,7 @@ const href = `/blog/${post.id}/`;
 
   .feature-cover {
     display: block;
-    border-radius: var(--r-card);
+    border-radius: var(--radius-card);
     transition:
       transform var(--dur-ui) var(--ease),
       box-shadow var(--dur-ui) var(--ease);
@@ -76,7 +73,7 @@ const href = `/blog/${post.id}/`;
 
   .feature-cover:hover {
     transform: translateY(-3px);
-    box-shadow: var(--shadow-card-hover);
+    box-shadow: var(--glow-card-hover);
   }
 
   .feature-meta {

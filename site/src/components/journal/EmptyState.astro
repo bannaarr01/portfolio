@@ -11,7 +11,7 @@
 import CoverArt from './CoverArt.astro';
 import Icon from '../ui/Icon.astro';
 import { getOrderedCategories } from './taxonomy';
-import { getCategoryCounts } from '../../lib/content';
+import { getCategoryCounts } from '../../lib';
 import type { CategorySlug } from '../../types/content';
 
 interface Props {
@@ -38,7 +38,7 @@ const elsewhere = categories.filter(
   </div>
 
   <div class="empty-copy">
-    <p class="kicker"><Icon name="compass" size={13} /> Nothing filed here yet</p>
+    <p class="kicker"><Icon name="book-open" size={13} /> Nothing filed here yet</p>
     <h3>No {title} articles have been published</h3>
     <p class="empty-dek">{description}</p>
 
@@ -78,7 +78,7 @@ const elsewhere = categories.filter(
     margin-top: 34px;
     padding: 34px;
     border: 1px solid var(--border);
-    border-radius: var(--r-card);
+    border-radius: var(--radius-card);
     background:
       radial-gradient(circle at 12% 0%, var(--glow-teal), transparent 42%),
       var(--surface);
@@ -135,7 +135,7 @@ const elsewhere = categories.filter(
     gap: 9px;
     padding: 9px 15px;
     border: 1px solid var(--border-strong);
-    border-radius: var(--r-pill);
+    border-radius: var(--radius-pill);
     background: var(--bg);
     font-size: 13.5px;
     font-weight: 650;

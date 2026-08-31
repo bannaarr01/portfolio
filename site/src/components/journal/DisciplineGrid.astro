@@ -8,7 +8,7 @@ import SectionRail from './SectionRail.astro';
 import RowGrid from './RowGrid.astro';
 import type { Row } from './taxonomy';
 import { getOrderedCategories } from './taxonomy';
-import { getCategoryCounts } from '../../lib/content';
+import { getCategoryCounts } from '../../lib';
 
 const [categories, counts] = await Promise.all([
   getOrderedCategories(),

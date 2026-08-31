@@ -1,0 +1,97 @@
+---
+/**
+ * Section H2 with the mono rail index, the gradient accent word, and the rule.
+ *
+ * Gradient text is spent here and on the hero name only (§4.6) — the accent
+ * word, never the whole heading.
+ */
+import type { SectionCopy } from './types';
+
+interface Props extends SectionCopy {
+  align?: 'left' | 'center';
+}
+
+const { index, lead, accent, align = 'left' } = Astro.props;
+---
+
+<header class:list={['sh', align]}>
+  {
+    index && (
+      <p class="idx">
+        <span class="n">{index}</span>
+        <span class="dash" />
+      </p>
+    )
+  }
+  <h2>{lead} <span class="grad">{accent}</span></h2>
+  <div class="rule"></div>
+</header>
+
+<style>
+  .sh {
+    margin-bottom: clamp(38px, 4.2vw, 56px);
+  }
+
+  .idx {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+  }
+
+  .n {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dash {
+    width: 34px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(30px, 3.2vw, 44px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .grad {
+    background: linear-gradient(96deg, var(--accent-strong), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .rule {
+    width: 64px;
+    height: 3px;
+    margin-top: 18px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+
+  /* Centred variant — the dash flanks the index on both sides. */
+  .sh.center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .sh.center .idx::before {
+    order: -1;
+    width: 34px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent));
+    content: '';
+  }
+</style>

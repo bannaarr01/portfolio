@@ -1,0 +1,58 @@
+---
+/**
+ * Homepage section shell: alternating band, vertical rhythm (§4.6), container.
+ *
+ * Publishes `--band` to descendants so anything that has to knock a hole in
+ * the background — the timeline dots, for one — can ring itself in the band
+ * colour instead of guessing between --bg and --surface.
+ */
+interface Props {
+  id?: string;
+  band?: 'bg' | 'surface';
+  class?: string;
+}
+
+const { id, band = 'bg', class: className } = Astro.props;
+---
+
+<section id={id} class:list={['section', band, className]}>
+  <div class="inner"><slot /></div>
+</section>
+
+<style>
+  .section {
+    position: relative;
+    padding: clamp(78px, 8.4vw, 118px) 0;
+  }
+
+  .section.bg {
+    --band: var(--bg);
+    background: var(--bg);
+  }
+
+  .section.surface {
+    --band: var(--surface);
+    background: var(--surface);
+  }
+
+  /* Hairline seam so the band change reads as deliberate, not as a gap. */
+  .section.surface::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--border) 20%,
+      var(--border) 80%,
+      transparent
+    );
+  }
+
+  .inner {
+    width: var(--container);
+    margin-inline: auto;
+  }
+</style>

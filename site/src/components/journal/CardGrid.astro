@@ -19,10 +19,10 @@
  * runs the full row height and the frame's bottom border closes underneath.
  */
 import BlogCard from './BlogCard.astro';
-import type { CollectionEntry } from 'astro:content';
+import type { Post } from '../../types/content';
 
 interface Props {
-  posts: CollectionEntry<'blog'>[];
+  posts: Post[];
   showPart?: boolean;
 }
 
@@ -39,7 +39,7 @@ const { posts, showPart = false } = Astro.props;
   .card-frame {
     margin-top: 34px;
     border: 1px solid var(--border);
-    border-radius: var(--r-card);
+    border-radius: var(--radius-card);
     overflow: hidden;
   }
 

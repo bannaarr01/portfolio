@@ -8,25 +8,23 @@
  */
 import CoverArt from './CoverArt.astro';
 import Icon from '../ui/Icon.astro';
-import { asIconName, findSeries } from './taxonomy';
-import { readingMinutes } from './reading-time';
-import { categoryTitle } from './taxonomy';
-import { formatDate } from '../../lib/format';
-import type { CollectionEntry } from 'astro:content';
+import { categoryTitle, findSeries } from './taxonomy';
+import { formatDate, getMinutesRead } from '../../lib';
+import type { Post } from '../../types/content';
 
 interface Props {
-  post: CollectionEntry<'blog'>;
+  post: Post;
   showPart?: boolean;
 }
 
 const { post, showPart = false } = Astro.props;
 const { title, description, category, publishDate, part, heroGlyph } = post.data;
 
-const [catTitle, series, minutes] = await Promise.all([
+const [catTitle, series] = await Promise.all([
   categoryTitle(category),
   findSeries(post.data.series),
-  readingMinutes(post),
 ]);
+const minutes = getMinutesRead(post);
 
 const href = `/blog/${post.id}/`;
 const showSeriesLine = !showPart && series !== undefined && part !== undefined;
@@ -35,7 +33,7 @@ const showSeriesLine = !showPart && series !== undefined && part !== undefined;
 <article class="blog-card">
   {showPart && part !== undefined && <p class="part-label">Part {part}</p>}
 
-  <CoverArt category={category} variant="card" glyph={asIconName(heroGlyph)} />
+  <CoverArt category={category} variant="card" glyph={heroGlyph} />
 
   <p class="blog-card-meta">
     <span class="cat">{catTitle}</span>

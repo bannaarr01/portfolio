@@ -1,0 +1,491 @@
+---
+/**
+ * Fixed glass header. PLAN.md §6 — `active?: NavKey`.
+ *
+ * Three things here are load-bearing:
+ *
+ * - **Glass.** `--header-bg` plus `blur(20px) saturate(180%)`. The saturate is
+ *   what stops the deep navy reading as a flat band; don't drop it (§4.6).
+ * - **Scroll border.** Driven by an IntersectionObserver on a 24px sentinel at
+ *   the document top, never a `scroll` listener — a scroll handler thrashes
+ *   layout every frame for a boolean that changes twice a page.
+ * - **Mobile panel.** A native `<dialog>` opened with `showModal()`, which
+ *   gives focus trapping, Escape-to-close, and inertness of the rest of the
+ *   page for free. The script adds only what the platform doesn't: outside
+ *   click, `aria-expanded` sync, and explicit focus restoration.
+ */
+import Icon from '../ui/Icon.astro';
+import Logo from '../ui/Logo.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import { NAV_ITEMS, CONTACT_HREF, SITE_OWNER, type NavKey } from './nav';
+
+interface Props {
+  active?: NavKey;
+}
+
+const { active } = Astro.props;
+---
+
+{
+  /* Scrolls with the document, unlike the fixed header, so the observer has
+    something real to watch. Absolute against the initial containing block. */
+}
+<div class="scroll-sentinel" aria-hidden="true"></div>
+
+<header class="site-header" data-site-header>
+  <div class="site-container header-inner">
+    <a class="brand" href="/">
+      <Logo size={30} />
+      <span>{SITE_OWNER}</span>
+    </a>
+
+    <nav class="primary-nav" aria-label="Primary">
+      {
+        NAV_ITEMS.map((item) => (
+          <a
+            href={item.href}
+            class:list={['nav-link', active === item.key && 'is-active']}
+            aria-current={active === item.key ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="header-actions">
+      <a class="contact-pill" href={CONTACT_HREF}>Contact</a>
+      <ThemeToggle />
+      <button
+        class="icon-button menu-button"
+        type="button"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        data-menu-open
+      >
+        <Icon name="menu" size={20} />
+        <span class="visually-hidden">Open menu</span>
+      </button>
+    </div>
+  </div>
+
+  <dialog id="mobile-nav" class="mobile-nav" data-mobile-nav>
+    <div class="site-container mobile-nav-inner">
+      <div class="mobile-nav-bar">
+        <span class="brand">
+          <Logo size={30} />
+          <span>{SITE_OWNER}</span>
+        </span>
+        <button class="icon-button" type="button" data-menu-close autofocus>
+          <Icon name="x" size={20} />
+          <span class="visually-hidden">Close menu</span>
+        </button>
+      </div>
+
+      <nav class="mobile-nav-list" aria-label="Primary">
+        {
+          NAV_ITEMS.map((item, i) => (
+            <a
+              href={item.href}
+              class:list={['mobile-nav-link', active === item.key && 'is-active']}
+              aria-current={active === item.key ? 'page' : undefined}
+              style={`--i:${i}`}
+            >
+              <span>{item.label}</span>
+              <Icon name="arrow-up-right" size={18} />
+            </a>
+          ))
+        }
+      </nav>
+
+      <a class="mobile-contact" href={CONTACT_HREF} style={`--i:${NAV_ITEMS.length}`}>
+        <Icon name="mail" size={17} />
+        Get in touch
+      </a>
+    </div>
+  </dialog>
+</header>
+
+<style>
+  .scroll-sentinel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 24px;
+    pointer-events: none;
+  }
+
+  /* ---------------- bar ---------------- */
+
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    background: var(--header-bg);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid transparent;
+    transition:
+      border-color var(--dur-ui) var(--ease),
+      box-shadow var(--dur-ui) var(--ease);
+  }
+
+  .site-header[data-scrolled] {
+    border-bottom-color: var(--border);
+    box-shadow: var(--glow-card-hover);
+  }
+
+  /* Edge light — a 1px cyan hairline that fades up with the border, so the
+     glass reads as catching light rather than as a drawn rule (§4.6). */
+  .site-header::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 -1px;
+    height: 1px;
+    opacity: 0;
+    background: var(--edge-light);
+    transition: opacity var(--dur-reveal) var(--ease);
+  }
+
+  .site-header[data-scrolled]::after {
+    opacity: 1;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    height: var(--header-h);
+  }
+
+  /* ---------------- brand ---------------- */
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15.5px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .brand :global(.logo) {
+    transition: transform var(--dur-ui) var(--ease);
+  }
+
+  a.brand:hover :global(.logo) {
+    transform: rotate(-8deg) scale(1.06);
+  }
+
+  /* The mark alone carries the brand once the name would start wrapping. */
+  @media (max-width: 460px) {
+    .brand > span {
+      display: none;
+    }
+  }
+
+  /* ---------------- desktop nav ---------------- */
+
+  .primary-nav {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    margin-left: auto;
+  }
+
+  .nav-link {
+    position: relative;
+    padding-block: var(--space-1);
+    font-size: var(--text-meta);
+    font-weight: 600;
+    color: var(--muted);
+    transition: color var(--dur-ui) var(--ease);
+  }
+
+  /* Hover/active is --accent-strong, not --accent: brighter reads better
+     against deep navy at 13.5px (01-layout-chrome.md, design notes). */
+  .nav-link:hover,
+  .nav-link.is-active {
+    color: var(--accent-strong);
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 -2px;
+    height: 2px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(90deg, var(--accent-strong), var(--accent-2));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-ui) var(--ease);
+  }
+
+  .nav-link:hover::after,
+  .nav-link.is-active::after {
+    transform: scaleX(1);
+  }
+
+  /* ---------------- actions ---------------- */
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .contact-pill {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-button);
+    border: 1px solid transparent;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-size: var(--text-meta);
+    font-weight: 700;
+    white-space: nowrap;
+    transition:
+      border-color var(--dur-ui) var(--ease),
+      box-shadow var(--dur-ui) var(--ease),
+      transform var(--dur-ui) var(--ease);
+  }
+
+  .contact-pill:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--glow-cta);
+    transform: translateY(-1px);
+  }
+
+  .icon-button {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-button);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+      background-color var(--dur-ui) var(--ease),
+      border-color var(--dur-ui) var(--ease),
+      color var(--dur-ui) var(--ease);
+  }
+
+  .icon-button:hover {
+    background: var(--surface-raised);
+    border-color: var(--border);
+    color: var(--accent-strong);
+  }
+
+  .menu-button {
+    display: none;
+  }
+
+  /* ---------------- mobile panel ---------------- */
+
+  .mobile-nav {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--header-bg);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    color: var(--text);
+    overscroll-behavior: contain;
+  }
+
+  .mobile-nav::backdrop {
+    background: var(--bg);
+  }
+
+  /* Discrete-property transitions so the panel animates out as well as in.
+     Browsers without @starting-style simply show it instantly. */
+  .mobile-nav,
+  .mobile-nav::backdrop {
+    opacity: 0;
+    transition:
+      opacity var(--dur-ui) var(--ease),
+      display var(--dur-ui) allow-discrete,
+      overlay var(--dur-ui) allow-discrete;
+  }
+
+  .mobile-nav[open],
+  .mobile-nav[open]::backdrop {
+    opacity: 1;
+  }
+
+  @starting-style {
+    .mobile-nav[open],
+    .mobile-nav[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  .mobile-nav-inner {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding-bottom: var(--space-7);
+  }
+
+  .mobile-nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--header-h);
+    flex: none;
+  }
+
+  .mobile-nav-list {
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--space-5);
+  }
+
+  .mobile-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: 18px var(--space-1);
+    border-bottom: 1px solid var(--border);
+    font-size: 26px;
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    transition: color var(--dur-ui) var(--ease);
+  }
+
+  .mobile-nav-link :global(.icon) {
+    color: var(--soft);
+    transition:
+      color var(--dur-ui) var(--ease),
+      transform var(--dur-ui) var(--ease);
+  }
+
+  .mobile-nav-link:hover,
+  .mobile-nav-link.is-active {
+    color: var(--accent-strong);
+  }
+
+  .mobile-nav-link:hover :global(.icon) {
+    color: var(--accent-strong);
+    transform: translate(2px, -2px);
+  }
+
+  .mobile-contact {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin-top: var(--space-6);
+    padding: 15px var(--space-5);
+    border-radius: var(--radius-button);
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    box-shadow: var(--glow-cta);
+    color: var(--on-accent);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  /* Staggered entrance — one orchestrated moment rather than scattered
+     micro-animations. Neutralised by the reduced-motion block below. */
+  .mobile-nav[open] .mobile-nav-link,
+  .mobile-nav[open] .mobile-contact {
+    animation: nav-in 320ms var(--ease) backwards;
+    animation-delay: calc(60ms + var(--i) * 45ms);
+  }
+
+  @keyframes nav-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
+  /* ---------------- breakpoint · 900px (PLAN.md §4.9) ---------------- */
+
+  @media (max-width: 899px) {
+    .primary-nav,
+    .header-actions > .contact-pill {
+      display: none;
+    }
+
+    .header-actions {
+      margin-left: auto;
+    }
+
+    .menu-button {
+      display: grid;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-nav[open] .mobile-nav-link,
+    .mobile-nav[open] .mobile-contact {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+  const sentinel = document.querySelector('.scroll-sentinel');
+  const dialog = document.querySelector<HTMLDialogElement>('[data-mobile-nav]');
+  const openBtn = document.querySelector<HTMLButtonElement>('[data-menu-open]');
+
+  // Scroll border: observe a sentinel, never listen to `scroll`.
+  if (header && sentinel) {
+    new IntersectionObserver(
+      ([entry]) => header.toggleAttribute('data-scrolled', !entry!.isIntersecting),
+      { threshold: 0 }
+    ).observe(sentinel);
+  }
+
+  if (dialog && openBtn) {
+    // Remembered explicitly rather than trusting the browser to restore it.
+    let restoreTo: HTMLElement | null = null;
+
+    openBtn.addEventListener('click', () => {
+      restoreTo = document.activeElement as HTMLElement | null;
+      dialog.showModal();
+      openBtn.setAttribute('aria-expanded', 'true');
+    });
+
+    for (const btn of dialog.querySelectorAll('[data-menu-close]')) {
+      btn.addEventListener('click', () => dialog.close());
+    }
+
+    // Otherwise the panel stays open behind the navigation.
+    for (const link of dialog.querySelectorAll('a')) {
+      link.addEventListener('click', () => dialog.close());
+    }
+
+    // Light dismiss: a click landing on the dialog box itself, not its content.
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+
+    // Fires for Escape too, so every close path lands here.
+    dialog.addEventListener('close', () => {
+      openBtn.setAttribute('aria-expanded', 'false');
+      restoreTo?.focus();
+      restoreTo = null;
+    });
+
+    // Crossing to the desktop breakpoint hides the panel in CSS while it is
+    // still modal — that would trap focus inside something invisible.
+    matchMedia('(min-width: 900px)').addEventListener('change', (e) => {
+      if (e.matches && dialog.open) dialog.close();
+    });
+  }
+</script>

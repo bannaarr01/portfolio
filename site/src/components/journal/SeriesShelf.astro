@@ -7,7 +7,7 @@ import { getCollection } from 'astro:content';
 import SectionRail from './SectionRail.astro';
 import RowGrid from './RowGrid.astro';
 import type { Row } from './taxonomy';
-import { getSeriesParts } from '../../lib/content';
+import { getSeriesParts } from '../../lib';
 
 const all = await getCollection('series');
 
