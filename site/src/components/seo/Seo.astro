@@ -1,13 +1,31 @@
 ---
-// STUB: owned by group 06 (06-seo-404-feeds).
-// Meta, canonical, Open Graph, Twitter card, JSON-LD. `canonical` is passed in
-// rather than derived so paginated and category routes can point at the right
-// URL. Resolve ogImage against Astro.site — ogImageUrl() returns a
-// root-relative path, and social crawlers require an absolute one.
+/**
+ * Seo — head metadata for every route. PLAN.md §6. Group 06.
+ *
+ * Deliberately does NOT emit charset, viewport, or favicon links: BaseLayout
+ * already emits them, and charset in particular has to sit in the first 1024
+ * bytes of the document, which only BaseLayout can guarantee. Duplicating them
+ * here would put two of each on every page.
+ *
+ * `canonical` is passed in rather than derived so paginated, category, and
+ * series routes can point at the URL they actually want indexed. BaseLayout
+ * hands over an absolute string; a root-relative path also works and is
+ * resolved against `Astro.site`.
+ */
+import { SITE_OWNER } from '../layout/nav';
+import {
+  FEED_PATH,
+  FEED_TITLE,
+  OG_DEFAULT,
+  OG_HEIGHT,
+  OG_WIDTH,
+  THEME_COLOR,
+} from './meta';
+
 interface Props {
   title: string;
   description: string;
-  canonical: string;
+  canonical: string | URL;
   ogImage?: string;
   noindex?: boolean;
   type?: 'website' | 'article';
@@ -22,17 +40,71 @@ const {
   type = 'website',
 } = Astro.props;
 
-const absoluteOgImage = ogImage ? new URL(ogImage, Astro.site).href : undefined;
+// Every absolute URL below depends on this. A site whose every og:image is
+// relative renders no link preview anywhere, so fail the build instead.
+const site = Astro.site;
+if (!site) {
+  throw new Error(
+    'Seo.astro: `site` is not set in astro.config.mjs. Canonical and og:image cannot be made absolute without it.'
+  );
+}
+
+const canonicalUrl = new URL(canonical, site);
+// Agrees with `trailingSlash: 'always'`. Paths with an extension are left alone.
+if (!/\.[a-z0-9]+$/i.test(canonicalUrl.pathname) && !canonicalUrl.pathname.endsWith('/')) {
+  canonicalUrl.pathname += '/';
+}
+
+const imageUrl = new URL(ogImage ?? OG_DEFAULT, site);
+const feedUrl = new URL(FEED_PATH, site);
+
+// The homepage supplies its own complete title; every other route gets the
+// owner appended. The `includes` guard stops a caller that already applied the
+// template — the journal index does — from getting the name twice.
+const isHome = canonicalUrl.pathname === '/';
+const fullTitle = isHome || title.includes(SITE_OWNER) ? title : `${title} — ${SITE_OWNER}`;
+
+// Social cards get the bare title: `og:site_name` already carries the owner,
+// so the suffix would only repeat it inside the preview card.
+const imageAlt = `${title} — ${SITE_OWNER}`;
 ---
 
-<!-- STUB: owned by group 06 -->
-<title>{title}</title>
+<title>{fullTitle}</title>
 <meta name="description" content={description} />
-<link rel="canonical" href={canonical} />
-{noindex && <meta name="robots" content="noindex, nofollow" />}
+<link rel="canonical" href={canonicalUrl.href} />
+
+{
+  /* Dark is the site default (PLAN.md §4.5), so browser chrome defaults to it.
+     ThemeToggle swaps this on flip — see the group 06 report. */
+}
+<meta name="theme-color" content={THEME_COLOR.dark} />
+<meta name="color-scheme" content="dark light" />
+
+{
+  /* `follow` rather than `nofollow`: the 404 should not be indexed, but its
+     helpful-paths links are exactly what a crawler should keep walking. */
+}
+{noindex && <meta name="robots" content="noindex, follow" />}
+
+<link rel="alternate" type="application/rss+xml" title={FEED_TITLE} href={feedUrl.href} />
+<link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+
 <meta property="og:type" content={type} />
+<meta property="og:site_name" content={SITE_OWNER} />
+<meta property="og:locale" content="en_GB" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:url" content={canonical} />
-{absoluteOgImage && <meta property="og:image" content={absoluteOgImage} />}
-<meta name="twitter:card" content={absoluteOgImage ? 'summary_large_image' : 'summary'} />
+<meta property="og:url" content={canonicalUrl.href} />
+<meta property="og:image" content={imageUrl.href} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content={String(OG_WIDTH)} />
+<meta property="og:image:height" content={String(OG_HEIGHT)} />
+<meta property="og:image:alt" content={imageAlt} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl.href} />
+<meta name="twitter:image:alt" content={imageAlt} />
+
+<meta name="author" content={SITE_OWNER} />
