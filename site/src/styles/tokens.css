@@ -46,6 +46,24 @@
   --edge-light: linear-gradient(90deg, transparent, #22d3ee40, transparent);
   --on-accent: #04121a; /* text on a saturated accent fill */
 
+  /* --- Cover art — PLAN.md §4.8 -------------------------------------------
+     The journal's CSS-only cover artwork (group 04). Deliberately declared
+     once, outside the light override: a cover is a printed artefact, not a
+     themed surface, so it renders identically in both themes. §4.2 permits
+     raw cyan/teal here because it is a large decorative fill, never text.
+     Per-category hue-rotate is applied by CoverArt.astro, not stored here. */
+  --cover-1: #04283a; /* gradient stop  0%   */
+  --cover-2: #075e6b; /* gradient stop 26%   */
+  --cover-3: #0e9aa0; /* gradient stop 58%   */
+  --cover-4: #14b8a6; /* gradient stop 82%   */
+  --cover-5: #22d3ee; /* gradient stop 100%  */
+  --cover-arc-1: #ffffff1a; /* inner concentric arc */
+  --cover-arc-2: #ffffff12; /* middle arc           */
+  --cover-arc-3: #ffffff0d; /* outer arc            */
+  --cover-grid: #ffffff0d; /* 52px engineering grid */
+  --cover-ink: #ffffffe0; /* glyph + category name */
+  --cover-ink-soft: #ffffffb0; /* cover kicker          */
+
   /* --- Type — PLAN.md §4.4 ------------------------------------------------
      One family. No serif anywhere. Self-hosted; no Google Fonts origin. */
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;

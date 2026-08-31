@@ -1,0 +1,165 @@
+---
+/**
+ * Masthead — the journal's identity, doing the work the editorial serif used to
+ * (PLAN.md §4.7). Three things carry the separation from the portfolio:
+ *
+ *   1. Scale — up to 84px, beyond anything on the portfolio side.
+ *   2. The gradient accent word, set against plain --text.
+ *   3. A monospace dateline. Geist Mono appears nowhere on the portfolio, so it
+ *      reads as the journal's own register: instrumentation, not decoration.
+ */
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  articleCount: number;
+}
+
+const { articleCount } = Astro.props;
+---
+
+<section class="masthead">
+  <div class="site-container">
+    <div class="dateline">
+      <span>Vol. 01 &mdash; Field notes</span>
+      <span
+        >{articleCount} {articleCount === 1 ? 'article' : 'articles'} in the archive</span
+      >
+    </div>
+
+    <p class="kicker masthead-kicker">
+      <Icon name="book-open" size={14} /> Boluwaji Joshua Adedigba&rsquo;s engineering publication
+    </p>
+
+    <div class="title-row">
+      <div class="lockup">
+        <p class="the">The</p>
+        <h1 class="title">Engineering <span class="accent-word">Journal</span></h1>
+      </div>
+      <p class="standfirst">
+        Field notes on building backend systems that remain reliable, observable, and
+        adaptable as their responsibilities grow.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .masthead {
+    position: relative;
+    padding-top: calc(var(--header-h) + 62px);
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 88% 16%, var(--glow-cyan), transparent 30%),
+      linear-gradient(180deg, var(--hero-bg), var(--bg));
+  }
+
+  /* A faint 52px rule grid, echoing the cover-art grid so the masthead and the
+     artwork below it read as one system. */
+  .masthead::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 52px),
+      repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 52px);
+    /* `black` here is a mask alpha stop (opaque), not a colour value. */
+    mask-image: linear-gradient(180deg, transparent, black 30%, black 70%, transparent);
+  }
+
+  .masthead > :global(.site-container) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dateline {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 24px;
+    padding: 11px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .masthead-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 34px;
+  }
+
+  .title-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(270px, 0.55fr);
+    gap: 70px;
+    align-items: end;
+    padding: 22px 0 50px;
+  }
+
+  .the {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .the::after {
+    content: '';
+    flex: none;
+    width: 70px;
+    height: 1px;
+    background: var(--border-strong);
+  }
+
+  .title {
+    /* PLAN.md §4.4. The trailing min() only binds below ~495px, where the 46px
+       floor cannot hold "Engineering Journal" on one line inside a 335px
+       container — see the report. Above that the clamp is used verbatim. */
+    font-size: min(clamp(46px, 5.8vw, 84px), 9.4vw);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+    color: var(--text);
+  }
+
+  .accent-word {
+    background: linear-gradient(100deg, var(--accent-strong), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .standfirst {
+    padding-left: 22px;
+    border-left: 2px solid var(--accent);
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  @media (max-width: 900px) {
+    .masthead {
+      padding-top: calc(var(--header-h) + 42px);
+    }
+
+    .title-row {
+      grid-template-columns: 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+  }
+</style>

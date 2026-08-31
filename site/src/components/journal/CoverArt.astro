@@ -1,52 +1,203 @@
 ---
-// STUB: owned by group 04 (04-journal-taxonomy).
-// CSS-only cover art — zero image bytes. Recipe in PLAN.md §4.8: the base
-// gradient plus concentric arcs, a 52px grid, the category glyph, and the
-// category name. Per-category hue rotation is what makes the four disciplines
-// read differently.
+/**
+ * CoverArt — PLAN.md §4.8 / §6. Owned by group 04, consumed by 05 and 06.
+ *
+ * Pure CSS, zero image bytes: a 118deg cyan/teal gradient, three concentric
+ * arcs struck from a focal point at 68% 106%, a 52px engineering grid, the
+ * discipline glyph centred, and the discipline name set bottom-left.
+ *
+ * The gradient, arcs and grid live on one filtered layer so the per-category
+ * hue-rotate never touches the white type sitting above it.
+ */
+import Icon from '../ui/Icon.astro';
+import { CATEGORY_ART, categoryTitle } from './taxonomy';
+import { SITE_OWNER } from '../layout/nav';
 import type { CategorySlug } from '../../types/content';
 import type { IconName } from '../../types/icons';
-import Icon from '../ui/Icon.astro';
 
+/* Signature is frozen — PLAN.md §6. Groups 05 and 06 build against it. */
 interface Props {
   category: CategorySlug;
   variant: 'lead' | 'card' | 'banner';
   glyph?: IconName;
 }
 
-const { category, variant, glyph = 'code' } = Astro.props;
+const { category, variant, glyph } = Astro.props;
 
-// PLAN.md §4.8 — placeholder until group 04 implements the full recipe.
-const HUE: Record<CategorySlug, number> = {
-  go: 0,
-  'aws-cloud': -14,
-  'system-design': 18,
-  'backend-engineering': 32,
-};
+const art = CATEGORY_ART[category];
+const title = await categoryTitle(category);
+const icon = glyph ?? art.glyph;
+const glyphSize = variant === 'lead' ? 60 : variant === 'banner' ? 46 : 40;
+
+/* The card cover is only ~250-280px wide, which is not enough for the byline
+   and the publication name on one line. The page already establishes the
+   journal, so the card keeps the byline alone and the roomier lead and banner
+   variants carry the full credit. */
+const credit = variant === 'card' ? SITE_OWNER : `${SITE_OWNER} · Engineering Journal`;
 ---
 
 <div
-  class="cover-art"
-  data-variant={variant}
-  style={`--cover-hue: ${HUE[category]}deg`}
-  aria-hidden="true"
+  class:list={['cover', `is-${variant}`]}
+  style={`--cover-rotate:${art.rotate}`}
+  data-category={category}
 >
-  <!-- STUB: owned by group 04 -->
-  <Icon name={glyph} size={40} />
+  <span class="cover-art" aria-hidden="true"></span>
+  <span class="cover-kicker">{credit}</span>
+  <span class="cover-glyph"><Icon name={icon} size={glyphSize} /></span>
+  <span class="cover-label">{title}</span>
 </div>
 
 <style>
-  .cover-art {
-    display: grid;
-    place-items: center;
-    aspect-ratio: 16 / 9;
+  .cover {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    isolation: isolate;
     border-radius: var(--radius-card);
-    background: linear-gradient(118deg, var(--hero-bg), var(--accent-2));
-    filter: hue-rotate(var(--cover-hue));
-    color: var(--bg);
+    background: var(--cover-1);
+    /* Artwork ink is fixed white in both themes — the cover is a printed
+       object, not a themed surface (PLAN.md §4.2 permits this as a large
+       decorative fill). */
+    color: var(--cover-ink);
   }
 
-  .cover-art[data-variant='banner'] {
-    aspect-ratio: 21 / 6;
+  /* ---- variants ---------------------------------------------------------- */
+
+  .is-card {
+    aspect-ratio: 16 / 10;
+    --pad: 20px;
+    --label: 22px;
+    --kick: 9.5px;
+  }
+
+  .is-lead {
+    aspect-ratio: 16 / 15.5;
+    --pad: 28px;
+    --label: 34px;
+    --kick: 10.5px;
+  }
+
+  .is-banner {
+    aspect-ratio: 16 / 6.4;
+    --pad: 28px;
+    --label: 28px;
+    --kick: 10.5px;
+  }
+
+  /* ---- the artwork layer ------------------------------------------------- */
+
+  .cover-art {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(
+      118deg,
+      var(--cover-1) 0%,
+      var(--cover-2) 26%,
+      var(--cover-3) 58%,
+      var(--cover-4) 82%,
+      var(--cover-5) 100%
+    );
+    filter: hue-rotate(var(--cover-rotate, 0deg));
+    transition: transform var(--dur-ui) var(--ease);
+  }
+
+  .cover-art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        circle at 68% 106%,
+        transparent 33%,
+        var(--cover-arc-1) 33.3%,
+        var(--cover-arc-1) 33.9%,
+        transparent 34.2%
+      ),
+      radial-gradient(
+        circle at 68% 106%,
+        transparent 52%,
+        var(--cover-arc-2) 52.3%,
+        var(--cover-arc-2) 52.9%,
+        transparent 53.2%
+      ),
+      radial-gradient(
+        circle at 68% 106%,
+        transparent 71%,
+        var(--cover-arc-3) 71.3%,
+        var(--cover-arc-3) 71.9%,
+        transparent 72.2%
+      ),
+      repeating-linear-gradient(to right, var(--cover-grid) 0 1px, transparent 1px 52px),
+      repeating-linear-gradient(to bottom, var(--cover-grid) 0 1px, transparent 1px 52px);
+  }
+
+  /* ---- type + glyph ------------------------------------------------------ */
+
+  .cover-kicker,
+  .cover-glyph,
+  .cover-label {
+    position: absolute;
+    z-index: 1;
+  }
+
+  .cover-kicker {
+    top: var(--pad);
+    left: var(--pad);
+    right: var(--pad);
+    font-family: var(--font-mono);
+    font-size: var(--kick);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: var(--cover-ink-soft);
+  }
+
+  .cover-glyph {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -58%);
+    color: var(--cover-ink);
+  }
+
+  .cover-label {
+    left: var(--pad);
+    bottom: var(--pad);
+    right: var(--pad);
+    font-size: var(--label);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  /* The banner is wide and short — centre the glyph away from the label. */
+  .is-banner .cover-glyph {
+    left: auto;
+    right: 12%;
+    transform: translate(0, -50%);
+  }
+
+  /* Hover belongs to the card that owns this cover, not the cover itself. */
+  :global(.blog-card:hover) .cover-art,
+  :global(.feature-cover:hover) .cover-art {
+    transform: scale(1.035);
+  }
+
+  @media (max-width: 560px) {
+    .is-lead {
+      --label: 28px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cover-art {
+      transition: none;
+    }
+    :global(.blog-card:hover) .cover-art,
+    :global(.feature-cover:hover) .cover-art {
+      transform: none;
+    }
   }
 </style>
