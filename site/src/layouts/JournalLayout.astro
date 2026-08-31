@@ -1,22 +1,22 @@
 ---
-// STUB: owned by group 01 (01-layout-chrome).
-// BaseLayout + the journal footer, which is deliberately distinct from the
-// portfolio one — with the serif gone, layout carries the whole identity
-// split between the two halves of the site (PLAN.md §4.7).
+/**
+ * BaseLayout + the journal footer, which is deliberately distinct from the
+ * portfolio one — with the serif gone, layout carries the whole identity split
+ * between the two halves of the site (PLAN.md §4.7).
+ *
+ * `active` defaults to 'blog' so every journal route lights the Blog nav item
+ * without each page remembering to pass it. Pages may still override.
+ */
 import JournalFooter from '../components/layout/JournalFooter.astro';
-import BaseLayout from './BaseLayout.astro';
+import BaseLayout, { type Props as BaseProps } from './BaseLayout.astro';
 
-interface Props {
-  title: string;
-  description: string;
-  ogImage?: string;
-  noindex?: boolean;
-  wide?: boolean;
-}
+export type Props = BaseProps;
+
+const { active = 'blog', ...rest } = Astro.props;
 ---
 
-<BaseLayout {...Astro.props}>
-  <!-- STUB: owned by group 01 -->
+<BaseLayout {...rest} active={active}>
+  <slot name="head" slot="head" />
   <slot />
   <JournalFooter slot="footer" />
 </BaseLayout>
