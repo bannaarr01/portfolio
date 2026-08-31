@@ -1,0 +1,200 @@
+---
+/**
+ * LAYER 3 — drifting tech icons.
+ *
+ * DOM plus a single rAF loop, not canvas: at ten elements the SVGs stay crisp
+ * at any DPI, inherit the palette tokens, and cost less code than rasterising.
+ *
+ * Every mote is anchored in CSS from numbers the build already computed, so
+ * the layer is correct at first paint with no JavaScript — which is also
+ * exactly what the reduced-motion path renders. `drift.ts` reproduces the same
+ * `clamp()` arithmetic and then only ever writes `transform`.
+ *
+ * Two nested masks do the work restraint requires:
+ *   .drift  — an edge fade, so motes dissolve rather than clip at the box.
+ *   .core   — the quiet zone, a hole over the hero headline. Combined with the
+ *             steering field in drift.ts, an icon can never sit on the H1.
+ */
+
+import Icon from '../ui/Icon.astro';
+import type { IconName } from '../../types/icons';
+import { seedField, QUIET, EDGE_PCT } from './seed';
+
+interface Props {
+  icons: IconName[];
+}
+
+const { icons } = Astro.props;
+const motes = seedField(icons);
+
+// One source of truth, spent twice: into CSS for the mask and the anchors,
+// and into `data-q` so the steering field agrees with both.
+const q = [QUIET.bp, QUIET.rxPct, QUIET.rxMin, QUIET.ryPct, QUIET.ryMin, QUIET.bandRx].join(
+  ','
+);
+// `--qx-wide` rather than `--qx` directly: an inline custom property outranks
+// any stylesheet rule, so band mode could never override it.
+const zone = [
+  `--qx-wide: max(${QUIET.rxPct}%, ${QUIET.rxMin}px)`,
+  `--qx-band: ${QUIET.bandRx * 100}%`,
+  `--qy: max(${QUIET.ryPct}%, ${QUIET.ryMin}px)`,
+  `--edge: ${EDGE_PCT}%`,
+].join(';');
+// NOTE: `--focus-x`/`--focus-y` are deliberately never *declared* — not here
+// and not on `.drift`. They are read as `var(--focus-x, 50%)` at each use site
+// so a value set on any ancestor inherits in. Declaring the default on `.drift`
+// itself would beat the ancestor's value and silently ignore the consumer.
+---
+
+<div class="drift" data-drift data-q={q} style={zone}>
+  <div class="core">
+    {
+      /* `data-m` restates a few values that are also custom properties. That
+         costs ~30 bytes of HTML per mote and saves `drift.ts` a
+         `getComputedStyle()` per element at init — a worthwhile trade in a
+         file whose whole point is never to read layout. Order must match the
+         `at(p, n)` indices in drift.ts. */
+      motes.map((m) => (
+        <span
+          class="mote"
+          data-m={[m.ux, m.uy, m.hx, m.vx, m.vy, m.vr, m.rot, m.size].join(',')}
+          style={[
+            `--ux:${m.ux}`,
+            `--uy:${m.uy}`,
+            `--hx:${m.hx}`,
+            `--s:${m.size}px`,
+            `--o:${m.opacity}`,
+            `--r:${m.rot}deg`,
+            `--tint:${m.tint}%`,
+            m.blur ? `--fx:blur(${m.blur}px)` : '',
+          ]
+            .filter(Boolean)
+            .join(';')}
+        >
+          <Icon name={m.name} size={m.size} />
+        </span>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .drift {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    --qx: var(--qx-wide);
+    /* Motes fade into the aurora near the border, so an edge bounce reads as
+       drift rather than as a ball in a box. */
+    -webkit-mask-image: radial-gradient(
+      ellipse 82% 86% at 50% 50%,
+      black 46%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(ellipse 82% 86% at 50% 50%, black 46%, transparent 100%);
+  }
+
+  .core {
+    position: absolute;
+    inset: 0;
+    /* The quiet zone. Zero alpha everywhere inside the ellipse, ramping to
+       opaque by 126% of its radius. drift.ts holds every mote outside that
+       same ellipse, so the two together make "no icon over the headline" an
+       invariant rather than a tuning. The radii are `max(<pct>, <px>)`, which
+       is what keeps it true down to a 375px viewport. */
+    /* The radii come from `--qx-px`/`--qy-px`, which drift.ts resolves to plain
+       pixels on the host at measure time. They are NOT `var(--qx)`: that holds
+       a `max()`, and Chromium rejects a math function as a radial-gradient
+       radius (WebKit and Firefox accept it). Because `var()` substitution is
+       deferred, such a declaration parses fine and then dies at computed-value
+       time — the mask silently becomes `none` with nothing in the console.
+       The percentage fallbacks keep this correct before JS runs, and under
+       reduced motion where JS never runs at all. */
+    -webkit-mask-image: radial-gradient(
+      ellipse var(--qx-px, 30%) var(--qy-px, 27%) at var(--focus-x, 50%) var(--focus-y, 50%),
+      transparent 0,
+      transparent 100%,
+      black 126%
+    );
+    mask-image: radial-gradient(
+      ellipse var(--qx-px, 30%) var(--qy-px, 27%) at var(--focus-x, 50%) var(--focus-y, 50%),
+      transparent 0,
+      transparent 100%,
+      black 126%
+    );
+  }
+
+  .mote {
+    position: absolute;
+    /* Anchored relative to the quiet zone, not to the box. drift.ts computes
+       this identically, which is why it never measures an element. */
+    left: clamp(
+      var(--edge),
+      calc(var(--focus-x, 50%) + var(--ux) * var(--qx)),
+      calc(100% - var(--edge))
+    );
+    top: clamp(
+      var(--edge),
+      calc(var(--focus-y, 50%) + var(--uy) * var(--qy)),
+      calc(100% - var(--edge))
+    );
+    width: var(--s);
+    height: var(--s);
+    /* Centring lives on `translate` so the animated `transform` stays ours. */
+    translate: -50% -50%;
+    transform: rotate(var(--r));
+    opacity: calc(var(--o) * var(--o-scale, 1));
+    /* Near plane cyan, far plane teal — chromatic depth for free. */
+    color: var(--accent-2);
+    color: color-mix(in oklab, var(--accent-strong) var(--tint), var(--accent-2));
+    /* Only the far plane carries a blur; the near plane has no filter at all. */
+    filter: var(--fx, none);
+    will-change: transform;
+  }
+
+  /* Dark ink on white loses a little presence at these alphas; nudge it back
+     so the far plane doesn't disappear entirely in light mode. */
+  :global([data-theme='light']) .drift {
+    --o-scale: 1.18;
+  }
+
+  .mote :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /*
+   * Band mode. Below 720px there is no room beside a wrapped H1, so the quiet
+   * zone becomes a full-width horizontal band and the motes drift in the sky
+   * above and the ground below the headline. Same ellipse, enormous x radius.
+   */
+  @media (max-width: 720px) {
+    .drift {
+      --qx: var(--qx-band);
+      /* Pre-JS fallback for the mask radius in band mode. Once drift.ts
+         measures, it writes `--qx-px` inline and that wins. */
+      --qx-px: 400%;
+    }
+    .mote {
+      left: calc(var(--hx) * 100%);
+    }
+  }
+
+  /* Frozen: either the preference was set at load, or flipped mid-session. */
+  @media (prefers-reduced-motion: reduce) {
+    .mote {
+      will-change: auto;
+    }
+  }
+
+  .drift[data-frozen] .mote {
+    will-change: auto;
+  }
+</style>
+
+<script>
+  import { initDrift } from './drift';
+
+  initDrift();
+</script>
