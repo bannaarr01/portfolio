@@ -27,9 +27,7 @@ const [categories, counts] = await Promise.all([
   getCategoryCounts(),
 ]);
 
-const elsewhere = categories.filter(
-  (c) => c.data.slug !== slug && counts[c.data.slug] > 0,
-);
+const elsewhere = categories.filter((c) => c.data.slug !== slug && counts[c.data.slug] > 0);
 ---
 
 <div class="empty">
@@ -80,8 +78,7 @@ const elsewhere = categories.filter(
     border: 1px solid var(--border);
     border-radius: var(--radius-card);
     background:
-      radial-gradient(circle at 12% 0%, var(--glow-teal), transparent 42%),
-      var(--surface);
+      radial-gradient(circle at 12% 0%, var(--glow-teal), transparent 42%), var(--surface);
   }
 
   .empty-art {

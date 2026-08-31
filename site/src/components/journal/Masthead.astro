@@ -21,11 +21,13 @@ const { articleCount } = Astro.props;
   <div class="site-container">
     <div class="dateline">
       <span>Vol. 01 &mdash; Field notes</span>
-      <span>{articleCount} {articleCount === 1 ? 'article' : 'articles'} in the archive</span>
+      <span
+        >{articleCount} {articleCount === 1 ? 'article' : 'articles'} in the archive</span
+      >
     </div>
 
     <p class="kicker masthead-kicker">
-      <Icon name="book-open" size={14} /> Tan Chin Siang&rsquo;s engineering publication
+      <Icon name="book-open" size={14} /> Boluwaji Joshua Adedigba&rsquo;s engineering publication
     </p>
 
     <div class="title-row">

@@ -10,6 +10,7 @@ import Icon from '../ui/Icon.astro';
 import Avatar from '../ui/Avatar.astro';
 import { categoryTitle } from './taxonomy';
 import { formatDate, getMinutesRead } from '../../lib';
+import { SITE_OWNER } from '../layout/nav';
 import type { Post } from '../../types/content';
 
 interface Props {
@@ -41,9 +42,9 @@ const href = `/blog/${post.id}/`;
     <p class="feature-dek">{description}</p>
 
     <div class="byline">
-      <Avatar initials="TC" size={38} />
+      <Avatar initials="BJA" size={38} />
       <div>
-        <strong>Tan Chin Siang</strong>
+        <strong>{SITE_OWNER}</strong>
         <time datetime={publishDate.toISOString()}>{formatDate(publishDate)}</time>
       </div>
     </div>

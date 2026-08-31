@@ -16,7 +16,7 @@ const rows: Row[] = (
     all.map(async (s) => {
       const parts = await getSeriesParts(s.data.slug);
       return { entry: s, count: parts.length };
-    }),
+    })
   )
 )
   .filter(({ count }) => count > 0)

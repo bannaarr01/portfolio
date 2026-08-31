@@ -28,10 +28,7 @@ const { slug, title, description } = entry.data;
 const posts = await getPostsByCategory(slug);
 ---
 
-<JournalLayout
-  title={`${title} — The Engineering Journal`}
-  description={description}
->
+<JournalLayout title={`${title} — The Engineering Journal`} description={description}>
   <section class="category-hero">
     <div class="site-container">
       <a class="hero-back" href="/blog/">

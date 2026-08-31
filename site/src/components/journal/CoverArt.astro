@@ -11,6 +11,7 @@
  */
 import Icon from '../ui/Icon.astro';
 import { CATEGORY_ART, categoryTitle } from './taxonomy';
+import { SITE_OWNER } from '../layout/nav';
 import type { CategorySlug } from '../../types/content';
 import type { IconName } from '../../types/icons';
 
@@ -27,6 +28,12 @@ const art = CATEGORY_ART[category];
 const title = await categoryTitle(category);
 const icon = glyph ?? art.glyph;
 const glyphSize = variant === 'lead' ? 60 : variant === 'banner' ? 46 : 40;
+
+/* The card cover is only ~250-280px wide, which is not enough for the byline
+   and the publication name on one line. The page already establishes the
+   journal, so the card keeps the byline alone and the roomier lead and banner
+   variants carry the full credit. */
+const credit = variant === 'card' ? SITE_OWNER : `${SITE_OWNER} · Engineering Journal`;
 ---
 
 <div
@@ -35,35 +42,13 @@ const glyphSize = variant === 'lead' ? 60 : variant === 'banner' ? 46 : 40;
   data-category={category}
 >
   <span class="cover-art" aria-hidden="true"></span>
-  <span class="cover-kicker">Chin Siang &middot; Engineering Journal</span>
+  <span class="cover-kicker">{credit}</span>
   <span class="cover-glyph"><Icon name={icon} size={glyphSize} /></span>
   <span class="cover-label">{title}</span>
 </div>
 
 <style>
   .cover {
-    /* ---- COVER-ART PALETTE — PLAN.md §4.8 -------------------------------
-       These are the only raw colour values in group 04, and they are here
-       rather than in tokens.css because group 00 did not ship them. They are
-       deliberately theme-independent: the cover is a printed artefact, not a
-       themed surface, and §4.2 permits raw cyan/teal as a large decorative
-       fill in light mode.
-
-       REQUEST TO GROUP 00 / 09: promote this block to tokens.css as
-       --cover-1..5, --cover-arc-1..3, --cover-grid and --cover-ink*, then
-       delete it here. Scoped to .cover so nothing else can consume them. */
-    --cover-1: #04283a;
-    --cover-2: #075e6b;
-    --cover-3: #0e9aa0;
-    --cover-4: #14b8a6;
-    --cover-5: #22d3ee;
-    --cover-arc-1: #ffffff1a;
-    --cover-arc-2: #ffffff12;
-    --cover-arc-3: #ffffff0d;
-    --cover-grid: #ffffff0d;
-    --cover-ink: #ffffffe0;
-    --cover-ink-soft: #ffffffb0;
-
     position: relative;
     display: block;
     overflow: hidden;
