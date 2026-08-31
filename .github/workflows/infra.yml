@@ -138,10 +138,19 @@ jobs:
       # severity threshold was raised above it. MEDIUM is in the gate for the
       # same reason: CloudFront access logging is a MEDIUM finding and is off
       # on purpose (§15), which should be recorded, not filtered.
-      # The tag is `v0.28.0` — this action's releases carry the `v` prefix, and
-      # `@0.28.0` fails at action-resolution time, before any step runs.
+      # v0.36.0, and the floor is v0.32.0 — not a preference, a hard constraint.
+      #
+      # This action delegates to `aquasecurity/setup-trivy`. Releases before
+      # v0.32.0 reference it by tag (`@v0.2.1`, `@v0.2.2`), and upstream has
+      # since deleted those tags — the only ones now published are v0.2.6,
+      # v0.3.0 and v0.3.1. So every trivy-action below v0.32.0 fails at action
+      # resolution with "unable to find version", regardless of how it is
+      # written here. v0.32.0 onwards pins setup-trivy by commit SHA, which
+      # cannot be deleted out from under it.
+      #
+      # (The tag also needs its `v` prefix; `@0.28.0` was doubly wrong.)
       - name: trivy config
-        uses: aquasecurity/trivy-action@v0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: config
           scan-ref: infra
