@@ -1,0 +1,32 @@
+<!--
+  Favicon: the logo-mark.svg geometry on a navy plate so it stays legible
+  against both light and dark browser chrome.
+
+  Two deliberate differences from logo-mark.svg:
+    1. the mark is scaled to 0.78 and centred, leaving a ~12px margin on the
+       64-unit plate so it does not touch the rounded corners
+    2. stroke-width is 5.5 rather than 4.5, which lands at ~4.3 effective
+       after the scale. At 16px the original weight renders under one device
+       pixel and the mark reads as a grey smudge.
+
+  Colours are literal for the same reason as logo-mark.svg: the plate is the
+  bg token (#05101C), the stroke runs accent-strong to accent-2.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Site icon">
+  <defs>
+    <linearGradient id="fv-stroke" x1="12" y1="12" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#2DD4BF"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#05101C"/>
+  <g transform="translate(32 32) scale(0.78) translate(-32 -32)"
+     fill="none" stroke="url(#fv-stroke)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 11h36M32 11v8c0 5-4 7-8 7h-2c-4 0-5 5-1.5 7 2.5 1.5 5.5 1 9.5 1"/>
+    <rect x="30" y="28" width="12" height="12" rx="3"/>
+    <path d="M42 34h2c7 0 9 8 4 12-3 2.5-8 2-13 2H24c-3 0-5 2-6 5"/>
+    <circle cx="10" cy="11" r="4"/>
+    <circle cx="54" cy="11" r="4"/>
+    <circle cx="14" cy="53" r="4"/>
+  </g>
+</svg>

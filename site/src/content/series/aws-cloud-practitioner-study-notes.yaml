@@ -1,0 +1,10 @@
+# Feeds: /blog/series/aws-cloud-practitioner-study-notes/ and the "Read by
+# series" rail on /blog/. Part count is derived from the posts, not stored.
+#
+# A post joins this series by setting BOTH `series: aws-cloud-practitioner-study-notes`
+# and a numeric `part:` in its frontmatter. The Zod refinement rejects one
+# without the other.
+slug: aws-cloud-practitioner-study-notes
+title: AWS Cloud Practitioner Study Notes
+description: An ordered path through AWS & Cloud, designed so each part is useful independently and builds on the previous one.
+category: aws-cloud

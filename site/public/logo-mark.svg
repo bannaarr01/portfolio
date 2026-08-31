@@ -1,0 +1,30 @@
+<!--
+  Connected-systems mark: three nodes joined by a routed path through a
+  central service box.
+
+  Geometry is unchanged from the original mockup mark. The only edit is the
+  gradient, which was indigo to violet (#5B6EFF, #A06CFA) and is now cyan to
+  teal (accent-strong #22D3EE, accent-2 #2DD4BF) per PLAN.md §4.1. Hex values
+  are literal here because a standalone SVG asset cannot read the site's CSS
+  custom properties; this file is the documented exception to the
+  no-hardcoded-colour rule.
+
+  The gradient id is namespaced (`lm-stroke`) so that inlining this file
+  alongside favicon.svg cannot collide.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Connected systems mark">
+  <defs>
+    <linearGradient id="lm-stroke" x1="8" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#2DD4BF"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="url(#lm-stroke)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 11h36M32 11v8c0 5-4 7-8 7h-2c-4 0-5 5-1.5 7 2.5 1.5 5.5 1 9.5 1"/>
+    <rect x="30" y="28" width="12" height="12" rx="3"/>
+    <path d="M42 34h2c7 0 9 8 4 12-3 2.5-8 2-13 2H24c-3 0-5 2-6 5"/>
+    <circle cx="10" cy="11" r="4"/>
+    <circle cx="54" cy="11" r="4"/>
+    <circle cx="14" cy="53" r="4"/>
+  </g>
+</svg>

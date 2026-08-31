@@ -1,0 +1,10 @@
+# Feeds: /blog/category/backend-engineering/, the CategoryTabs strip, and the
+# discipline grid on /blog/. Article counts are derived at build time.
+#
+# NOTE: this category deliberately has zero published posts. Its only entry is
+# the draft fixture, so /blog/category/backend-engineering/ exercises the
+# empty-state branch that group 09 checks for.
+slug: backend-engineering
+title: Backend Engineering
+description: APIs, databases, security, observability, performance, and production practice.
+order: 4
