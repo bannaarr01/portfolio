@@ -7,6 +7,9 @@ import SectionRail from '../../../components/journal/SectionRail.astro';
 import CardGrid from '../../../components/journal/CardGrid.astro';
 import EmptyState from '../../../components/journal/EmptyState.astro';
 import Icon from '../../../components/ui/Icon.astro';
+import StructuredData, {
+  type Crumb,
+} from '../../../components/seo/StructuredData.astro';
 import { getPostsByCategory } from '../../../lib';
 
 /**
@@ -26,9 +29,16 @@ const { entry } = Astro.props;
 const { slug, title, description } = entry.data;
 
 const posts = await getPostsByCategory(slug);
+
+const breadcrumbs: Crumb[] = [
+  { name: 'Journal', url: '/blog/' },
+  { name: title, url: `/blog/category/${slug}/` },
+];
 ---
 
 <JournalLayout title={`${title} — The Engineering Journal`} description={description}>
+  <StructuredData slot="head" breadcrumbs={breadcrumbs} />
+
   <section class="category-hero">
     <div class="site-container">
       <a class="hero-back" href="/blog/">

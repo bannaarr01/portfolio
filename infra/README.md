@@ -253,36 +253,40 @@ blocking theme-init script in `<head>` has to be inline and synchronous or the
 page paints in the wrong theme first, and hashing it is what keeps the rest of
 `script-src` meaningful.
 
-The hash is a variable, `csp_script_hashes`, empty until group 09 supplies it.
-While it is empty the theme script is blocked and the site flashes — which is
-the intended failure mode, because it is visible on staging.
+The hashes live in `csp_script_hashes`, a list. While it is empty every inline
+script is blocked — which is the intended failure mode, because it is visible
+on staging.
 
-To compute it from the built HTML, hash the script's **exact** text content:
-everything between `<script>` and `</script>`, with no surrounding whitespace
-trimmed or added.
+**It is a list, not a single hash.** This was written expecting one entry, the
+theme-init snippet. The built site has seven: Astro inlines each island's
+bundled JavaScript straight into the HTML rather than emitting a file for it,
+and different routes carry different ones — the drifting background only on
+`/`, the table-of-contents only on articles, the requested-path readout only on
+`/404`. Pinning the theme hash alone is the worst available outcome: the theme
+applies, the page looks correct, and the header navigation, theme toggle,
+animated background, scroll reveals and article TOC are all silently blocked.
+
+Generate them from the build rather than by hand:
 
 ```bash
-node -e '
-  const fs = require("fs");
-  const html = fs.readFileSync("site/dist/index.html", "utf8");
-  const m = html.match(/<script>([\s\S]*?)<\/script>/);
-  if (!m) throw new Error("no inline script found");
-  const hash = require("crypto").createHash("sha256").update(m[1]).digest("base64");
-  console.log("sha256-" + hash);
-'
+cd site && npm run build && cd ..
+node scripts/csp-hashes.mjs            # inspect: hash, size, which routes use it
+node scripts/csp-hashes.mjs --write    # rewrite csp_script_hashes in both tfvars
 ```
 
-Put the result in both `envs/staging/terraform.tfvars` and
-`envs/prod/terraform.tfvars`:
+The hashes are content-derived, so any change to any client-side script
+invalidates one. `node scripts/csp-hashes.mjs --check` runs in `site-ci` after
+the build and fails the PR when the pinned list no longer matches the built
+HTML — a byte of difference otherwise produces a silent block that no
+server-side check can see. The `content_security_policy` output also surfaces
+the assembled header in `terraform plan`, so a mismatch is reviewable before
+apply rather than in a browser console after it.
 
-```hcl
-csp_script_hashes = ["sha256-Base64Base64Base64Base64Base64Base64Base64="]
-```
-
-A byte of difference produces a silent block, so pair it with a test that
-asserts the built HTML still hashes to the pinned value. The `content_security_policy`
-output exists so a mismatch is visible in the plan rather than in a browser
-console after deploy.
+> If the inline-script set ever grows faster than this is worth maintaining,
+> the durable alternative is Astro's own `security.csp`, which emits a
+> per-page `<meta http-equiv>` with hashes it computes itself. The CloudFront
+> policy would then stop setting `script-src` and keep the directives that
+> cannot be expressed in a meta tag — `frame-ancestors` above all.
 
 ---
 

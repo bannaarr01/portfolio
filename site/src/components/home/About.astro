@@ -28,12 +28,21 @@ const { heading, content, stats } = Astro.props;
 
     <dl class="stats">
       {
+        /*
+          `Reveal` renders the card itself rather than wrapping it. Two nested
+          divs between <dl> and its <dt>/<dd> breaks the definition-list
+          grouping rule: at most one wrapper element is allowed there, and
+          axe (so Lighthouse) fails both `definition-list` and `dlitem` on it.
+
+          Term before description, too — <dt> then <dd> is the required order.
+          `.stat` reverses them visually so the figure still reads above its
+          label, which also gives screen readers the more sensible
+          "Years Experience: 4+" rather than "4+: Years Experience".
+        */
         stats.map((stat, i) => (
-          <Reveal delay={i * 60}>
-            <div class="stat h-card">
-              <dd>{stat.value}</dd>
-              <dt>{stat.label}</dt>
-            </div>
+          <Reveal as="div" class="stat h-card" delay={i * 60}>
+            <dt>{stat.label}</dt>
+            <dd>{stat.value}</dd>
           </Reveal>
         ))
       }
@@ -69,15 +78,17 @@ const { heading, content, stats } = Astro.props;
     margin: 0;
   }
 
-  /* Reveal wraps each cell; the card fills it so the 2×2 stays even. */
+  /* Reveal renders the card itself; it fills the cell so the 2×2 stays even. */
   .stats > :global(*) {
     height: 100%;
   }
 
+  /* column-reverse, because the DOM order is <dt> then <dd> (required for a
+     valid definition list) while the figure has to read above its label. */
   .stat {
     display: flex;
     height: 100%;
-    flex-direction: column;
+    flex-direction: column-reverse;
     justify-content: center;
     padding: 24px 22px;
   }

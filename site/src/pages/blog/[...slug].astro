@@ -21,7 +21,9 @@ import AuthorBox from '../../components/article/AuthorBox.astro';
 import SeriesNav from '../../components/article/SeriesNav.astro';
 import RelatedGrid from '../../components/article/RelatedGrid.astro';
 import Icon from '../../components/ui/Icon.astro';
+import StructuredData, { type Crumb } from '../../components/seo/StructuredData.astro';
 import { SITE_OWNER } from '../../components/layout/nav';
+import { profile } from '../../data/profile';
 import type { Post } from '../../types/content';
 
 import {
@@ -37,15 +39,14 @@ import '../../styles/prose.css';
 /**
  * Author identity.
  *
- * The name comes from `SITE_OWNER`, which is the established single source on
- * develop — CoverArt, FeatureStory, both footers and Header all read it from
- * `components/layout/nav`. There is no `src/data/` on develop yet, so the role
- * and bio sit here until group 07 lands a data module to own them.
+ * The name comes from `SITE_OWNER`, which is the established single source —
+ * CoverArt, FeatureStory, both footers and Header all read it from
+ * `components/layout/nav`. Role and bio were hardcoded here while group 07 was
+ * still in flight; they now read from `data/profile.ts` so the byline cannot
+ * drift from the homepage.
  */
-const AUTHOR_ROLE = 'Backend & Cloud Software Engineer';
-const AUTHOR_BIO =
-  'Backend and cloud software engineer writing about reliable systems, ' +
-  'infrastructure automation, and engineering practice.';
+const AUTHOR_ROLE = profile.role;
+const AUTHOR_BIO = profile.tagline;
 
 // "Boluwaji Joshua Adedigba" -> "BJA", matching the initials in ui/Logo.
 const AUTHOR_INITIALS = SITE_OWNER.split(/\s+/)
@@ -87,6 +88,18 @@ const related = await getRelatedPosts(post, 3);
 const href = (entry: Post) => `/blog/${entry.id}/`;
 
 const author = { name: SITE_OWNER, role: AUTHOR_ROLE, initials: AUTHOR_INITIALS };
+
+const articleUrl = `/blog/${post.id}/`;
+
+// Journal → Category → this article. The series, where there is one, is a
+// reading order rather than a containment hierarchy, so it is deliberately not
+// a crumb — putting it here would claim /blog/<slug>/ lives under the series
+// URL, which it does not.
+const breadcrumbs: Crumb[] = [
+  { name: 'Journal', url: '/blog/' },
+  { name: categoryTitle, url: categoryHref },
+  { name: post.data.title, url: articleUrl },
+];
 ---
 
 <ArticleLayout
@@ -94,7 +107,23 @@ const author = { name: SITE_OWNER, role: AUTHOR_ROLE, initials: AUTHOR_INITIALS 
   description={post.data.description}
   ogImage={ogImageUrl(post.id)}
   headings={headings}
+  type="article"
 >
+  <StructuredData
+    slot="head"
+    article={{
+      title: post.data.title,
+      description: post.data.description,
+      url: articleUrl,
+      image: ogImageUrl(post.id),
+      publishDate: post.data.publishDate,
+      updatedDate: post.data.updatedDate,
+      section: categoryTitle,
+      tags: post.data.tags,
+    }}
+    breadcrumbs={breadcrumbs}
+  />
+
   <ArticleHero
     slot="hero"
     title={post.data.title}

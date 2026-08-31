@@ -17,28 +17,33 @@ import type { CaseStudy } from '../types/portfolio';
 
 export const caseStudies = [
   {
-    title: 'TODO: Case study title',
-    company: 'TODO: Employer or client',
-    summary: 'TODO: one sentence on what this system did and what you changed about it.',
+    title: 'IoT Cloud Cost Optimization',
+    company: 'Electrolux Home Appliance Sdn Bhd',
+    summary:
+      'Automated Azure IoT Hub capacity management and cloud provisioning to improve reliability and cost efficiency.',
     problem:
-      'TODO: the constraint or tradeoff that made this hard. Say what was actually at stake, not that "the system needed improvement".',
+      'Fixed IoT Hub capacity created a tradeoff between paying for unused headroom and risking service throttling during utilization spikes.',
     approach:
-      'TODO: what you built and the decision that mattered most. Name the technologies only where the choice was load-bearing.',
+      'Implemented utilization-driven SKU scaling, supported by Terraform-managed infrastructure, monitoring, and event-driven cloud integrations.',
     result:
-      'TODO: the outcome, with a number. Cost, latency, throughput, incident count, or headcount freed.',
+      'Reduced cloud infrastructure cost while preserving capacity and preventing service throttling.',
     architecture:
-      'TODO: one line describing the resulting shape, e.g. "Event-driven services behind an API gateway, with capacity driven by utilisation metrics."',
-    tech: ['TODO: Service', 'Terraform', 'Kafka', 'TODO: Broker', 'TODO: Monitoring'],
+      'Utilization-driven IoT capacity automation supported by Infrastructure as Code and event-driven integration.',
+    tech: ['Azure IoT Hub', 'Terraform', 'Kafka', 'Azure Event Hubs', 'Azure Monitor'],
   },
   {
-    title: 'TODO: Second case study title',
-    company: 'TODO: Employer or client',
-    summary: 'TODO: one sentence on the system and your role in changing it.',
-    problem: 'TODO: what was failing, degrading, or costing too much, and who felt it.',
-    approach: 'TODO: the work you did, in the order it mattered.',
+    title: 'HR Systems Modernization (ERA/JESSICA)',
+    company: 'Telekom Research & Development Sdn Bhd',
+    summary:
+      'Enhanced and refactored a legacy HR backend to improve scalability, maintainability, security, and production observability.',
+    problem:
+      'A legacy HR backend needed greater throughput, maintainability, security, and production visibility to support a growing internal user base.',
+    approach:
+      'Refactored backend services, introduced asynchronous RabbitMQ workflows, strengthened authentication, and added Prometheus and Grafana observability.',
     result:
-      'TODO: the measurable outcome. If you have a before-and-after pair, use both numbers.',
-    architecture: 'TODO: one line describing the resulting shape.',
+      'Increased throughput 3×, scaling the platform from 1,000 to more than 3,000 concurrent users.',
+    architecture:
+      'Event-driven microservices with a centralized API gateway and RabbitMQ for inter-service communication.',
     tech: ['NestJS', 'TypeScript', 'PostgreSQL', 'RabbitMQ', 'Prometheus'],
   },
 ] satisfies CaseStudy[];

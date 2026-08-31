@@ -68,7 +68,11 @@ const { index, lead, accent, align = 'left' } = Astro.props;
     background: linear-gradient(96deg, var(--accent-strong), var(--accent-2));
     -webkit-background-clip: text;
     background-clip: text;
-    color: transparent;
+    /* Real colour + -webkit-text-fill-color, never `color: transparent` —
+       transparent text is not an LCP candidate, and it leaves no fallback
+       where background-clip:text is unsupported. See Hero.astro. */
+    color: var(--accent-strong);
+    -webkit-text-fill-color: transparent;
   }
 
   .rule {

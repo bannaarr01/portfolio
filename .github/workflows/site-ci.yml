@@ -53,6 +53,23 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Astro inlines every island's JS into the HTML, so `script-src` pins
+      # several content-derived hashes, not just the theme-init one. Any edit
+      # to a client script changes a hash, and a stale pin blocks that script
+      # in the browser with nothing failing server-side. Catching it here is
+      # the difference between a red check and a silently broken page.
+      - name: CSP hash drift
+        working-directory: .
+        run: node scripts/csp-hashes.mjs --check
+
+      # Lighthouse measures transfer size as served, and `astro preview` serves
+      # uncompressed — so its byte budgets are a trend, not a gate (see the note
+      # in lighthouserc.json). This measures the built output at gzip level 9,
+      # per route, against the actual PLAN.md §8 numbers.
+      - name: Route weight budgets
+        working-directory: .
+        run: node scripts/budgets.mjs --check
+
       # Internal links only. External links break for reasons outside this
       # repo, and a CI job that fails because someone else's blog moved is a
       # job people learn to ignore.

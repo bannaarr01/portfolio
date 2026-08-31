@@ -27,46 +27,50 @@ export const projectsSubheading = 'Additional projects';
 
 export const projects = [
   {
-    title: 'TODO: Project one',
-    company: 'TODO: Employer or client',
-    summary: 'TODO: one sentence on what this project was and what you did on it.',
+    title: 'Azure-to-AWS Platform Migration',
+    company: 'Electrolux Home Appliance Sdn Bhd',
+    summary:
+      'Modernized enterprise backend infrastructure by participating in the migration of services from Microsoft Azure to AWS.',
     highlights: [
-      'TODO: the first thing worth knowing about it.',
-      'TODO: the second.',
-      'TODO: the third.',
+      'Moved enterprise backend services toward AWS cloud infrastructure',
+      'Improved cloud scalability',
+      'Simplified long-term infrastructure management',
     ],
     tech: ['AWS', 'Azure', 'Go', 'Terraform', 'Kubernetes'],
   },
   {
-    title: 'TODO: Project two',
-    company: 'TODO: Employer or client',
-    summary: 'TODO: one sentence on scope and your contribution.',
+    title: 'Cloud-Native Go Microservices',
+    company: 'Electrolux Home Appliance Sdn Bhd',
+    summary:
+      'Re-engineered existing backend microservices in Go as part of a broader enterprise platform modernization effort.',
     highlights: [
-      'TODO: a performance or resource result.',
-      'TODO: a maintainability or design result.',
-      'TODO: an operational result.',
+      'Improved backend performance and resource utilization',
+      'Improved service maintainability',
+      'Optimized services through monitoring and architectural improvements',
     ],
     tech: ['Go', 'Python', 'Java', 'Kafka', 'Kubernetes', 'Docker'],
   },
   {
-    title: 'TODO: Project three',
-    company: 'TODO: Employer or client',
-    summary: 'TODO: one sentence on what the platform did.',
+    title: 'Smart Forestry Platform',
+    company: 'Telekom Research & Development Sdn Bhd',
+    summary:
+      'A comprehensive monitoring platform for wildlife and environmental metrics using IoT and big data pipelines.',
     highlights: [
-      'TODO: the read or API surface you built.',
-      'TODO: the pipeline or automation you designed.',
-      'TODO: how data moved end to end.',
+      'Built real-time dashboard APIs for animal population and environmental metrics',
+      'Automated SFTP data retrieval and processing with Apache Airflow',
+      'Designed DAGs from data extraction through centralized storage',
     ],
     tech: ['Node.js', 'Apache Airflow', 'SFTP', 'PostgreSQL', 'Grafana'],
   },
   {
-    title: 'TODO: Project four',
-    company: 'TODO: Employer or client',
-    summary: 'TODO: one sentence on the system and its users.',
+    title: 'SWIMS 2.0 IoT Monitoring',
+    company: 'Telekom Research & Development Sdn Bhd',
+    summary:
+      'High-performance water quality monitoring system with robust authentication and real-time analytics.',
     highlights: [
-      'TODO: the auth or access-control work.',
-      'TODO: the real-time or analytics surface.',
-      'TODO: the historical or reporting surface.',
+      'Implemented Keycloak authentication and Role-Based Access Control',
+      'Developed APIs for real-time water quality visualization',
+      'Supported historical water quality data analysis',
     ],
     tech: ['NestJS', 'Keycloak', 'IoT', 'Real-time Analytics', 'RBAC'],
   },

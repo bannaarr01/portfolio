@@ -5,13 +5,29 @@ import sitemap from '@astrojs/sitemap';
 
 import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
 
+/**
+ * The canonical origin.
+ *
+ * Every absolute URL the site emits derives from this — `<link rel=canonical>`,
+ * `og:image`, `og:url`, RSS `<link>`s, and every entry in the sitemap. Building
+ * with the wrong value produces a site that looks correct locally and is
+ * wrong in every crawler and every share card.
+ *
+ * The default is the production host recorded in README.md and AGENTS.md.
+ * `SITE_URL` overrides it, which is what staging builds do — a staging build
+ * carrying production canonicals would ask Google to index the wrong origin.
+ *
+ * Set `SITE_URL` in the deploy workflow per environment. It must agree with
+ * the host the Terraform stack actually serves for that environment.
+ */
+const PRODUCTION_SITE = 'https://joshua.naijora.com';
+const SITE_URL = process.env.SITE_URL?.trim() || PRODUCTION_SITE;
+
 // Owned by group 00. Every integration the whole build needs is registered
 // here up front so no Wave 2 group ever has to touch this file.
 // https://astro.build/config
 export default defineConfig({
-  // Placeholder. Group 09 replaces this with the real domain at integration.
-  // It must be absolute — sitemap, RSS, and absolute OG image URLs depend on it.
-  site: 'https://example.com',
+  site: SITE_URL,
 
   output: 'static',
 

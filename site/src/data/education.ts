@@ -37,44 +37,54 @@ export const certificationsCard = {
 
 export const degrees = [
   {
-    period: 'TODO: 04/2018 – 04/2022',
-    location: 'TODO: City, Country',
-    qualification: 'TODO: Bachelor of ... (Honours)',
-    institution: 'TODO: University name',
-    notes: ['TODO: GPA, classification, or thesis title'],
+    period: '04/2018 – 04/2022',
+    location: 'Sepang, Malaysia',
+    qualification: 'Bachelor of Engineering in Software Engineering (Honours)',
+    institution: 'Xiamen University Malaysia',
+    notes: ['Cumulative GPA: 3.05/4.00'],
   },
   {
-    period: 'TODO: 01/2012 – 12/2017',
-    location: 'TODO: City, Country',
-    qualification: 'TODO: Secondary qualification',
-    institution: 'TODO: School name',
+    period: '01/2012 – 12/2017',
+    location: 'Kuala Lumpur, Malaysia',
+    qualification: 'Malaysia Independent Chinese Secondary School Unified Exam (UEC)',
+    institution: 'Tsun Jin High School',
     notes: [
-      'TODO: results summary',
-      'TODO: a leadership or club role',
-      'TODO: anything else worth one line',
+      'UEC results: 2As and 4Bs',
+      'Volleyball Club Team Leader',
+      'Student Representative for Malay Subject',
     ],
   },
 ] satisfies Degree[];
 
+/**
+ * Titles and issuers are real; the verification links are not yet known — the
+ * mockup left every one of them as `#`.
+ *
+ * An empty `url` renders as plain text rather than a link. That is deliberate:
+ * a credential row that looks clickable and goes nowhere is worse than one
+ * that does not look clickable, and a `href="#"` on a verification claim
+ * invites exactly the click it cannot honour. Paste the Credly or issuer URL
+ * in and the row becomes a link with no other change.
+ */
 export const certifications = [
   {
-    title: 'TODO: Certification name',
-    issuer: 'TODO: Issuing body · Year',
-    url: 'TODO: https://verification-url',
+    title: 'Node.js Application Developer',
+    issuer: 'OpenJS Foundation · 2024',
+    url: '',
   },
   {
-    title: 'TODO: Certification name',
-    issuer: 'TODO: Issuing body · Year',
-    url: 'TODO: https://verification-url',
+    title: 'AWS Digital Badge Portfolio',
+    issuer: 'AWS / Credly',
+    url: '',
   },
   {
-    title: 'TODO: Certification name',
-    issuer: 'TODO: Issuing body · Year',
-    url: 'TODO: https://verification-url',
+    title: 'Certified Associate in Back-end Development',
+    issuer: 'TalentLabs',
+    url: '',
   },
   {
-    title: 'TODO: Certification name',
-    issuer: 'TODO: Issuing body · Year',
-    url: 'TODO: https://verification-url',
+    title: 'Certified Associate in Front-end Development',
+    issuer: 'TalentLabs',
+    url: '',
   },
 ] satisfies Certification[];

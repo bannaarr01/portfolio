@@ -10,8 +10,8 @@
 import type { Stat } from '../types/portfolio';
 
 export const stats = [
-  { label: 'Years Experience', value: 'TODO: 4+' },
-  { label: 'Companies', value: 'TODO: 3' },
-  { label: 'Featured Projects', value: 'TODO: 6' },
-  { label: 'Technologies', value: 'TODO: 25+' },
+  { label: 'Years Experience', value: '4+' },
+  { label: 'Companies', value: '3' },
+  { label: 'Featured Projects', value: '6' },
+  { label: 'Technologies', value: '25+' },
 ] satisfies Stat[];

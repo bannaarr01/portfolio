@@ -83,7 +83,7 @@ export const skillGroups = [
   {
     title: 'Spoken Languages',
     icon: 'languages',
-    items: ['TODO: English', 'TODO: second language', 'TODO: third language'],
+    items: ['English', 'Chinese', 'Malay'],
   },
   {
     title: 'Working Style',

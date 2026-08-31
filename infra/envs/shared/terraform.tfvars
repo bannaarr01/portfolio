@@ -1,10 +1,10 @@
 project = "portfolio"
 region  = "ap-southeast-1"
 
-# TODO(owner): the one value the whole stack needs and nobody can infer.
-# Set this to the registered apex domain before the first apply. Everything
-# else — certificate names, aliases, staging subdomain — is derived from it.
-domain_name = "example.dev"
+# The registered apex. Everything else — certificate names, aliases, the
+# staging subdomain — is derived from it. A wildcard cert for *.naijora.com
+# is already issued; see README.md and AGENTS.md.
+domain_name = "naijora.com"
 
 github_owner = "bannaarr01"
 github_repo  = "portfolio"

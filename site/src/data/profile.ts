@@ -51,22 +51,28 @@ export const profile = {
   tagline: 'Backend and cloud systems built for scale.',
   availability: 'Available for opportunities',
 
-  lead: 'TODO: one sentence on what you build and what you optimise for. For reference, the mockup used: "I design scalable Go microservices and cloud-native platforms across AWS and Azure, with a focus on event-driven systems, infrastructure automation, reliability, and cost optimization."',
+  lead: 'I design scalable Go microservices and cloud-native platforms across AWS and Azure, with a focus on event-driven systems, infrastructure automation, reliability, and cost optimization.',
 
   about: [
-    'TODO: opening paragraph. Who you are and how long you have been doing this.',
-    'TODO: second paragraph. The technical ground you cover.',
-    'TODO: third paragraph. One or two concrete recent results, with numbers.',
+    'I’m a backend and cloud software engineer with more than four years of experience modernizing enterprise systems across cloud platforms, HR technology, environmental monitoring, IoT, and ERP.',
+    'My work spans Azure-to-AWS migration, Go microservice re-engineering, Terraform automation, Kafka-based integration, API architecture, observability, and Kubernetes deployments.',
+    'Recent work includes automating Azure IoT Hub capacity to control cost and prevent throttling. Earlier, I increased HR-platform throughput 3× to support more than 3,000 concurrent users and led a first Go microservice initiative.',
   ],
 
-  location: 'TODO: City, Country',
+  location: 'Malaysia',
   email: 'joshboluwaji6@gmail.com',
   phone: '+601128557317',
   resumeUrl: '/resume.pdf',
 
+  /**
+   * The mockup left every social `href` as `#`, so the profile URLs are the one
+   * thing here that is genuinely not known. An empty `href` is rendered as a
+   * disabled control rather than a dead link — see `Contact.astro`. Fill these
+   * in and the buttons activate with no other change.
+   */
   socials: [
-    { label: 'GitHub', href: 'TODO: https://github.com/<you>', icon: 'github' },
-    { label: 'LinkedIn', href: 'TODO: https://linkedin.com/in/<you>', icon: 'linkedin' },
+    { label: 'GitHub', href: '', icon: 'github' },
+    { label: 'LinkedIn', href: '', icon: 'linkedin' },
     { label: 'Email', href: 'mailto:joshboluwaji6@gmail.com', icon: 'mail' },
   ],
 } satisfies Profile;

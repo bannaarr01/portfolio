@@ -26,26 +26,26 @@ import type { Testimonial } from '../types/portfolio';
 
 /** The intro row above the quote cards, with its outbound link. */
 export const testimonialsIntro = {
-  lead: 'TODO: one sentence framing who these people are and how you worked with them.',
+  lead: 'Selected recommendations from people who worked with me directly at Telekom R&D.',
   linkLabel: 'View LinkedIn profile',
-  linkHref: 'TODO: https://linkedin.com/in/<you>',
+  linkHref: '',
 } satisfies TestimonialsIntro;
 
-export const testimonials = [
-  {
-    quote:
-      'TODO: replace with a real quote you have permission to publish. Roughly this length works well in the card: two or three clauses about how the person actually works, ending on something concrete.',
-    name: 'TODO: Full Name',
-    role: 'TODO: Their role · Company',
-    relationship: 'TODO: how you worked together',
-    initials: 'TD',
-  },
-  {
-    quote:
-      'TODO: a second real quote. Shorter is fine, and the contrast between the two card heights is deliberate.',
-    name: 'TODO: Full Name',
-    role: 'TODO: Their role · Company',
-    relationship: 'TODO: how you worked together',
-    initials: 'TD',
-  },
-] satisfies Testimonial[];
+/**
+ * ── DELIBERATELY EMPTY ───────────────────────────────────────────────────
+ * Every other module on this page was filled from the mockup during
+ * integration. This one was not, and the omission is the point.
+ *
+ * A testimonial puts words in a named person's mouth on a public page. The
+ * mockup's two quotes are attributed to real individuals, and nothing in this
+ * repository establishes that they were given for publication — one of them is
+ * even attributed to the site owner, which is a mockup artefact rather than a
+ * recommendation. Shipping either would be a claim about someone else that
+ * cannot be verified from here.
+ *
+ * `Testimonials.astro` renders nothing for an empty array, so the section
+ * simply does not appear until there is something real to put in it. Paste in
+ * quotes you have permission to publish, with `initials` as two characters,
+ * and the section returns.
+ */
+export const testimonials = [] satisfies Testimonial[];

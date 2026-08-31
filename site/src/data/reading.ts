@@ -22,7 +22,7 @@ export const reading = [
 
 /** The paragraph above the list. */
 export const readingIntro =
-  'TODO: two or three sentences on what you study outside the day job and why. The mockup framed it as sharpening engineering judgement, with system design as the main thread and emerging technology as the secondary one.';
+  'Reading is part of how I sharpen my engineering judgment. I actively study system design — how services remain available, observable, adaptable, and cost-efficient as traffic, data, and teams grow. I also explore AI, blockchain, Rust, quantum computing, and other emerging technologies that could shape what we build next.';
 
 /** The pull-quote that closes the section. */
 export const workingPrinciple =

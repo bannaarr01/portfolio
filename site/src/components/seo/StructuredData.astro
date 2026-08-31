@@ -10,11 +10,12 @@
  * blocks and `author` can reference the Person node by `@id` instead of
  * restating it.
  *
- * `jobTitle`, `sameAs`, and `email` are omitted until group 07 lands
- * `src/data/*` — an invented social profile is worse than an absent one, and
- * Google treats all three as optional. See the group 06 report.
+ * `jobTitle`, `email`, and `sameAs` now read from `data/profile.ts` (wired at
+ * integration, once group 07 landed). `sameAs` still self-censors: it only
+ * emits profile URLs that are actually set.
  */
 import { SITE_OWNER } from '../layout/nav';
+import { profile } from '../../data/profile';
 import { OG_DEFAULT } from './meta';
 
 export interface Crumb {
@@ -62,6 +63,13 @@ function headline(value: string, limit = 110): string {
 const graph: Record<string, unknown>[] = [];
 
 if (person) {
+  // `sameAs` only carries profiles that actually exist. An empty array, or one
+  // holding a placeholder URL, is worse than the absent property: Google treats
+  // `sameAs` as an identity claim and a broken entry devalues the whole node.
+  const sameAs = profile.socials
+    .filter((social) => social.href !== '' && !social.href.startsWith('mailto:'))
+    .map((social) => social.href);
+
   graph.push({
     '@type': 'Person',
     '@id': PERSON_ID,
@@ -70,6 +78,11 @@ if (person) {
     // A raster URL, not the SVG mark: validators are inconsistent about SVG in
     // structured data and the generated card costs nothing to point at.
     image: abs(OG_DEFAULT),
+    jobTitle: profile.role,
+    description: profile.tagline,
+    email: `mailto:${profile.email}`,
+    ...(profile.location ? { address: profile.location } : {}),
+    ...(sameAs.length ? { sameAs } : {}),
   });
 }
 

@@ -87,7 +87,11 @@ const year = new Date().getFullYear();
     background: linear-gradient(100deg, var(--accent-strong), var(--accent-2));
     -webkit-background-clip: text;
     background-clip: text;
-    color: transparent;
+    /* Real colour + -webkit-text-fill-color, never `color: transparent` —
+       transparent text is not an LCP candidate, and it leaves no fallback
+       where background-clip:text is unsupported. See Hero.astro. */
+    color: var(--accent-strong);
+    -webkit-text-fill-color: transparent;
   }
 
   .standfirst {
@@ -122,11 +126,13 @@ const year = new Date().getFullYear();
     gap: 7px;
   }
 
+  /* --muted, not --soft: 12.5px is body scale, and --soft (~4.0:1) is only
+     cleared for large or bold meta text (PLAN.md §4.1). */
   .journal-footer-base {
     padding-top: var(--space-5);
     font-size: 12.5px;
     font-weight: 600;
-    color: var(--soft);
+    color: var(--muted);
   }
 
   @media (max-width: 899px) {

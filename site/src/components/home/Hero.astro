@@ -143,7 +143,23 @@ const { content } = Astro.props;
     background: linear-gradient(96deg, var(--accent-strong), var(--accent-2));
     -webkit-background-clip: text;
     background-clip: text;
-    color: transparent;
+    /* NOT `color: transparent`.
+
+       Chrome excludes fully transparent text from Largest Contentful Paint
+       candidacy. This is the largest text above the fold, and at Lighthouse's
+       412px mobile viewport it was the *only* candidate — so the homepage
+       reported NO_LCP, which nulls LCP, TBT and TTI and scores performance 0.
+       A real browser at desktop width found other text and looked fine, which
+       is why this only ever showed up in CI.
+
+       `-webkit-text-fill-color` paints the identical result while leaving
+       `color` a real value, so the element stays an LCP candidate. It also
+       doubles as the fallback wherever `background-clip: text` is unsupported,
+       which `color: transparent` never was — there the text was invisible.
+
+       Same reasoning applies to every gradient-text rule in this project. */
+    color: var(--accent-strong);
+    -webkit-text-fill-color: transparent;
   }
 
   /* ------------------------------------------------------------ role -- */
@@ -254,9 +270,27 @@ const { content } = Astro.props;
     }
   }
 
+  /*
+    Transform only — deliberately no `opacity: 0` start.
+
+    Chrome will not treat an element as a Largest Contentful Paint candidate if
+    it is fully transparent when first painted, and it does not reconsider that
+    element once the fade finishes. Every child of `.inner` shares this
+    animation, so fading them in left the homepage with no LCP candidate at all
+    above the fold: Lighthouse reported NO_LCP, which nulls LCP, TBT and TTI and
+    collapses the performance score to 0.
+
+    It only ever reproduced at narrow viewports, because at desktop widths an
+    element outside the stagger happened to qualify — which is why a real
+    browser at desktop size looked perfectly healthy.
+
+    Raising the floor to a small non-zero opacity would silence the metric
+    without fixing anything, so: the entrance is a rise, not a fade. The text is
+    legible from the first frame, which is what the metric is trying to measure
+    in the first place.
+  */
   @keyframes rise {
     from {
-      opacity: 0;
       transform: translateY(14px);
     }
   }
