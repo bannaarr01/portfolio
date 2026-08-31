@@ -1,0 +1,56 @@
+{
+  "//": [
+    "Lighthouse CI budgets, enforced on every PR touching site/**.",
+    "",
+    "Thresholds come from grouped/plans/PLAN.md §8, which supersedes",
+    "astro.md §7: performance 95 not 98, and LCP 1.8s not 1.5s, to pay for",
+    "the animated background.",
+    "",
+    "Paths are relative to site/, because that is where the workflow runs lhci.",
+    "",
+    "Byte budgets are warnings, not errors, on purpose. Lighthouse measures",
+    "transfer size as served and `astro preview` serves uncompressed, so these",
+    "are raw bytes against a gzipped budget — useful as a trend, wrong as a",
+    "gate. The real gz budget (9 KB homepage JS) belongs with whoever owns the",
+    "islands, measured against the built output rather than over the wire.",
+    "",
+    "TODO(group 09): add one real article URL. PLAN.md §11 asks for /, /blog/",
+    "and an article; the first two are knowable now, the third depends on",
+    "content slugs this group does not own.",
+    "",
+    "Comments live only in this top-level key. LHCI validates the contents of",
+    "`assertions` against real audit ids, so a `//` key in there is an error,",
+    "not a comment."
+  ],
+  "ci": {
+    "collect": {
+      "startServerCommand": "npx astro preview --port 4173 --host 127.0.0.1",
+      "startServerReadyPattern": "4173",
+      "startServerReadyTimeout": 60000,
+      "url": ["http://127.0.0.1:4173/", "http://127.0.0.1:4173/blog/"],
+      "numberOfRuns": 3,
+      "settings": {
+        "onlyCategories": ["performance", "accessibility", "best-practices", "seo"]
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["error", { "minScore": 0.95 }],
+        "categories:accessibility": ["error", { "minScore": 1 }],
+        "categories:best-practices": ["error", { "minScore": 1 }],
+        "categories:seo": ["error", { "minScore": 1 }],
+
+        "largest-contentful-paint": ["error", { "maxNumericValue": 1800 }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.05 }],
+        "total-blocking-time": ["error", { "maxNumericValue": 200 }],
+
+        "resource-summary:script:size": ["warn", { "maxNumericValue": 30000 }],
+        "resource-summary:stylesheet:size": ["warn", { "maxNumericValue": 60000 }]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}

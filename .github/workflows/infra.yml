@@ -1,0 +1,366 @@
+##############################################################################
+# infra — static checks, then plan on PR, then apply behind approval.
+#
+# Three jobs, deliberately layered by what credentials they need:
+#
+#   checks  no AWS access at all. fmt, validate, tflint, trivy, unit test.
+#   plan    read-mostly AWS access via the terraform role, gated by the
+#           `infra-plan` GitHub Environment so the OIDC `sub` claim is
+#           repo:<owner>/<repo>:environment:infra-plan.
+#   apply   same role, but via `infra-prod`, which carries required reviewers.
+#
+# Because plan and apply are distinguished by GitHub Environment rather than
+# by branch, the trust policy lists two exact subjects and no wildcard. Fork
+# PRs cannot reach either: this triggers on `pull_request`, not
+# `pull_request_target`, so a fork's job gets no id-token.
+##############################################################################
+
+name: infra
+
+on:
+  pull_request:
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infra-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TF_VERSION: '1.15.8'
+  TF_IN_AUTOMATION: 'true'
+  # Every apply happens through the terraform role, whose policy scopes S3 and
+  # IAM by this prefix.
+  TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+
+jobs:
+  # ---------------------------------------------------------------------------
+  checks:
+    name: static checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: terraform fmt
+        working-directory: infra
+        run: terraform fmt -recursive -check -diff
+
+      # The viewer-request function is the only imperative code in the stack
+      # and sits on every request. Debugging it in place costs a 15-minute
+      # distribution deploy per attempt, so it is tested here instead.
+      - name: CloudFront Function unit test
+        run: node infra/modules/static-site/functions/directory-index.test.js
+
+      # -backend=false: validation needs no state and therefore no credentials.
+      - name: terraform validate
+        working-directory: infra
+        run: |
+          set -euo pipefail
+          for env_dir in envs/shared envs/staging envs/prod; do
+            echo "::group::validate $env_dir"
+            terraform -chdir="$env_dir" init -backend=false -input=false
+            terraform -chdir="$env_dir" validate
+            echo "::endgroup::"
+          done
+
+      - name: Assert no expensive resources
+        working-directory: infra
+        run: |
+          set -euo pipefail
+          # astro.md §1: no VPC, no NAT, no ALB, no RDS, no EC2. The IAM role
+          # denies these services outright, but catching it at review time is
+          # cheaper than catching it at apply time.
+          if grep -rnE '\baws_(vpc|nat_gateway|lb|alb|db_instance|instance|ecs_service|eks_cluster|elasticache_cluster)\b' \
+               --include='*.tf' .; then
+            echo "::error::found a resource the cost model forbids — see astro.md §1"
+            exit 1
+          fi
+          # State locking is native since Terraform 1.10; a lock table here
+          # would be a regression, not a safety net.
+          #
+          # Matched narrowly on purpose. A bare `grep dynamodb` also hits the
+          # `dynamodb:*` entry in the terraform role's DenyExpensiveServices
+          # statement — which exists precisely to stop a lock table being
+          # created — so the broad grep would fail the build over the guardrail
+          # rather than over a violation.
+          if grep -rnE 'aws_dynamodb_table|dynamodb_table[[:space:]]*=' --include='*.tf' .; then
+            echo "::error::DynamoDB lock table found — the S3 backend uses use_lockfile instead"
+            exit 1
+          fi
+
+          # And the backends must actually opt into native locking.
+          for backend in envs/*/backend.tf; do
+            grep -q 'use_lockfile[[:space:]]*=[[:space:]]*true' "$backend" || {
+              echo "::error::$backend does not set use_lockfile = true"
+              exit 1
+            }
+          done
+
+          echo "clean: no expensive resources, native state locking"
+
+      - uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      # TFLINT_CONFIG_FILE is set explicitly because `--recursive` chdirs into
+      # each directory and then looks for `.tflint.hcl` relative to it. Without
+      # this, every module and environment below infra/ silently runs with only
+      # the bundled terraform ruleset and no AWS rules at all — a pass that
+      # means nothing.
+      - name: tflint
+        working-directory: infra
+        env:
+          TFLINT_CONFIG_FILE: ${{ github.workspace }}/infra/.tflint.hcl
+        run: |
+          set -euo pipefail
+          tflint --init
+          tflint --recursive --format compact
+
+      # Config scanning. Every justified exception is an inline
+      # `#trivy:ignore:<ID>` comment above the resource it applies to, so
+      # `Failures: 0` means each finding was read and answered — not that the
+      # severity threshold was raised above it. MEDIUM is in the gate for the
+      # same reason: CloudFront access logging is a MEDIUM finding and is off
+      # on purpose (§15), which should be recorded, not filtered.
+      - name: trivy config
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: infra
+          trivy-config: infra/trivy.yaml
+          severity: MEDIUM,HIGH,CRITICAL
+          exit-code: '1'
+
+  # ---------------------------------------------------------------------------
+  plan:
+    name: plan (${{ matrix.env }})
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    environment: infra-plan
+
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write # to post the plan comment
+
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [shared, staging, prod]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_TERRAFORM_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: tf-plan-${{ matrix.env }}-${{ github.run_id }}
+
+      # The state bucket name is not committed — it embeds the account id — so
+      # it arrives as a repository variable and is applied as partial backend
+      # config here.
+      - name: terraform init
+        working-directory: infra/envs/${{ matrix.env }}
+        run: |
+          set -euo pipefail
+          terraform init -input=false \
+            -backend-config="bucket=${TF_STATE_BUCKET}"
+
+      - name: terraform plan
+        id: plan
+        working-directory: infra/envs/${{ matrix.env }}
+        run: |
+          set -euo pipefail
+          terraform plan -input=false -lock-timeout=5m -out=tfplan
+          terraform show -no-color tfplan > plan.txt
+
+      # `always()`, so a failed plan still leaves something readable in the
+      # summary — hence the guard: plan.txt does not exist if plan itself died.
+      - name: Render plan to step summary
+        if: always()
+        working-directory: infra/envs/${{ matrix.env }}
+        env:
+          TARGET_ENV: ${{ matrix.env }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### terraform plan — ${TARGET_ENV}"
+            echo
+            echo '```terraform'
+            if [ -f plan.txt ]; then
+              head -c 60000 plan.txt
+            else
+              echo '(plan produced no output — it failed before terraform show; see the job log)'
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Read from disk via fs rather than interpolating plan text into a shell
+      # or script body — plan output contains arbitrary strings.
+      - name: Post plan as PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          TARGET_ENV: ${{ matrix.env }}
+        with:
+          script: |
+            const fs = require('fs');
+            const targetEnv = process.env.TARGET_ENV;
+            const marker = `<!-- terraform-plan:${targetEnv} -->`;
+            const path = `infra/envs/${targetEnv}/plan.txt`;
+
+            let plan = 'plan did not produce output — see the job log';
+            try {
+              plan = fs.readFileSync(path, 'utf8');
+            } catch (err) {
+              core.warning(`no plan file at ${path}: ${err.message}`);
+            }
+
+            // GitHub caps a comment at 65536 characters.
+            const LIMIT = 55000;
+            const truncated = plan.length > LIMIT;
+            if (truncated) {
+              plan = plan.slice(0, LIMIT);
+            }
+
+            const body = [
+              marker,
+              `#### \`terraform plan\` — \`${targetEnv}\``,
+              '',
+              '<details><summary>Show plan</summary>',
+              '',
+              '```terraform',
+              plan,
+              '```',
+              '',
+              truncated ? '_Truncated. Full output is in the job log._' : '',
+              '</details>',
+            ].join('\n');
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number }
+            );
+            const existing = comments.find(
+              (c) => c.user.type === 'Bot' && c.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: existing.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number, body,
+              });
+            }
+
+      # Passed to apply so the applied plan is byte-identical to the reviewed
+      # one. Re-planning at apply time would let a console change slip in
+      # between approval and execution.
+      - name: Upload plan
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ matrix.env }}
+          path: infra/envs/${{ matrix.env }}/tfplan
+          retention-days: 5
+
+  # ---------------------------------------------------------------------------
+  apply:
+    name: apply (${{ matrix.env }})
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 45 # a CloudFront distribution takes 5–15 min on its own
+
+    # Configure this environment in GitHub with required reviewers and
+    # deployment branches limited to `main`. That gate is the only thing
+    # standing between a merged PR and a live infrastructure change.
+    environment: infra-prod
+
+    permissions:
+      contents: read
+      id-token: write
+
+    # Not a matrix in parallel: shared owns the hosted zone and the terraform
+    # role that the site environments depend on, so it must land first.
+    strategy:
+      fail-fast: true
+      max-parallel: 1
+      matrix:
+        env: [shared, staging, prod]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_TERRAFORM_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: tf-apply-${{ matrix.env }}-${{ github.run_id }}
+
+      - name: terraform init
+        working-directory: infra/envs/${{ matrix.env }}
+        run: |
+          set -euo pipefail
+          terraform init -input=false \
+            -backend-config="bucket=${TF_STATE_BUCKET}"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ matrix.env }}
+          path: infra/envs/${{ matrix.env }}
+
+      - name: terraform apply
+        working-directory: infra/envs/${{ matrix.env }}
+        run: |
+          set -euo pipefail
+          terraform apply -input=false -lock-timeout=5m -auto-approve tfplan
+
+      - name: Outputs to summary
+        if: always()
+        working-directory: infra/envs/${{ matrix.env }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### applied — ${{ matrix.env }}"
+            echo
+            echo '```json'
+            terraform output -json || echo '{}'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,34 @@
+# checkov configuration for infra/.
+#
+#   checkov -d infra --quiet --compact
+#
+# There is deliberately no `skip-check` list here. Every exception is an inline
+#
+#   # checkov:skip=<ID>:<reason>
+#
+# comment *inside* the resource block it applies to, so the justification shows
+# up when that resource is reviewed and disappears if the resource does. Note
+# the "inside": a skip comment placed above the block is silently ignored, and
+# a run that reports `Skipped checks: 0` alongside a clean pass is the symptom.
+#
+# The exceptions all live in four places, and all four are cost decisions
+# measured against a ~$0.55/month total:
+#
+#   bootstrap/main.tf                    state bucket: logging, replication, KMS
+#   modules/static-site/s3.tf            origin bucket: same four
+#   modules/static-site/cloudfront.tf    WAF, origin failover, geo restriction
+#   modules/static-site/monitoring.tf    SNS encryption (breaks the alarm)
+#   modules/dns/main.tf                  DNSSEC, query logging
+#   modules/ci-oidc/main.tf              IAM wildcards on the terraform role
+
+directory:
+  - .
+
+quiet: true
+compact: true
+
+framework:
+  - terraform
+
+skip-path:
+  - .terraform
