@@ -15,9 +15,10 @@ import { profile } from './profile';
 const whatsappNumber = profile.phone.replace(/\D/g, '');
 
 export const contact = {
-  heading: { index: '08', lead: "Let's", accent: 'Connect' },
+  // 07, not 08 — the testimonials section is not rendering. See `sections.ts`.
+  heading: { index: '07', lead: "Let's", accent: 'Connect' },
 
-  lead: 'TODO: one or two sentences on what you want to hear about. The mockup used: "I’m open to discussing backend and cloud engineering roles, platform modernization, and technically ambitious projects."',
+  lead: 'I’m open to discussing backend and cloud engineering roles, platform modernization, and technically ambitious projects.',
 
   primaryCta: { label: 'Email Me', href: `mailto:${profile.email}`, icon: 'mail' },
   secondaryCta: {

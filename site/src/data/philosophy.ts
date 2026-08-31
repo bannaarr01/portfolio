@@ -15,18 +15,16 @@ import { reading, readingIntro, workingPrinciple } from './reading';
 export { principles } from './principles';
 
 export const philosophy = {
-  // Autobiographical, so both bodies are placeholders.
   intro: [
     {
       kicker: 'Who I am',
-      title:
-        'TODO: a short declarative line, e.g. "Curious by nature, accountable by choice."',
-      body: 'TODO: two or three sentences on what motivates you and how you approach unfamiliar problems. Write it as you would say it out loud.',
+      title: 'Curious by nature, accountable by choice.',
+      body: 'I’m motivated by visible professional growth and by becoming the engineer a team can trust with unfamiliar, complex problems. I don’t stop at completing an assigned task: I work to understand why it matters, contribute ideas, and identify better ways forward. I learn quickly, take ownership, and keep going until I understand not only how something works, but how to make it useful, reliable, and better.',
     },
     {
       kicker: "What I'm building toward",
-      title: 'TODO: a short line on the work you want next.',
-      body: 'TODO: two or three sentences on the kind of problem, scale, or organisation you are aiming at.',
+      title: 'Engineering that creates value at scale.',
+      body: 'I want to work on technology that produces meaningful value and impact. I’m especially drawn to ambitious, large-scale organizations where strong engineering decisions can improve systems used by many people.',
     },
   ],
 

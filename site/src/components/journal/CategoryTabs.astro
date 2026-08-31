@@ -29,6 +29,20 @@ const tabs = [
 <nav class="tabs-shell" aria-label="Article categories">
   <div class="tabs">
     {
+      /*
+        The qualifier is a visually-hidden span rather than an `aria-label`.
+
+        "Go" alone is flagged as non-descriptive link text — it reads as the
+        verb, not the language — and out of context a bare category name tells
+        a screen-reader user nothing about where the link goes. An `aria-label`
+        fixes the accessible name but *not* the audit, which reads the link's
+        text content; real text in the DOM satisfies both, and it is what a
+        crawler sees too.
+
+        The visible word stays the start of the full name, which is what WCAG
+        2.5.3 (Label in Name) requires so voice-control users can still say
+        "click Go".
+      */
       tabs.map((tab) => (
         <a
           href={tab.href}
@@ -36,6 +50,7 @@ const tabs = [
           aria-current={tab.key === active ? 'page' : undefined}
         >
           {tab.label}
+          <span class="visually-hidden"> articles</span>
         </a>
       ))
     }

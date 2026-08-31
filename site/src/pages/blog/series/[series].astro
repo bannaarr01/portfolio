@@ -5,6 +5,7 @@ import JournalLayout from '../../../layouts/JournalLayout.astro';
 import SectionRail from '../../../components/journal/SectionRail.astro';
 import CardGrid from '../../../components/journal/CardGrid.astro';
 import Icon from '../../../components/ui/Icon.astro';
+import StructuredData, { type Crumb } from '../../../components/seo/StructuredData.astro';
 import { categoryTitle } from '../../../components/journal/taxonomy';
 import { getSeriesParts } from '../../../lib';
 
@@ -22,9 +23,17 @@ const { slug, title, description, category } = entry.data;
 /* Ordered by `part` ascending — never by date. */
 const parts = await getSeriesParts(slug);
 const catTitle = await categoryTitle(category);
+
+const breadcrumbs: Crumb[] = [
+  { name: 'Journal', url: '/blog/' },
+  { name: catTitle, url: `/blog/category/${category}/` },
+  { name: title, url: `/blog/series/${slug}/` },
+];
 ---
 
 <JournalLayout title={`${title} — The Engineering Journal`} description={description}>
+  <StructuredData slot="head" breadcrumbs={breadcrumbs} />
+
   <section class="series-hero">
     <div class="site-container">
       <a class="hero-back" href="/blog/">

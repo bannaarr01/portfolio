@@ -9,6 +9,7 @@
  * more than one section-height of flat navy.
  */
 import PortfolioLayout from '../layouts/PortfolioLayout.astro';
+import StructuredData from '../components/seo/StructuredData.astro';
 
 import About from '../components/home/About.astro';
 import Contact from '../components/home/Contact.astro';
@@ -44,6 +45,9 @@ import { testimonials, testimonialsIntro } from '../data/testimonials';
 ---
 
 <PortfolioLayout title={meta.title} description={meta.description} active="about">
+  {/* The Person node every article's `author` references by @id. */}
+  <StructuredData slot="head" person />
+
   <Hero content={hero} />
 
   <About heading={headings.about} content={about} stats={stats} />

@@ -14,9 +14,10 @@
     "gate. The real gz budget (9 KB homepage JS) belongs with whoever owns the",
     "islands, measured against the built output rather than over the wire.",
     "",
-    "TODO(group 09): add one real article URL. PLAN.md §11 asks for /, /blog/",
-    "and an article; the first two are knowable now, the third depends on",
-    "content slugs this group does not own.",
+    "The article URL is the longest post in the corpus (14 H2s, code blocks,",
+    "a wide table). Sampling the heaviest article rather than a short one is",
+    "the point: it is the page most likely to miss LCP or CLS, and the only",
+    "one that exercises the TOC island.",
     "",
     "Comments live only in this top-level key. LHCI validates the contents of",
     "`assertions` against real audit ids, so a `//` key in there is an error,",
@@ -27,7 +28,11 @@
       "startServerCommand": "npx astro preview --port 4173 --host 127.0.0.1",
       "startServerReadyPattern": "4173",
       "startServerReadyTimeout": 60000,
-      "url": ["http://127.0.0.1:4173/", "http://127.0.0.1:4173/blog/"],
+      "url": [
+        "http://127.0.0.1:4173/",
+        "http://127.0.0.1:4173/blog/",
+        "http://127.0.0.1:4173/blog/read-heavy-service-design/"
+      ],
       "numberOfRuns": 3,
       "settings": {
         "onlyCategories": ["performance", "accessibility", "best-practices", "seo"]

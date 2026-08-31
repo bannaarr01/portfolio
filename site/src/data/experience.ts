@@ -4,8 +4,7 @@
  * Feeds: `components/home/Experience.astro` (the `#experience` section).
  *
  * ── EDITING ──────────────────────────────────────────────────────────────
- * Every `TODO:` is a placeholder. The *shape* here is deliberate and worth
- * keeping while you swap the copy in:
+ * The *shape* here is deliberate and worth keeping while you swap copy in:
  *
  *   - three roles, newest first (the timeline renders in array order)
  *   - the middle role carries three `blocks`, which is the case that proves
@@ -23,21 +22,21 @@ import type { Job } from '../types/portfolio';
 
 export const jobs = [
   {
-    role: 'TODO: Backend & Cloud Software Engineer',
-    company: 'TODO: Current employer',
-    location: 'TODO: City, Country',
-    start: 'TODO: 05/2026',
+    role: 'Backend & Cloud Software Engineer',
+    company: 'Electrolux Home Appliance Sdn Bhd',
+    location: 'Selangor, Malaysia',
+    start: '05/2026',
     end: 'Present',
     blocks: [
       {
-        heading: 'TODO: Programme or system name',
+        heading: 'Cloud Platform Modernization',
         bullets: [
-          'TODO: what you owned here and what changed because of it. One line, verifiable in an interview.',
-          'TODO: a second responsibility. Attach a number if you have one.',
-          'TODO: infrastructure or tooling work, and why it was needed.',
-          'TODO: something you built that outlived the ticket that asked for it.',
-          'TODO: a cost, latency, or reliability result.',
-          'TODO: the thing you would actually want to be asked about.',
+          'Participated in migrating enterprise backend services from Microsoft Azure to AWS, improving cloud scalability and simplifying long-term infrastructure management',
+          'Re-engineered existing backend microservices in Go to improve performance, maintainability, and resource utilization',
+          'Implemented Infrastructure as Code with Terraform for repeatable cloud provisioning and consistent environments',
+          'Developed event-driven integrations with Kafka and Azure Event Hubs for reliable asynchronous communication',
+          'Implemented automatic Azure IoT Hub SKU scaling based on real-time capacity utilization, reducing infrastructure cost while preventing service throttling',
+          'Optimized backend services and cloud resources through performance tuning, monitoring, and architectural improvements',
         ],
       },
     ],
@@ -57,36 +56,36 @@ export const jobs = [
   {
     // Three blocks. This is the fixture that proves a role with several
     // distinct projects renders as nested groups rather than one flat list.
-    role: 'TODO: Backend Software Engineer',
-    company: 'TODO: Previous employer',
-    location: 'TODO: City, Country',
-    start: 'TODO: 05/2023',
-    end: 'TODO: 05/2026',
+    role: 'Backend Software Engineer',
+    company: 'Telekom Research & Development Sdn Bhd',
+    location: 'Selangor, Malaysia',
+    start: '05/2023',
+    end: '05/2026',
     blocks: [
       {
-        heading: 'TODO: Primary system',
+        heading: 'HR Systems (ERA/JESSICA)',
         bullets: [
-          'TODO: the headline result from this role, with the number that makes it credible.',
-          'TODO: something you proposed rather than were assigned.',
-          'TODO: an API, auth, or security responsibility.',
-          'TODO: asynchronous or scheduled work you designed.',
-          'TODO: an integration you owned end to end.',
-          'TODO: observability or tooling you introduced.',
+          'Spearheaded backend enhancement and refactoring of a legacy HR system, improving scalability, maintainability, and performance by 3× to support more than 3,000 concurrent users',
+          'Proposed and led the company’s first Go-based microservice REST API, secured supervisor approval, and delivered the initial service to validate Go for production use',
+          'Developed secure REST APIs with Multi-Factor Authentication and Google reCAPTCHA integration',
+          'Implemented RabbitMQ-based asynchronous employee data synchronization and task scheduling',
+          'Integrated the LinkedIn API into the learning module for employee training and development insights',
+          'Instrumented services and metrics dashboards with Prometheus and Grafana',
         ],
       },
       {
-        heading: 'TODO: Second project',
+        heading: 'Smart Forestry Platform',
         bullets: [
-          'TODO: what this system did and which part was yours.',
-          'TODO: the pipeline, job, or service you built for it.',
-          'TODO: how the data got from source to storage.',
+          'Built data-driven dashboard APIs serving real-time animal population and environmental metrics',
+          'Designed Apache Airflow pipelines for automated SFTP data retrieval and processing',
+          'Created DAGs for end-to-end orchestration from extraction to centralized storage',
         ],
       },
       {
-        heading: 'TODO: Third project',
+        heading: 'IoT Water Monitoring (SWIMS2.0)',
         bullets: [
-          'TODO: the authentication or access-control work.',
-          'TODO: the read path you built and what it had to sustain.',
+          'Implemented Keycloak authentication with Role-Based Access Control for secure user management',
+          'Developed high-performance REST APIs for real-time and historical water quality visualization and analysis',
         ],
       },
     ],
@@ -109,21 +108,21 @@ export const jobs = [
     ],
   },
   {
-    role: 'TODO: Software Developer',
-    company: 'TODO: First employer',
-    location: 'TODO: City, Country',
-    start: 'TODO: 05/2022',
-    end: 'TODO: 04/2023',
+    role: 'Software Developer',
+    company: 'Xeersoft Sdn Bhd',
+    location: 'Kuala Lumpur, Malaysia',
+    start: '05/2022',
+    end: '04/2023',
     blocks: [
       {
-        heading: 'TODO: Platform or product name',
+        heading: 'ERP Platform',
         bullets: [
-          'TODO: what you contributed to and in which part of the stack.',
-          'TODO: the APIs or features you built and maintained.',
-          'TODO: a performance or quality improvement you can point at.',
+          'Contributed to accounting-platform upgrades and feature improvements using modern web technologies',
+          'Developed and maintained PHP Slim 4 REST APIs for web and mobile application integrations',
+          'Implemented performance optimizations that improved ERP system efficiency and user satisfaction',
         ],
       },
     ],
-    tech: ['PHP', 'MySQL', 'JavaScript', 'jQuery', 'Bootstrap', 'HTML', 'CSS'],
+    tech: ['PHP', 'Slim 4', 'MySQL', 'JavaScript', 'jQuery', 'Bootstrap', 'HTML', 'CSS'],
   },
 ] satisfies Job[];

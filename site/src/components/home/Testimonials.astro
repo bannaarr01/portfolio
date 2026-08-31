@@ -16,44 +16,61 @@ interface Props {
 }
 
 const { heading, intro, testimonials } = Astro.props;
+
+/*
+  With no quotes there is nothing to recommend, and a heading over an empty
+  grid reads as a rendering fault rather than an absence. Rendering nothing is
+  the honest empty state here — see the note in `data/testimonials.ts`.
+
+  If you restore this section, restore the section numbering with it:
+  `data/sections.ts` and `data/contact.ts` were shifted down by one.
+*/
+const hasQuotes = testimonials.length > 0;
 ---
 
-<Section band="bg">
-  <Reveal><SectionHeading {...heading} /></Reveal>
+{
+  hasQuotes && (
+    <Section band="bg">
+      <Reveal>
+        <SectionHeading {...heading} />
+      </Reveal>
 
-  <Reveal>
-    <div class="intro">
-      <p>{intro.lead}</p>
-      <a href={intro.linkHref}>
-        {intro.linkLabel}
-        <Icon name="arrow-right" size={14} />
-      </a>
-    </div>
-  </Reveal>
+      <Reveal>
+        <div class="intro">
+          <p>{intro.lead}</p>
+          {/* No LinkedIn URL yet — the label stays, the dead link does not. */}
+          {intro.linkHref && (
+            <a href={intro.linkHref}>
+              {intro.linkLabel}
+              <Icon name="arrow-right" size={14} />
+            </a>
+          )}
+        </div>
+      </Reveal>
 
-  <div class="grid">
-    {
-      testimonials.map((t, i) => (
-        <Reveal delay={i * 60}>
-          <figure class="quote h-card">
-            <span class="glyph" aria-hidden="true">
-              &ldquo;
-            </span>
-            <blockquote>{t.quote}</blockquote>
-            <figcaption>
-              <Avatar initials={t.initials} size={42} />
-              <span class="who">
-                <strong>{t.name}</strong>
-                <span class="role">{t.role}</span>
-                <span class="rel">{t.relationship}</span>
+      <div class="grid">
+        {testimonials.map((t, i) => (
+          <Reveal delay={i * 60}>
+            <figure class="quote h-card">
+              <span class="glyph" aria-hidden="true">
+                &ldquo;
               </span>
-            </figcaption>
-          </figure>
-        </Reveal>
-      ))
-    }
-  </div>
-</Section>
+              <blockquote>{t.quote}</blockquote>
+              <figcaption>
+                <Avatar initials={t.initials} size={42} />
+                <span class="who">
+                  <strong>{t.name}</strong>
+                  <span class="role">{t.role}</span>
+                  <span class="rel">{t.relationship}</span>
+                </span>
+              </figcaption>
+            </figure>
+          </Reveal>
+        ))}
+      </div>
+    </Section>
+  )
+}
 
 <style>
   .intro {

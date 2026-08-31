@@ -30,9 +30,25 @@ export interface Props {
   wide?: boolean;
   /** Addition to the §6 signature — the only way to reach Header's `active`. */
   active?: NavKey;
+  /**
+   * Addition to the §6 signature (group 09). `Seo` has always accepted this,
+   * but nothing forwarded it, so every route — articles included — shipped
+   * `og:type="website"`. Facebook, LinkedIn and Slack use `og:type` to decide
+   * whether a share card gets article treatment (byline, published time), so
+   * the whole journal was previewing as a set of generic pages.
+   */
+  type?: 'website' | 'article';
 }
 
-const { title, description, ogImage, noindex = false, wide = false, active } = Astro.props;
+const {
+  title,
+  description,
+  ogImage,
+  noindex = false,
+  wide = false,
+  active,
+  type = 'website',
+} = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 ---
@@ -59,6 +75,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
       canonical={canonical}
       ogImage={ogImage}
       noindex={noindex}
+      type={type}
     />
 
     <slot name="head" />

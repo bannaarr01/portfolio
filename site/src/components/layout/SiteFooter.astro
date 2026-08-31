@@ -40,11 +40,14 @@ const year = new Date().getFullYear();
     gap: var(--space-3) var(--space-5);
   }
 
+  /* --muted, not --soft. PLAN.md §4.1 caps --soft (~4.0:1) at large or bold
+     meta text — ≥18.66px bold or ≥24px regular. At 12.5px it fails AA, which
+     Lighthouse flags as a colour-contrast error. */
   p {
     font-size: 12.5px;
     font-weight: 600;
     line-height: 1.5;
-    color: var(--soft);
+    color: var(--muted);
   }
 
   .footer-note {

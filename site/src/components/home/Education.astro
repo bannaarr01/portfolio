@@ -70,13 +70,26 @@ const { heading, degreesCard, degrees, certificationsCard, certifications } = As
           {
             certifications.map((cert) => (
               <li>
-                <a href={cert.url} rel="noopener noreferrer" target="_blank">
-                  <span class="cert-text">
-                    <strong>{cert.title}</strong>
-                    <span class="issuer">{cert.issuer}</span>
-                  </span>
-                  <Icon name="external-link" size={15} />
-                </a>
+                {/* A credential without a verification URL renders as plain
+                    text. Linking it to `#` or to an empty href would give the
+                    row a pointer, a focus stop and an external-link icon that
+                    all promise a verification page there is no URL for. */}
+                {cert.url ? (
+                  <a href={cert.url} rel="noopener noreferrer" target="_blank">
+                    <span class="cert-text">
+                      <strong>{cert.title}</strong>
+                      <span class="issuer">{cert.issuer}</span>
+                    </span>
+                    <Icon name="external-link" size={15} />
+                  </a>
+                ) : (
+                  <div class="cert-static">
+                    <span class="cert-text">
+                      <strong>{cert.title}</strong>
+                      <span class="issuer">{cert.issuer}</span>
+                    </span>
+                  </div>
+                )}
               </li>
             ))
           }
@@ -164,7 +177,8 @@ const { heading, degreesCard, degrees, certificationsCard, certifications } = As
     list-style: none;
   }
 
-  .certs a {
+  .certs a,
+  .certs .cert-static {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -179,6 +193,7 @@ const { heading, degreesCard, degrees, certificationsCard, certifications } = As
       background-color 180ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
   }
 
+  /* Hover affordance belongs only to the rows that actually go somewhere. */
   .certs a:hover {
     border-color: color-mix(in srgb, var(--accent) 45%, transparent);
     background: var(--accent-soft);
