@@ -1,0 +1,327 @@
+---
+/**
+ * ArticleHero — everything above the reading shell.
+ *
+ * Breadcrumb → series kicker → H1 → dek → byline → banner cover art.
+ * Renders full-bleed and supplies its own container, so it belongs in
+ * ArticleLayout's `hero` slot (outside the two-column grid).
+ *
+ * Owner: group 05.
+ */
+import Avatar from '../ui/Avatar.astro';
+import Icon from '../ui/Icon.astro';
+import CoverArt from '../journal/CoverArt.astro';
+import { formatDate } from '../../lib';
+import type { CategorySlug } from '../../types/content';
+import type { IconName } from '../../types/icons';
+
+interface Props {
+  title: string;
+  description: string;
+  category: CategorySlug;
+  categoryTitle: string;
+  categoryHref: string;
+  /** Present only for posts that belong to a series. */
+  series?: { title: string; href: string } | null;
+  part?: number;
+  publishDate: Date;
+  updatedDate?: Date;
+  /** Injected by group 00's remark plugin. Never computed here. */
+  minutesRead: number;
+  author: { name: string; role: string; initials: string };
+  glyph?: IconName;
+}
+
+const {
+  title,
+  description,
+  category,
+  categoryTitle,
+  categoryHref,
+  series = null,
+  part,
+  publishDate,
+  updatedDate,
+  minutesRead,
+  author,
+  glyph,
+} = Astro.props;
+
+// Already a whole minute with a floor of 1 — the remark plugin ceils it.
+const readingTime = `${minutesRead} min read`;
+---
+
+<header class="hero">
+  <div class="hero__atmosphere" aria-hidden="true"></div>
+
+  <div class="hero__inner">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/blog/">Journal</a>
+      <span class="crumbs__sep" aria-hidden="true">/</span>
+      <a href={categoryHref}>{categoryTitle}</a>
+    </nav>
+
+    {
+      series && part !== undefined && (
+        <p class="hero__series">
+          <span class="hero__series-mark" aria-hidden="true">
+            <Icon name="layers" size={13} />
+          </span>
+          {/* One inline run so the kicker wraps as text on a narrow
+              screen rather than stranding "Part N" at the far edge. */}
+          <span class="hero__series-text">
+            <a href={series.href}>{series.title}</a>
+            <span class="hero__dot" aria-hidden="true">
+              ·
+            </span>
+            Part {part}
+          </span>
+        </p>
+      )
+    }
+
+    <h1 class="hero__title">{title}</h1>
+
+    <p class="hero__dek">{description}</p>
+
+    <div class="hero__byline">
+      <div class="byline">
+        <Avatar initials={author.initials} size={40} />
+        <span class="byline__who">
+          <strong>{author.name}</strong>
+          <span>{author.role}</span>
+        </span>
+      </div>
+
+      <div class="hero__stats">
+        <span>
+          <Icon name="calendar" size={14} />
+          <time datetime={publishDate.toISOString()}
+            >{formatDate(publishDate, 'short')}</time
+          >
+        </span>
+        {
+          updatedDate && (
+            <span class="hero__updated">
+              Updated{' '}
+              <time datetime={updatedDate.toISOString()}>
+                {formatDate(updatedDate, 'short')}
+              </time>
+            </span>
+          )
+        }
+        <span>
+          <Icon name="clock" size={14} />
+          {readingTime}
+        </span>
+      </div>
+    </div>
+
+    <div class="hero__cover">
+      <CoverArt category={category} variant="banner" glyph={glyph} />
+    </div>
+  </div>
+</header>
+
+<style>
+  .hero {
+    position: relative;
+    padding: calc(var(--header-h) + 64px) 0 0;
+    isolation: isolate;
+  }
+
+  /* Atmosphere: the hero lift, a faint grid, and one cyan bloom.
+     Everything token-driven so it follows the theme. */
+  .hero__atmosphere {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(760px 420px at 88% 6%, var(--glow-cyan), transparent 62%),
+      repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 74px),
+      repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 74px),
+      linear-gradient(180deg, var(--hero-bg), var(--bg) 78%);
+    -webkit-mask-image: linear-gradient(180deg, black 55%, transparent);
+    mask-image: linear-gradient(180deg, black 55%, transparent);
+  }
+
+  .hero__inner {
+    width: var(--container);
+    margin-inline: auto;
+  }
+
+  /* ---------------- breadcrumb ---------------- */
+
+  .crumbs {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .crumbs a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .crumbs a:hover {
+    color: var(--accent-strong);
+  }
+
+  .crumbs__sep {
+    color: var(--border-strong);
+  }
+
+  /* ---------------- series kicker ---------------- */
+
+  .hero__series {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 54px 0 0;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+  }
+
+  .hero__series-mark {
+    display: inline-flex;
+    flex: none;
+    margin-top: 1px;
+  }
+
+  .hero__series-text {
+    min-width: 0;
+  }
+
+  .hero__series a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hero__series a:hover {
+    border-bottom-color: currentColor;
+  }
+
+  .hero__dot {
+    color: var(--soft);
+  }
+
+  /* ---------------- title + dek ---------------- */
+
+  .hero__title {
+    max-width: 15ch;
+    margin: 12px 0 0;
+    font-size: clamp(34px, 4.4vw, 60px);
+    font-weight: 700;
+    line-height: 1.06;
+    letter-spacing: -0.038em;
+    color: var(--text);
+    text-wrap: balance;
+  }
+
+  /* No series line means the title needs the breathing room itself. */
+  .crumbs + .hero__title {
+    margin-top: 54px;
+  }
+
+  .hero__dek {
+    max-width: 62ch;
+    margin: 26px 0 0;
+    font-size: 18px;
+    line-height: 1.56;
+    letter-spacing: -0.008em;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  /* ---------------- byline ---------------- */
+
+  .hero__byline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 42px;
+    padding: 20px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .byline {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+  }
+
+  .byline__who strong {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .byline__who span {
+    display: block;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .hero__stats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 24px;
+  }
+
+  .hero__stats > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .hero__updated {
+    font-weight: 600;
+  }
+
+  /* ---------------- cover ---------------- */
+
+  .hero__cover {
+    margin-top: 40px;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      padding-top: calc(var(--header-h) + 40px);
+    }
+
+    .hero__series,
+    .crumbs + .hero__title {
+      margin-top: 36px;
+    }
+
+    .hero__title {
+      max-width: none;
+    }
+
+    .hero__byline {
+      justify-content: flex-start;
+    }
+  }
+</style>

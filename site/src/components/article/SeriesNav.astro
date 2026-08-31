@@ -1,0 +1,199 @@
+---
+/**
+ * SeriesNav — previous / next part, plus a way back to the series index.
+ *
+ * Renders only for posts that belong to a series, and degrades cleanly at
+ * both ends: the first part has no `prev`, the last has no `next`, and a
+ * one-part series has neither. In none of those cases should an empty box
+ * appear — the surviving side takes the full width, and if both are absent
+ * only the series link remains.
+ *
+ * Owner: group 05.
+ */
+import Icon from '../ui/Icon.astro';
+
+interface Adjacent {
+  title: string;
+  href: string;
+  part?: number;
+}
+
+interface Props {
+  series: { title: string; href: string };
+  totalParts?: number;
+  prev?: Adjacent | null;
+  next?: Adjacent | null;
+}
+
+const { series, totalParts, prev = null, next = null } = Astro.props;
+
+const hasPrev = Boolean(prev);
+const hasNext = Boolean(next);
+const single = !hasPrev && !hasNext;
+---
+
+<nav class="series" aria-label={`${series.title} navigation`}>
+  <p class="series__kicker">
+    <Icon name="layers" size={13} />
+    Part of a series
+  </p>
+
+  {
+    !single && (
+      <div class="series__pair" data-one-sided={hasPrev !== hasNext}>
+        {prev && (
+          <a class="series__cell series__cell--prev" href={prev.href} rel="prev">
+            <span class="series__dir">
+              <Icon name="arrow-left" size={14} />
+              Previous{prev.part !== undefined && ` · Part ${prev.part}`}
+            </span>
+            <span class="series__title">{prev.title}</span>
+          </a>
+        )}
+
+        {next && (
+          <a class="series__cell series__cell--next" href={next.href} rel="next">
+            <span class="series__dir">
+              Next{next.part !== undefined && ` · Part ${next.part}`}
+              <Icon name="arrow-right" size={14} />
+            </span>
+            <span class="series__title">{next.title}</span>
+          </a>
+        )}
+      </div>
+    )
+  }
+
+  <a class="series__index" href={series.href}>
+    <span>
+      {series.title}
+      {totalParts !== undefined && <span class="series__count">· {totalParts} parts</span>}
+    </span>
+    <Icon name="arrow-up-right" size={14} />
+  </a>
+</nav>
+
+<style>
+  .series {
+    margin-top: 40px;
+  }
+
+  .series__kicker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .series__pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  /* One end of the series: the surviving cell takes the full width
+     rather than leaving a hole beside it. */
+  .series__pair[data-one-sided='true'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .series__cell {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    padding: 20px 22px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface-raised);
+    text-decoration: none;
+    transition:
+      transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .series__cell:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+    box-shadow: 0 12px 40px color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  .series__cell--next {
+    text-align: right;
+  }
+
+  .series__dir {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-strong);
+  }
+
+  .series__cell--next .series__dir {
+    justify-content: flex-end;
+  }
+
+  .series__title {
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.32;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .series__index {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 18px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .series__index:hover {
+    color: var(--accent-strong);
+  }
+
+  /* Inherits --muted rather than dropping to --soft: at 13px, --soft
+     is below the AA threshold it is only cleared for at 18.66px bold. */
+  .series__count {
+    font-weight: 600;
+  }
+
+  @media (max-width: 620px) {
+    .series__pair {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .series__cell--next {
+      text-align: left;
+    }
+
+    .series__cell--next .series__dir {
+      justify-content: flex-start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .series__cell {
+      transition: border-color 0.18s;
+    }
+
+    .series__cell:hover {
+      transform: none;
+    }
+  }
+</style>
