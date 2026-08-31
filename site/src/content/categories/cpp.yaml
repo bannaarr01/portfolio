@@ -1,0 +1,11 @@
+# Feeds: /blog/category/cpp/, the CategoryTabs strip, and the discipline grid
+# on /blog/. Article counts are derived at build time, never stored here.
+#
+# Added for the C++ notes series. The angle is deliberately not "learn C++":
+# it is the mechanics a backend engineer already relies on without seeing,
+# which is why the description names the managed languages the posts compare
+# against rather than the language itself.
+slug: cpp
+title: C++
+description: Memory, lifetimes, and the build model, taken from C++ and pointed back at the languages that hide them.
+order: 5

@@ -5,7 +5,6 @@ import CategoryTabs from '../../components/journal/CategoryTabs.astro';
 import FeatureStory from '../../components/journal/FeatureStory.astro';
 import SectionRail from '../../components/journal/SectionRail.astro';
 import CardGrid from '../../components/journal/CardGrid.astro';
-import SeriesShelf from '../../components/journal/SeriesShelf.astro';
 import DisciplineGrid from '../../components/journal/DisciplineGrid.astro';
 import { getPublishedPosts } from '../../lib';
 import { SITE_OWNER } from '../../components/layout/nav';
@@ -49,7 +48,6 @@ const [feature, ...rest] = posts;
     )
   }
 
-  <SeriesShelf />
   <DisciplineGrid />
 </JournalLayout>
 

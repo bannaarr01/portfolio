@@ -10,6 +10,7 @@ export const CATEGORY_SLUGS = [
   'aws-cloud',
   'system-design',
   'backend-engineering',
+  'cpp',
 ] as const;
 
 export type CategorySlug = (typeof CATEGORY_SLUGS)[number];

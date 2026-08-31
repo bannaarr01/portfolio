@@ -58,6 +58,7 @@ export const CATEGORY_HUE: Record<CategorySlug, number> = {
   'aws-cloud': -14,
   'system-design': 18,
   'backend-engineering': 32,
+  cpp: -30,
 };
 
 /**
@@ -69,6 +70,7 @@ export const CATEGORY_GLYPH: Record<CategorySlug, IconName> = {
   'aws-cloud': 'cloud',
   'system-design': 'layers',
   'backend-engineering': 'server',
+  cpp: 'activity',
 };
 
 export const glyphPath = (icon: IconName): string => ICON_PATHS[icon];

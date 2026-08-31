@@ -26,6 +26,7 @@ export const CATEGORY_ART: Record<
     glyph: 'server',
     rotate: '32deg',
   },
+  cpp: { title: 'C++', glyph: 'activity', rotate: '-30deg' },
 };
 
 /** All four categories, ordered by their `order` field. */
