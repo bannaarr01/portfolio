@@ -1,0 +1,522 @@
+---
+/**
+ * /404 — chromeless. Group 06.
+ *
+ * No header, no footer, no BaseLayout. A 404 is a dead end, and the only things
+ * worth putting on it are the routes that are still alive plus the diagnostic
+ * that says which one failed. Building its own document shell is what keeps it
+ * chromeless without adding a "hide everything" flag to BaseLayout.
+ *
+ * The mockup returned home after twelve seconds. That is deliberately gone —
+ * see the group 06 report. Nothing here moves the reader anywhere.
+ *
+ * The background is a local static field rather than group 02's
+ * `BackgroundField`: the brief allows it, and it keeps this route at zero
+ * imported islands, which is what holds the JS budget at a few hundred bytes.
+ */
+import Icon from '../components/ui/Icon.astro';
+import Logo from '../components/ui/Logo.astro';
+import Seo from '../components/seo/Seo.astro';
+import ThemeToggle from '../components/layout/ThemeToggle.astro';
+import { SITE_OWNER } from '../components/layout/nav';
+import { THEME_INIT_SCRIPT } from '../lib/theme';
+
+import '../styles/global.css';
+
+const canonical = new URL('/404/', Astro.site).href;
+
+// Not NAV_ITEMS: on a dead end the useful set is "where would you actually go",
+// which includes the journal and omits Projects (the secondary CTA covers it).
+const HELPFUL_PATHS = [
+  { label: 'About', href: '/#about' },
+  { label: 'Experience', href: '/#experience' },
+  { label: 'Skills', href: '/#skills' },
+  { label: 'Journal', href: '/blog/' },
+  { label: 'Contact', href: '/#contact' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script is:inline set:html={THEME_INIT_SCRIPT} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" sizes="16x16 32x32 48x48" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <Seo
+      title="Page not found"
+      description="That route does not exist. The portfolio and the engineering journal are both still here."
+      canonical={canonical}
+      noindex
+    />
+  </head>
+
+  <body>
+    <div class="field" aria-hidden="true">
+      <div class="grid"></div>
+      <div class="glow glow-a"></div>
+      <div class="glow glow-b"></div>
+    </div>
+
+    <div class="toggle-slot"><ThemeToggle /></div>
+
+    <main class="page" id="main">
+      <a class="brand" href="/">
+        <Logo size={34} />
+        <span>{SITE_OWNER}</span>
+      </a>
+
+      {
+        /* role="img" so the aria-label is authoritative — without it the mark's
+           own <title> leaks the owner's name into the middle of "404". */
+      }
+      <p class="lockup" role="img" aria-label="Error 404">
+        <span aria-hidden="true">4</span>
+        <span class="lockup-mark" aria-hidden="true"><Logo size={156} bare /></span>
+        <span aria-hidden="true">4</span>
+      </p>
+
+      <p class="kicker eyebrow">Route not found</p>
+      <h1>This endpoint didn&rsquo;t make it into <em>production</em>.</h1>
+      <p class="lede">
+        The page may have moved, the link may be outdated, or this route may never have been
+        deployed. The portfolio and the journal are both still healthy.
+      </p>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="/">
+          <Icon name="arrow-left" size={16} />
+          Return home
+        </a>
+        <a class="btn btn-secondary" href="/#projects">
+          <Icon name="briefcase" size={16} />
+          View projects
+        </a>
+      </div>
+
+      <!--
+        Replaces the mockup's auto-redirect. A readout of the path that failed is
+        the one genuinely diagnostic thing this page can offer, and unlike a
+        countdown it never takes the decision away from the reader.
+      -->
+      <div class="readout" role="status">
+        <span class="readout-status">404</span>
+        <code class="readout-path" data-requested-path>the requested route</code>
+        <span class="readout-note">no matching route</span>
+      </div>
+
+      <aside class="paths" aria-labelledby="paths-label">
+        <p class="kicker" id="paths-label">Helpful paths</p>
+        <nav aria-labelledby="paths-label">
+          {HELPFUL_PATHS.map((p) => <a href={p.href}>{p.label}</a>)}
+        </nav>
+      </aside>
+    </main>
+
+    <script>
+      // A static 404 is served for every unmatched path, so only the client
+      // knows which one was asked for. Progressive enhancement: without this the
+      // markup already reads as a complete sentence.
+      const target = document.querySelector<HTMLElement>('[data-requested-path]');
+      if (target) {
+        const path = location.pathname + location.search;
+        target.textContent = path.length > 52 ? `${path.slice(0, 51)}…` : path;
+      }
+    </script>
+
+    <style>
+      /* ── field ───────────────────────────────────────────────────────────
+         Static equivalent of group 02's BackgroundField at density="subtle".
+         `black` in the mask below is an alpha channel, not a palette colour. */
+      .field {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        background: radial-gradient(
+          ellipse 90% 70% at 50% 0%,
+          var(--hero-bg),
+          var(--bg) 70%
+        );
+        pointer-events: none;
+      }
+
+      .grid {
+        position: absolute;
+        inset: -1px;
+        background-image:
+          repeating-linear-gradient(to right, var(--grid-line) 0 1px, transparent 1px 76px),
+          repeating-linear-gradient(to bottom, var(--grid-line) 0 1px, transparent 1px 76px);
+        -webkit-mask-image: radial-gradient(
+          ellipse 76% 62% at 50% 42%,
+          black 38%,
+          transparent 100%
+        );
+        mask-image: radial-gradient(
+          ellipse 76% 62% at 50% 42%,
+          black 38%,
+          transparent 100%
+        );
+      }
+
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(14px);
+      }
+
+      .glow-a {
+        width: 660px;
+        height: 480px;
+        left: -170px;
+        bottom: -140px;
+        background: radial-gradient(circle, var(--glow-cyan), transparent 68%);
+        animation: drift 26s var(--ease) infinite alternate;
+      }
+
+      .glow-b {
+        width: 580px;
+        height: 460px;
+        right: -140px;
+        top: -110px;
+        background: radial-gradient(circle, var(--glow-teal), transparent 68%);
+        animation: drift 31s var(--ease) infinite alternate-reverse;
+      }
+
+      @keyframes drift {
+        from {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        to {
+          transform: translate3d(38px, -26px, 0) scale(1.09);
+        }
+      }
+
+      /* ── shell ──────────────────────────────────────────────────────────── */
+      .toggle-slot {
+        position: fixed;
+        top: var(--space-4);
+        right: var(--space-5);
+        z-index: 3;
+      }
+
+      .page {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100svh;
+        width: min(100% - 40px, 660px);
+        margin-inline: auto;
+        padding: var(--space-8) 0;
+        text-align: center;
+      }
+
+      /* One orchestrated entrance: every child shares the animation and differs
+         only by delay, so the page assembles top-down in a single gesture. */
+      .page > * {
+        animation: rise 620ms var(--ease) backwards;
+      }
+      .brand {
+        animation-delay: 40ms;
+      }
+      .lockup {
+        animation-delay: 100ms;
+      }
+      .eyebrow {
+        animation-delay: 210ms;
+      }
+      h1 {
+        animation-delay: 260ms;
+      }
+      .lede {
+        animation-delay: 330ms;
+      }
+      .actions {
+        animation-delay: 400ms;
+      }
+      .readout {
+        animation-delay: 470ms;
+      }
+      .paths {
+        animation-delay: 540ms;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+      }
+
+      /* ── brand ──────────────────────────────────────────────────────────── */
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 11px;
+        font-size: 15.5px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--text);
+      }
+
+      /* ── 4 · mark · 4 ───────────────────────────────────────────────────── */
+      .lockup {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        margin: var(--space-7) 0 var(--space-1);
+      }
+
+      .lockup span:not(.lockup-mark) {
+        /* Near-solid, with just enough falloff to give the numerals weight
+           without competing with the mark between them. */
+        font-size: clamp(88px, 12vw, 132px);
+        font-weight: 700;
+        letter-spacing: -0.07em;
+        line-height: 1;
+        background: linear-gradient(
+          178deg,
+          var(--text) 46%,
+          color-mix(in srgb, var(--text) 86%, transparent)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .lockup-mark {
+        display: grid;
+        place-items: center;
+        flex: none;
+        filter: drop-shadow(0 0 26px var(--glow-cyan));
+      }
+
+      /* Logo's `size` is a fixed pixel prop, so the mark is scaled here instead
+         — otherwise it stays 148px while the numerals shrink to 88px on mobile
+         and the lockup stops reading as one unit. The ratio is tuned to the
+         glyph's cap height, not its box: the mark carries internal padding, so
+         matching the box to the numerals leaves it looking undersized. */
+      .lockup-mark :global(svg) {
+        width: clamp(104px, 14.2vw, 156px);
+        height: auto;
+      }
+
+      /* ── copy ───────────────────────────────────────────────────────────── */
+      .eyebrow {
+        margin-top: var(--space-3);
+        color: var(--accent-strong);
+      }
+
+      h1 {
+        margin-top: var(--space-3);
+        font-size: clamp(32px, 4.4vw, 52px);
+        font-weight: 700;
+        letter-spacing: -0.042em;
+        line-height: 1.08;
+        text-wrap: balance;
+      }
+
+      h1 em {
+        font-style: normal;
+        background: linear-gradient(96deg, var(--accent-strong), var(--accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .lede {
+        margin-top: var(--space-4);
+        max-width: 52ch;
+        font-size: var(--text-body);
+        line-height: 1.65;
+        color: var(--muted);
+        text-wrap: pretty;
+      }
+
+      /* ── actions ────────────────────────────────────────────────────────── */
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-3);
+        justify-content: center;
+        margin-top: var(--space-6);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 13px 22px;
+        border: 1px solid transparent;
+        border-radius: var(--radius-button);
+        font-size: 14.5px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        transition:
+          transform var(--dur-ui) var(--ease),
+          box-shadow var(--dur-ui) var(--ease),
+          border-color var(--dur-ui) var(--ease);
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn-primary {
+        background: linear-gradient(96deg, var(--accent), var(--accent-2));
+        color: var(--on-accent);
+        box-shadow: var(--glow-cta);
+      }
+
+      .btn-primary:hover {
+        box-shadow: var(--glow-cta-hover);
+      }
+
+      .btn-secondary {
+        background: var(--header-bg);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        backdrop-filter: blur(20px) saturate(180%);
+        border-color: var(--border);
+        color: var(--text);
+      }
+
+      .btn-secondary:hover {
+        border-color: var(--border-strong);
+        box-shadow: var(--shadow-card);
+      }
+
+      /* ── readout ────────────────────────────────────────────────────────── */
+      .readout {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        max-width: 100%;
+        margin-top: var(--space-5);
+        padding: 9px 9px 9px 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        background: var(--header-bg);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        line-height: 1.7;
+      }
+
+      .readout-status {
+        flex: none;
+        padding: 2px 10px;
+        border-radius: var(--radius-pill);
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .readout-path {
+        overflow: hidden;
+        font-family: inherit;
+        color: var(--text);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .readout-note {
+        flex: none;
+        padding-right: 8px;
+        color: var(--soft);
+        font-size: 12px;
+      }
+
+      /* ── helpful paths ──────────────────────────────────────────────────── */
+      .paths {
+        width: min(100%, 620px);
+        margin-top: var(--space-6);
+        padding-top: var(--space-5);
+        border-top: 1px solid var(--border);
+      }
+
+      .paths .kicker {
+        color: var(--soft);
+      }
+
+      .paths nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: var(--space-4);
+      }
+
+      .paths nav a {
+        padding: 9px 18px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-button);
+        background: var(--surface-raised);
+        color: var(--muted);
+        font-size: 13.5px;
+        font-weight: 650;
+        transition:
+          transform var(--dur-ui) var(--ease),
+          color var(--dur-ui) var(--ease),
+          border-color var(--dur-ui) var(--ease),
+          box-shadow var(--dur-ui) var(--ease);
+      }
+
+      .paths nav a:hover {
+        transform: translateY(-2px);
+        border-color: var(--border-strong);
+        color: var(--accent-strong);
+        box-shadow: var(--shadow-card);
+      }
+
+      /* The glows are sized for a wide canvas; left alone they dominate a narrow
+         one and the lower half of the page turns teal. */
+      @media (max-width: 1000px) {
+        .glow-a {
+          width: 440px;
+          height: 330px;
+          left: -150px;
+          bottom: -120px;
+        }
+        .glow-b {
+          width: 390px;
+          height: 310px;
+          right: -120px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .lockup {
+          gap: 0;
+          margin-top: var(--space-6);
+        }
+        .readout-note {
+          display: none;
+        }
+      }
+
+      /* Nothing here is load-bearing, so under reduced motion it all simply
+         renders in its final state. */
+      @media (prefers-reduced-motion: reduce) {
+        .page > *,
+        .glow-a,
+        .glow-b {
+          animation: none;
+        }
+        .btn:hover,
+        .paths nav a:hover {
+          transform: none;
+        }
+      }
+    </style>
+  </body>
+</html>
