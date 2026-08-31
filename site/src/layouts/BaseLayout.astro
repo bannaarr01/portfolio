@@ -1,0 +1,54 @@
+---
+// STUB: owned by group 01 (01-layout-chrome).
+// Props are the published contract (PLAN.md §6) — keep them when you replace
+// this. The head order below is not decorative: THEME_INIT_SCRIPT must be
+// synchronous and before any stylesheet, or the page flashes light before
+// paint. Astro injects `<link rel=stylesheet>` at the end of <head>, so
+// keeping the inline script first is enough.
+import Header from '../components/layout/Header.astro';
+import { THEME_INIT_SCRIPT } from '../lib/theme';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  noindex?: boolean;
+  wide?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script is:inline set:html={THEME_INIT_SCRIPT} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- SVG first for browsers that take it; .ico is the legacy fallback and
+         the file crawlers still probe for at /favicon.ico. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" sizes="16x16 32x32 48x48" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+  </head>
+  <body>
+    <!-- STUB: owned by group 01 -->
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <!-- Portfolio and journal pass different footers through here. -->
+    <slot name="footer" />
+  </body>
+</html>
+
+<style>
+  main {
+    padding-top: var(--header-h);
+  }
+</style>

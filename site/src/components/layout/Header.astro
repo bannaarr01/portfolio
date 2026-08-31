@@ -1,0 +1,110 @@
+---
+// STUB: owned by group 01 (01-layout-chrome).
+// Glass header, 68px, fixed. `active` highlights the current section.
+import Container from '../ui/Container.astro';
+import Logo from '../ui/Logo.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+interface Props {
+  active?: 'about' | 'experience' | 'projects' | 'skills' | 'education' | 'blog';
+}
+
+const { active } = Astro.props;
+
+const LINKS = [
+  { id: 'about', label: 'About', href: '/#about' },
+  { id: 'experience', label: 'Experience', href: '/#experience' },
+  { id: 'projects', label: 'Projects', href: '/#projects' },
+  { id: 'skills', label: 'Skills', href: '/#skills' },
+  { id: 'education', label: 'Education', href: '/#education' },
+  { id: 'blog', label: 'Journal', href: '/blog/' },
+] as const;
+---
+
+<header class="site-header">
+  <!-- STUB: owned by group 01 -->
+  <Container class="header-inner">
+    <a class="brand" href="/">
+      <Logo size={30} />
+      <span>Boluwaji Joshua Adedigba</span>
+    </a>
+    <nav aria-label="Primary">
+      <ul>
+        {
+          LINKS.map((link) => (
+            <li>
+              <a href={link.href} aria-current={active === link.id ? 'page' : undefined}>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <ThemeToggle />
+  </Container>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    background: var(--header-bg);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-header :global(.header-inner) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    height: var(--header-h);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15.5px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  /* The mark alone carries the brand once the name would start wrapping. */
+  @media (max-width: 420px) {
+    .brand span {
+      display: none;
+    }
+  }
+
+  nav {
+    margin-left: auto;
+  }
+
+  nav ul {
+    display: flex;
+    gap: var(--space-5);
+  }
+
+  nav a {
+    font-size: var(--text-meta);
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  nav a[aria-current='page'] {
+    color: var(--accent);
+  }
+
+  @media (max-width: 900px) {
+    nav {
+      display: none;
+    }
+
+    .brand {
+      margin-right: auto;
+    }
+  }
+</style>

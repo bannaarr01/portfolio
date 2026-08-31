@@ -1,0 +1,52 @@
+---
+// STUB: owned by group 04 (04-journal-taxonomy).
+// CSS-only cover art — zero image bytes. Recipe in PLAN.md §4.8: the base
+// gradient plus concentric arcs, a 52px grid, the category glyph, and the
+// category name. Per-category hue rotation is what makes the four disciplines
+// read differently.
+import type { CategorySlug } from '../../types/content';
+import type { IconName } from '../../types/icons';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  category: CategorySlug;
+  variant: 'lead' | 'card' | 'banner';
+  glyph?: IconName;
+}
+
+const { category, variant, glyph = 'code' } = Astro.props;
+
+// PLAN.md §4.8 — placeholder until group 04 implements the full recipe.
+const HUE: Record<CategorySlug, number> = {
+  go: 0,
+  'aws-cloud': -14,
+  'system-design': 18,
+  'backend-engineering': 32,
+};
+---
+
+<div
+  class="cover-art"
+  data-variant={variant}
+  style={`--cover-hue: ${HUE[category]}deg`}
+  aria-hidden="true"
+>
+  <!-- STUB: owned by group 04 -->
+  <Icon name={glyph} size={40} />
+</div>
+
+<style>
+  .cover-art {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-card);
+    background: linear-gradient(118deg, var(--hero-bg), var(--accent-2));
+    filter: hue-rotate(var(--cover-hue));
+    color: var(--bg);
+  }
+
+  .cover-art[data-variant='banner'] {
+    aspect-ratio: 21 / 6;
+  }
+</style>

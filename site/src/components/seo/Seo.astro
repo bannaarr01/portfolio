@@ -1,0 +1,38 @@
+---
+// STUB: owned by group 06 (06-seo-404-feeds).
+// Meta, canonical, Open Graph, Twitter card, JSON-LD. `canonical` is passed in
+// rather than derived so paginated and category routes can point at the right
+// URL. Resolve ogImage against Astro.site — ogImageUrl() returns a
+// root-relative path, and social crawlers require an absolute one.
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  ogImage?: string;
+  noindex?: boolean;
+  type?: 'website' | 'article';
+}
+
+const {
+  title,
+  description,
+  canonical,
+  ogImage,
+  noindex = false,
+  type = 'website',
+} = Astro.props;
+
+const absoluteOgImage = ogImage ? new URL(ogImage, Astro.site).href : undefined;
+---
+
+<!-- STUB: owned by group 06 -->
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+<meta property="og:type" content={type} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+{absoluteOgImage && <meta property="og:image" content={absoluteOgImage} />}
+<meta name="twitter:card" content={absoluteOgImage ? 'summary_large_image' : 'summary'} />

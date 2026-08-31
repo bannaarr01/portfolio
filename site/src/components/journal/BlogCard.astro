@@ -1,0 +1,76 @@
+---
+// STUB: owned by group 04 (04-journal-taxonomy).
+// `showPart` surfaces the "Part N" badge on series listings, where the part
+// number is the point, and hides it on mixed feeds, where it is noise.
+import { formatDate, getMinutesRead } from '../../lib';
+import type { Post } from '../../types/content';
+import CoverArt from './CoverArt.astro';
+
+interface Props {
+  post: Post;
+  showPart?: boolean;
+}
+
+const { post, showPart = false } = Astro.props;
+const { title, description, category, part, publishDate, heroGlyph } = post.data;
+const minutesRead = getMinutesRead(post);
+---
+
+<article class="blog-card">
+  <!-- STUB: owned by group 04 -->
+  <a href={`/blog/${post.id}/`}>
+    <CoverArt category={category} variant="card" glyph={heroGlyph} />
+    <div class="body">
+      {showPart && part && <p class="kicker">Part {part}</p>}
+      <h3>{title}</h3>
+      <p class="dek">{description}</p>
+      <p class="meta">
+        <time datetime={publishDate.toISOString()}>{formatDate(publishDate, 'short')}</time>
+        {` · ${minutesRead} min read`}
+      </p>
+    </div>
+  </a>
+</article>
+
+<style>
+  .blog-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface-raised);
+    overflow: hidden;
+    transition:
+      transform var(--dur-ui) var(--ease),
+      border-color var(--dur-ui) var(--ease),
+      box-shadow var(--dur-ui) var(--ease);
+  }
+
+  @media (hover: hover) {
+    .blog-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-strong);
+      box-shadow: var(--glow-card-hover);
+    }
+  }
+
+  .body {
+    padding: var(--space-5);
+  }
+
+  h3 {
+    font-size: var(--text-h3);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+  }
+
+  .dek {
+    margin-top: var(--space-2);
+    color: var(--muted);
+  }
+
+  .meta {
+    margin-top: var(--space-3);
+    font-size: var(--text-meta);
+    font-weight: 600;
+    color: var(--soft);
+  }
+</style>

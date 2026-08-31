@@ -1,0 +1,73 @@
+---
+// STUB: owned by group 01 (01-layout-chrome).
+// Functional on purpose — Wave 2 needs a working toggle to check both themes
+// in `npm run dev`. It writes the same `localStorage` key the head script
+// reads (THEME_STORAGE_KEY); keep that contract when you replace it.
+import Icon from '../ui/Icon.astro';
+---
+
+<button
+  class="theme-toggle"
+  type="button"
+  data-theme-toggle
+  aria-label="Toggle colour theme"
+>
+  <!-- STUB: owned by group 01 -->
+  <span class="on-dark"><Icon name="sun" size={18} /></span>
+  <span class="on-light"><Icon name="moon" size={18} /></span>
+</button>
+
+<style>
+  .theme-toggle {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
+  }
+
+  .theme-toggle:hover {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  /* Dark is the default, so `.on-dark` shows unless the attribute is present. */
+  .on-light {
+    display: none;
+  }
+
+  :global(:root[data-theme='light']) .on-dark {
+    display: none;
+  }
+
+  :global(:root[data-theme='light']) .on-light {
+    display: block;
+  }
+</style>
+
+<script>
+  import { THEME_STORAGE_KEY } from '../../lib/theme';
+
+  document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
+    const root = document.documentElement;
+    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+
+    if (next === 'light') root.dataset.theme = 'light';
+    else delete root.dataset.theme;
+
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, next);
+    } catch {
+      /* private mode — the toggle still works for this page view */
+    }
+  });
+</script>

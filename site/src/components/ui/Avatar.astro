@@ -1,0 +1,41 @@
+---
+/**
+ * Initials circle, used for testimonial bylines. Decorative — the person's
+ * name is always rendered next to it, so it stays out of the accessibility
+ * tree rather than being read twice.
+ */
+interface Props {
+  initials: string;
+  size?: number;
+  class?: string;
+}
+
+const { initials, size = 40, class: className } = Astro.props;
+---
+
+<span
+  class:list={['avatar', className]}
+  style={`--avatar-size: ${size}px`}
+  aria-hidden="true">{initials}</span
+>
+
+<style>
+  .avatar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    /* Scales with the circle so a 64px avatar isn't wearing 12px initials. */
+    font-size: calc(var(--avatar-size) * 0.32);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    text-transform: uppercase;
+    user-select: none;
+  }
+</style>

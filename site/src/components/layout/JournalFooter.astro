@@ -1,0 +1,28 @@
+---
+// STUB: owned by group 01 (01-layout-chrome). The journal footer — distinct
+// from SiteFooter by design (PLAN.md §4.7).
+import Container from '../ui/Container.astro';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="journal-footer">
+  <!-- STUB: owned by group 01 -->
+  <Container wide>
+    <p>&copy; {year} — journal footer</p>
+  </Container>
+</footer>
+
+<style>
+  .journal-footer {
+    padding-block: var(--space-7);
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  p {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--soft);
+  }
+</style>
