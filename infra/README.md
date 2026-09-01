@@ -283,12 +283,18 @@ Three stages, in order, and the order is the point (§13.2).
 3. **Prune** orphans, a delete-only pass, last.
 
 With HTML set to `must-revalidate`, CloudFront holds the object but revalidates
-against S3 by ETag on each request. **Routine deploys therefore need no
-invalidation at all** — a handful of conditional GETs, fractions of a cent,
-against staying permanently inside the 1,000 free invalidation paths per month.
+against S3 by ETag on each request. That is what keeps the site correct between
+deploys, at the cost of a handful of conditional GETs.
 
-Invalidation is an opt-in `workflow_dispatch` input. If a blanket `/*` starts
-feeling routine, the cache headers are wrong; more invalidations is not the fix.
+**The deploy also invalidates `/*` every time**, which is belt and braces
+rather than a substitute. The header only protects objects that carried it when
+the edge first cached them, and one `aws s3 sync` without `--cache-control` is
+enough to leave the edge serving a header-less copy under the cache policy's
+24-hour default TTL. Every correct deploy afterwards then changes nothing a
+visitor can see, which reads as a broken pipeline rather than a poisoned cache.
+
+A wildcard counts as **one path** against the 1,000 free per month, so a daily
+deploy spends about 30. That is a cheap price for never debugging this again.
 
 `aws s3 sync` re-uploads every file on every deploy, because it treats a newer
 local mtime as a change and a fresh checkout timestamps everything at clone

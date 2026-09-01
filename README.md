@@ -159,7 +159,7 @@ Add `site/src/content/series/<slug>.yaml` with `slug`, `title`, `description`, `
 
 Site deploys happen automatically on merge to `main` when `site/**` changes. The workflow assumes a narrowly scoped deploy role through GitHub OIDC, so no AWS credentials are stored in the repo.
 
-Assets are uploaded immutable with content-hashed filenames; HTML is uploaded with `max-age=0, must-revalidate`. That combination means CloudFront revalidates HTML via ETag and routine deploys need no cache invalidation at all, keeping the project inside the free invalidation tier.
+Assets are uploaded immutable with content-hashed filenames; HTML is uploaded with `max-age=0, must-revalidate`, so CloudFront revalidates it by ETag. The deploy then invalidates `/*` as a second guard: a wildcard counts as one path against the 1,000 free per month, and it covers the case where an object reached the bucket without the right header and the edge cached it for a day.
 
 A budget alert and a CloudFront 5xx alarm are defined in Terraform rather than clicked into the console.
 

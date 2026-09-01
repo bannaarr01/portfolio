@@ -26,10 +26,6 @@ on:
         type: choice
         options: [prod]
         default: prod
-      invalidate:
-        description: 'Create a CloudFront invalidation (normally unnecessary — see §13.3)'
-        type: boolean
-        default: false
       prune:
         description: 'Run stage 3 and delete orphaned objects'
         type: boolean
@@ -120,11 +116,14 @@ jobs:
 
       # ---- Stage 2: everything else, no --delete ------------------------
       #
-      # Stable paths whose content changes, so they must revalidate. This
-      # header is what makes routine invalidation unnecessary (§13.3):
-      # CloudFront holds the object but revalidates against S3 by ETag, which
-      # costs a conditional GET rather than one of the 1,000 free invalidation
-      # paths per month.
+      # Stable paths whose content changes, so they must revalidate. The edge
+      # holds the object but revalidates against S3 by ETag, which costs a
+      # conditional GET rather than a full transfer.
+      #
+      # This header is still the mechanism that keeps the site correct between
+      # deploys. The invalidation at the end of this workflow is a second belt:
+      # it covers the case where an object reached the bucket without this
+      # header and the edge cached it for a day.
       #
       # Note this re-uploads every file on every deploy. `aws s3 sync` treats a
       # newer local mtime as a change, and a fresh checkout timestamps
@@ -179,11 +178,27 @@ jobs:
             --delete \
             --size-only
 
-      # Off by default and it should stay that way. If a blanket /* becomes
-      # routine, the cache headers are wrong — more invalidations is not the
-      # fix (§13.3).
-      - name: Invalidate CloudFront (opt-in)
-        if: github.event.inputs.invalidate == 'true'
+      # Runs on every deploy, and the reasoning changed deliberately.
+      #
+      # The original design left this opt-in: HTML ships `max-age=0,
+      # must-revalidate`, so the edge revalidates by ETag and an invalidation
+      # buys nothing. That is true only while every object in the bucket
+      # carries the right header. One `aws s3 sync` without `--cache-control`
+      # is enough to break it: those objects arrive header-less, CloudFront
+      # applies the cache policy's 24-hour default TTL, and the edge then
+      # serves them for a day without asking the origin anything. A correct
+      # deploy afterwards changes nothing a visitor can see, which is a
+      # miserable thing to debug — it looks like the pipeline failed when it
+      # did not.
+      #
+      # A wildcard counts as ONE path against the 1,000 free per month, so
+      # even a daily deploy uses about 30. Buying certainty for 3% of the free
+      # tier is the better trade.
+      #
+      # `--paths '/*'` also re-fetches the hashed assets under `_astro/`, which
+      # is harmless: they are immutable, so the edge re-caches them for a year
+      # on first request.
+      - name: Invalidate CloudFront
         run: |
           set -euo pipefail
           id=$(aws cloudfront create-invalidation \
@@ -202,7 +217,6 @@ jobs:
         env:
           TARGET_ENV: ${{ github.event.inputs.environment || 'prod' }}
           DID_PRUNE: ${{ github.event.inputs.prune != 'false' }}
-          DID_INVALIDATE: ${{ github.event.inputs.invalidate == 'true' }}
         run: |
           {
             echo "### site-deploy"
@@ -212,5 +226,5 @@ jobs:
             echo "| Environment | \`${TARGET_ENV}\` |"
             echo "| Bucket | \`${SITE_BUCKET}\` |"
             echo "| Pruned | \`${DID_PRUNE}\` |"
-            echo "| Invalidated | \`${DID_INVALIDATE}\` |"
+            echo "| Invalidated | \`/*\` (every deploy) |"
           } >> "$GITHUB_STEP_SUMMARY"
