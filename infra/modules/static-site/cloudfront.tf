@@ -15,7 +15,13 @@ resource "aws_cloudfront_function" "directory_index" {
   code = templatefile("${path.module}/functions/directory-index.js", {
     # Empty string rather than null: the JS compares against '' to decide
     # whether the redirect is enabled.
-    canonical_host = coalesce(var.canonical_host, "")
+    #
+    # Not `coalesce`. It treats "" as absent as well as null, so with a null
+    # canonical_host every argument is skipped and it fails with "no non-null,
+    # non-empty-string arguments" rather than yielding the "" wanted here. That
+    # is every environment serving a single hostname: staging always, and prod
+    # whenever serve_www is false.
+    canonical_host = var.canonical_host == null ? "" : var.canonical_host
   })
 }
 

@@ -90,21 +90,21 @@ terraform apply
 Creates the state bucket (versioned, SSE-S3, public access blocked, noncurrent
 versions expiring after 90 days) and the GitHub OIDC identity provider.
 
-Then move its own state into the bucket it just made:
-
-```bash
-# uncomment the backend block in backend.tf, substituting the state_bucket output
-terraform init -migrate-state
-```
-
-Losing the local state before this step is recoverable — both resources are
-trivially importable, which is what makes the sequence safe.
-
-Record the bucket name; everything below needs it.
+Record the bucket name; the migration and every step below need it.
 
 ```bash
 export TF_STATE_BUCKET=$(terraform output -raw state_bucket)
 ```
+
+Then move its own state into the bucket it just made:
+
+```bash
+# uncomment the backend block in backend.tf
+terraform init -migrate-state -backend-config="bucket=$TF_STATE_BUCKET"
+```
+
+Losing the local state before this step is recoverable — both resources are
+trivially importable, which is what makes the sequence safe.
 
 ### 2. Shared
 

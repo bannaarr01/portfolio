@@ -11,6 +11,9 @@ github_repo  = "portfolio"
 
 # TODO(owner): budget and 5xx alerts go nowhere until this is set. An email
 # subscription also has to be confirmed from the inbox after the first apply.
-alert_emails = []
+# Subscriber for the account-wide budget alert this environment owns. Same
+# address as staging and prod. AWS emails a confirmation link on first apply
+# and delivers nothing until it is clicked.
+alert_emails = ["joshboluwaji6@gmail.com"]
 
 monthly_budget_usd = 5
