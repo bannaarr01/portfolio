@@ -1,7 +1,17 @@
 /**
  * The hero's stat HUD — the "player card" readout under the lead paragraph.
  *
- * Feeds: `components/home/HeroHud.astro`, via `hero.ts`.
+ * Feeds: `components/home/Hero.astro`, via `hero.ts`.
+ *
+ * ── ONLY PART OF THIS IS RENDERED ────────────────────────────────────────
+ * The stat panel that used to sit under the lead was removed at the owner's
+ * request, so `stats` and `achievements` are currently unrendered. `level`,
+ * `xp` and `xpLabel` are still live: they drive the availability pill at the
+ * top of the hero, which is why this module stays.
+ *
+ * The unrendered halves are kept rather than deleted because they are content,
+ * not scaffolding, and getting them back is a matter of rendering them
+ * somewhere. Delete them if the panel is not coming back.
  *
  * ── WHY THIS EXISTS ──────────────────────────────────────────────────────
  * The hero was correct but inert: a name, a role, a paragraph. This module

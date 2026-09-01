@@ -1,5 +1,5 @@
 ---
-title: 'Move semantics, and why a copy costs what it costs'
+title: 'Move semantics, and why copies are expensive'
 description: 'A pointer copied twice will free the same memory twice. Following that bug to its fix explains deep copies, r-value references, and what moving an object really is.'
 category: cpp
 publishDate: 2026-09-01

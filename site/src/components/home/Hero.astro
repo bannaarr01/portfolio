@@ -9,7 +9,8 @@
 import BackgroundField from '../background/BackgroundField.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
-import HeroHud from './HeroHud.astro';
+import { getMinutesRead, getPublishedPosts } from '../../lib';
+import { CATEGORY_ART, categoryTitle } from '../journal/taxonomy';
 import type { HeroContent } from './types';
 
 interface Props {
@@ -20,6 +21,32 @@ const { content } = Astro.props;
 
 /** "LVL 4" reads like a typo next to a two-digit XP figure. Pad it. */
 const level = String(content.hud.level).padStart(2, '0');
+
+/**
+ * The newest article, for the journal line under the CTAs.
+ *
+ * A "Read the blog" button is the thing every portfolio has and nobody clicks,
+ * because it promises a page rather than a subject. Naming the actual latest
+ * piece gives a reason to click, and the line re-points itself at whatever
+ * ships next without anyone editing the hero.
+ *
+ * Through `getPublishedPosts()` so a draft can never surface above the fold,
+ * and resolved at build time, so it costs no client JavaScript.
+ */
+const posts = await getPublishedPosts();
+const [latest] = posts;
+
+/**
+ * The teaser borrows the journal's own cover-art recipe rather than inventing
+ * a hero-only decoration: same gradient, same per-category hue rotation, same
+ * glyph as the cards on `/blog/`. A reader who clicks through lands on a page
+ * whose artwork they have already seen, which is the point of the tile.
+ *
+ * `heroGlyph` wins over the category default when a post sets it, matching
+ * `CoverArt`.
+ */
+const art = latest ? CATEGORY_ART[latest.data.category] : undefined;
+const latestCategory = latest ? await categoryTitle(latest.data.category) : '';
 ---
 
 <section class="hero" id="top">
@@ -60,14 +87,12 @@ const level = String(content.hud.level).padStart(2, '0');
 
     <p class="lead" style="--i: 3">{content.lead}</p>
 
-    {
-      /* The standalone location row folded into the HUD's header — it was a
-        whole 38px band carrying one word, and the HUD needed a right-hand
-        item. */
-    }
-    <div class="hudwrap" style="--i: 4">
-      <HeroHud hud={content.hud} location={content.location} />
-    </div>
+    <p class="loc" style="--i: 4">
+      <span class="locpill">
+        <Icon name="map-pin" size={13} />
+        {content.location}
+      </span>
+    </p>
 
     <div class="actions" style="--i: 5">
       <Button variant="primary" href={content.primaryCta.href}>
@@ -79,6 +104,45 @@ const level = String(content.hud.level).padStart(2, '0');
         <Icon name={content.secondaryCta.icon} size={16} />
       </Button>
     </div>
+
+    {
+      /* Not a third button. Three peers on one row is a menu, and a button
+        advertises the blog while this advertises a piece of writing, which is
+        what actually earns a click. */
+    }
+    {
+      latest && art && (
+        <a
+          class="dispatch"
+          href={`/blog/${latest.id}/`}
+          style={`--i: 6; --cover-rotate: ${art.rotate}`}
+        >
+          <span class="dart" aria-hidden="true">
+            <span class="dart-bg" />
+            <Icon name={latest.data.heroGlyph ?? art.glyph} size={23} />
+          </span>
+
+          <span class="dbody">
+            <span class="dtop">
+              <span class="ddot" aria-hidden="true" />
+              <span class="dkicker">New in the journal</span>
+              <span class="dmins">{getMinutesRead(latest)} min</span>
+            </span>
+
+            <span class="dtitle">{latest.data.title}</span>
+
+            <span class="dfoot">
+              <span class="dcat">{latestCategory}</span>
+              <span class="dsep" aria-hidden="true">
+                &middot;
+              </span>
+              <span>{posts.length} articles</span>
+              <Icon name="arrow-right" size={15} class="darrow" />
+            </span>
+          </span>
+        </a>
+      )
+    }
 
     {
       /* Two elements on purpose — see the `.cue` rules below: the link carries
@@ -294,12 +358,35 @@ const level = String(content.hud.level).padStart(2, '0');
     line-height: 1.68;
   }
 
-  /* `.inner` is a centred flex column, so the HUD needs a wrapper to be the
-     stagger participant while the panel itself sizes to its own max-width. */
-  .hudwrap {
-    display: flex;
-    width: 100%;
-    justify-content: center;
+  /* ------------------------------------------------------- location -- */
+
+  .loc {
+    margin: 20px 0 0;
+  }
+
+  /* A pill rather than a bare line of muted text. On its own between the lead
+     and the CTAs, unbordered text read as a caption that had drifted; the
+     border and the glass give it the same footing as the availability pill
+     above, so the two bracket the headline. */
+  .locpill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px 4px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--header-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+  }
+
+  .locpill :global(svg) {
+    flex: none;
+    color: var(--accent);
   }
 
   .actions {
@@ -308,6 +395,219 @@ const level = String(content.hud.level).padStart(2, '0');
     justify-content: center;
     gap: 12px;
     margin-top: 20px;
+  }
+
+  /* ------------------------------------------------------- dispatch -- */
+
+  /*
+    A teaser card, not a link. It carries colour by default rather than only on
+    hover, because the previous version sat in --muted behind a hairline and
+    disappeared next to two filled CTAs.
+
+    It still must not read as a third CTA: it is wider than tall, left-aligned
+    against the centred column above it, and its weight comes from the artwork
+    rather than from a fill competing with the primary button.
+  */
+  .dispatch {
+    display: inline-flex;
+    max-width: min(100%, 520px);
+    align-items: stretch;
+    gap: 13px;
+    margin-top: 26px;
+    padding: 11px;
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius: 16px;
+    background: var(--accent-soft);
+    text-align: left;
+    text-decoration: none;
+    transition:
+      border-color 220ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      box-shadow 220ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1)),
+      transform 220ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+  }
+
+  .dispatch:hover,
+  .dispatch:focus-visible {
+    border-color: var(--accent);
+    box-shadow: var(--glow-card-hover);
+  }
+
+  /* ---- the cover tile ---- */
+
+  /*
+    The journal's own recipe at tile scale: same gradient stops and the same
+    per-category hue rotation as `CoverArt`, with the grid tightened from 52px
+    to 13px so it still reads as a grid at 62px wide. The filter sits on its own
+    layer so the hue rotation never touches the glyph above it, exactly as it
+    does in the real component.
+  */
+  .dart {
+    position: relative;
+    display: grid;
+    width: 62px;
+    flex: none;
+    border-radius: 11px;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--cover-1);
+    color: var(--cover-ink);
+    place-items: center;
+  }
+
+  .dart-bg {
+    position: absolute;
+    z-index: 0;
+    background: linear-gradient(
+      118deg,
+      var(--cover-1) 0%,
+      var(--cover-2) 26%,
+      var(--cover-3) 58%,
+      var(--cover-4) 82%,
+      var(--cover-5) 100%
+    );
+    filter: hue-rotate(var(--cover-rotate, 0deg));
+    inset: 0;
+  }
+
+  .dart-bg::after {
+    position: absolute;
+    background:
+      radial-gradient(
+        circle at 68% 112%,
+        transparent 41%,
+        var(--cover-arc-1) 41.4%,
+        var(--cover-arc-1) 43%,
+        transparent 43.4%
+      ),
+      radial-gradient(
+        circle at 68% 112%,
+        transparent 67%,
+        var(--cover-arc-2) 67.4%,
+        var(--cover-arc-2) 69%,
+        transparent 69.4%
+      ),
+      repeating-linear-gradient(to right, var(--cover-grid) 0 1px, transparent 1px 13px),
+      repeating-linear-gradient(to bottom, var(--cover-grid) 0 1px, transparent 1px 13px);
+    content: '';
+    inset: 0;
+  }
+
+  .dart :global(svg) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---- the copy ---- */
+
+  .dbody {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+    padding-right: 2px;
+  }
+
+  .dtop,
+  .dfoot {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  /* The one moving part, and it earns it: a static marker says "there is a
+     blog", a live one says "there is something new here". */
+  .ddot {
+    position: relative;
+    width: 6px;
+    height: 6px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .dkicker {
+    color: var(--accent-strong);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .dmins {
+    margin-left: auto;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+
+  /* The title is the reason anyone clicks, so it takes the reading weight.
+     Two lines, then ellipsis: one line truncates most of these titles. */
+  .dtitle {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .dfoot {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .dcat {
+    color: var(--accent-strong);
+  }
+
+  .dsep {
+    color: var(--border-strong);
+  }
+
+  .dispatch :global(.darrow) {
+    flex: none;
+    margin-left: auto;
+    color: var(--accent);
+    transition: transform 220ms var(--ease, cubic-bezier(0.4, 0, 0.2, 1));
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ddot::after {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: dpulse 2.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+      content: '';
+    }
+
+    .dispatch:hover,
+    .dispatch:focus-visible {
+      transform: translateY(-2px);
+    }
+
+    .dispatch:hover :global(.darrow),
+    .dispatch:focus-visible :global(.darrow) {
+      transform: translateX(3px);
+    }
+  }
+
+  @keyframes dpulse {
+    0% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    70%,
+    100% {
+      opacity: 0;
+      transform: scale(2.8);
+    }
   }
 
   /* ------------------------------------------------------------- cue -- */
@@ -508,6 +808,12 @@ const level = String(content.hud.level).padStart(2, '0');
 
     .actions > :global(*) {
       justify-content: center;
+    }
+
+    /* Full width at phone sizes so the title keeps two comfortable lines
+       instead of clamping after five words. */
+    .dispatch {
+      width: 100%;
     }
   }
 </style>
