@@ -1,5 +1,5 @@
 ---
-/** About: prose column + 2×2 stat grid, collapsing to one column at 900px. */
+/** About: prose column + the figures readout, stacking at 900px. */
 import type { Stat } from '../../types/portfolio';
 import Reveal from '../ui/Reveal.astro';
 import Section from './Section.astro';
@@ -14,6 +14,20 @@ interface Props {
 }
 
 const { heading, content, stats } = Astro.props;
+
+/**
+ * Split "50+" into the figure and its qualifier so they can be set in
+ * different type. The figures then sit in one tabular-numeral column and stay
+ * optically aligned down the panel instead of each being nudged right by the
+ * width of its own "+".
+ *
+ * A value with no qualifier falls through with an empty string, and a value
+ * that does not start with digits is left whole rather than mangled.
+ */
+const rows = stats.map((stat) => {
+  const [, figure = stat.value, qualifier = ''] = /^([\d.,]+)(.*)$/.exec(stat.value) ?? [];
+  return { ...stat, figure, qualifier };
+});
 ---
 
 <Section id="about" band="bg">
@@ -29,20 +43,28 @@ const { heading, content, stats } = Astro.props;
     <dl class="stats">
       {
         /*
-          `Reveal` renders the card itself rather than wrapping it. Two nested
+          `Reveal` renders the row itself rather than wrapping it. Two nested
           divs between <dl> and its <dt>/<dd> breaks the definition-list
           grouping rule: at most one wrapper element is allowed there, and
           axe (so Lighthouse) fails both `definition-list` and `dlitem` on it.
 
-          Term before description, too — <dt> then <dd> is the required order.
-          `.stat` reverses them visually so the figure still reads above its
-          label, which also gives screen readers the more sensible
-          "Years Experience: 4+" rather than "4+: Years Experience".
+          <dt> before <dd> is required, and here it is also what you want to
+          read: the row lays out left to right, so the label precedes its
+          figure visually and in the accessibility tree. The old 2×2 card
+          reversed them with `column-reverse` to put the figure on top; the
+          readout needs no such trick.
+
+          The row styles live in `home.css`, not in this file's scoped block.
+          See the note above `.stats` there — it is a real trap, not a
+          preference.
         */
-        stats.map((stat, i) => (
-          <Reveal as="div" class="stat h-card" delay={i * 60}>
-            <dt>{stat.label}</dt>
-            <dd>{stat.value}</dd>
+        rows.map((row, i) => (
+          <Reveal as="div" class="stat" delay={i * 60}>
+            <dt>{row.label}</dt>
+            <dd>
+              {row.figure}
+              {row.qualifier && <span class="stat-unit">{row.qualifier}</span>}
+            </dd>
           </Reveal>
         ))
       }
@@ -69,57 +91,8 @@ const { heading, content, stats } = Astro.props;
     line-height: 1.72;
   }
 
-  /* Stretches to the height of the copy column so the two sides balance. */
-  .stats {
-    display: grid;
-    height: 100%;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    margin: 0;
-  }
-
-  /* Reveal renders the card itself; it fills the cell so the 2×2 stays even. */
-  .stats > :global(*) {
-    height: 100%;
-  }
-
-  /* column-reverse, because the DOM order is <dt> then <dd> (required for a
-     valid definition list) while the figure has to read above its label. */
-  .stat {
-    display: flex;
-    height: 100%;
-    flex-direction: column-reverse;
-    justify-content: center;
-    padding: 24px 22px;
-  }
-
-  .stat dd {
-    margin: 0;
-    color: var(--accent-strong);
-    font-family: var(--font-mono);
-    font-size: 34px;
-    font-weight: 500;
-    line-height: 1.1;
-    letter-spacing: -0.035em;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .stat dt {
-    margin-top: 7px;
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.4;
-    letter-spacing: -0.005em;
-  }
-
   @media (max-width: 900px) {
     .grid {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-
-  @media (max-width: 420px) {
-    .stats {
       grid-template-columns: minmax(0, 1fr);
     }
   }

@@ -184,3 +184,122 @@
   background: var(--accent-soft);
   color: var(--accent-strong);
 }
+
+/* ------------------------------------------------------- about readout -- */
+/*
+ * The About figures, as one instrument panel rather than four floating cards.
+ *
+ * THESE RULES LIVE HERE FOR A REASON, not out of preference. Each row is
+ * rendered by <Reveal>, and a child component's root element never receives
+ * the parent's `data-astro-cid-*` attribute. Astro stamps that attribute onto
+ * every compound of a scoped selector, so a scoped `.stat dd { ... }` in
+ * About.astro compiles to `.stat[cid] dd[cid]` and matches nothing at all.
+ * The previous version was written that way: every rule for the row and its
+ * contents was dead, and the section shipped as four block boxes with the
+ * label above the figure and 140px of empty space beneath it.
+ *
+ * If you move these back into About.astro, verify in a browser rather than by
+ * reading the file. The failure is silent.
+ */
+
+.stats {
+  display: grid;
+  /* Rows divide the panel evenly but never squash below their own content,
+     which is what makes the panel track the height of the prose beside it
+     instead of leaving a hole under a short figure. */
+  grid-auto-rows: minmax(min-content, 1fr);
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* clips the row hairlines to the corner radius */
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-raised);
+  counter-reset: stat;
+}
+
+.stat {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 var(--space-4);
+  padding: clamp(14px, 2vw, 20px) clamp(16px, 2.2vw, 22px);
+  counter-increment: stat;
+}
+
+.stat + .stat {
+  border-top: 1px solid var(--border);
+}
+
+/* The rail numeral, echoing the section indices. Generated rather than
+   authored: the order comes from the data file and nothing should have to
+   renumber by hand when an entry moves. */
+.stat::before {
+  content: counter(stat, decimal-leading-zero);
+  color: var(--soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-kicker);
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  font-variant-numeric: tabular-nums;
+  transition: color var(--dur-ui) var(--ease);
+}
+
+/* Edge tick. The one moving part, and it only moves on the row you point at. */
+.stat::after {
+  content: '';
+  position: absolute;
+  inset-block: 18%;
+  inset-inline-start: 0;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent-2));
+  transform: scaleY(0);
+  transition: transform var(--dur-ui) var(--ease);
+}
+
+.stat:hover::after {
+  transform: scaleY(1);
+}
+
+.stat:hover::before {
+  color: var(--accent-strong);
+}
+
+.stat dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+}
+
+.stat dd {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: clamp(26px, 2.6vw, 34px);
+  font-weight: 500;
+  line-height: 1;
+  text-align: right;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The trailing "+" is a qualifier, not a digit. Setting it smaller, raised and
+   in the accent keeps it out of the numeral column, so the figures stay
+   aligned down the panel and the accent gets used sparingly rather than on
+   four large numbers at once. */
+.stat-unit {
+  margin-left: 0.06em;
+  color: var(--accent-strong);
+  font-size: 0.52em;
+  vertical-align: 0.62em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat::before,
+  .stat::after {
+    transition: none;
+  }
+}
