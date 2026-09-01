@@ -24,8 +24,7 @@ infra/
 │  └─ guardrails/        monthly cost budget
 └─ envs/
    ├─ shared/            hosted zone, budget, terraform role  (account-level)
-   ├─ staging/           staging.<domain>, noindex
-   └─ prod/              apex + www
+   └─ prod/              joshua.<domain>
 ```
 
 Environments hold provider config, backend config, module calls and tfvars.
@@ -48,26 +47,27 @@ lifecycle must outlive any single site:
 
 | Thing | Why it cannot live in prod |
 |---|---|
-| Hosted zone | Shared with staging; `destroy` on prod must not remove it |
+| Hosted zone | Holds the apex MX and TXT records; `destroy` on prod must not remove it |
 | Cost budget | Account-wide; two copies double-count the same spend |
-| `terraform` role | Manages both environments; two would race for one state file |
+| `terraform` role | Manages every environment; two would race for one state file |
 
-The per-environment `site-deploy` roles do live in `envs/staging` and
-`envs/prod`, because each names exactly one bucket and one distribution.
+The per-environment `site-deploy` role does live in `envs/prod`, because it
+names exactly one bucket and one distribution. A second environment would get
+its own.
 
 ---
 
 ## Standing it up
 
-Order matters: `bootstrap` → `shared` → `staging` → `prod`. The first pass is
+Order matters: `bootstrap` → `shared` → `prod`. The first pass is
 manual, because the role CI uses to apply is itself created by `shared` and
 cannot create itself.
 
 ### 0. Fill in the domain
 
-`domain_name` is the one value nothing can infer, and it appears in all three
-tfvars files. Every other name — certificate SANs, aliases, the staging
-subdomain — is derived from it.
+`domain_name` is the one value nothing can infer, and it appears in both
+tfvars files. Every other name — certificate SANs, aliases, the `subdomain`
+prefix — is derived from it.
 
 ```bash
 grep -rn 'example.dev' infra/envs/*/terraform.tfvars
@@ -120,34 +120,18 @@ the whole build that cannot be done from Terraform. Nothing below works until
 delegation has propagated — check with
 `dig +short NS <domain>` before continuing.
 
-### 3. Staging
+### 3. Production
 
-```bash
-cd ../staging
-terraform init -backend-config="bucket=$TF_STATE_BUCKET"
-terraform apply
-```
+There is deliberately no staging environment. It was removed once prod was
+standing: a second distribution and certificate for a single-author static
+site bought a rehearsal step and little else, and the checks below are cheap
+enough to run against prod directly. `scripts/preview-with-headers.mjs`
+reproduces the header policy and the directory rewrite locally, which is where
+a mistake is cheapest to find.
 
-Expect 5–15 minutes; the distribution dominates. Then verify end to end,
-because this is the environment where the awkward parts are supposed to
-surface:
-
-```bash
-URL=https://staging.<domain>
-
-curl -sI  $URL/                     # 200, and check the headers below
-curl -sI  $URL/blog/                # 200 — proves the trailing-slash rewrite
-curl -sI  $URL/blog                 # 200 — proves the extensionless rewrite
-curl -sI  $URL/nope/                # 404 with the custom page, NOT 403
-curl -sI  http://staging.<domain>/  # 301 to https
-```
-
-The header set to look for: `strict-transport-security`,
-`content-security-policy`, `x-content-type-options`, `x-frame-options`,
-`referrer-policy`, `permissions-policy`, and on staging only,
-`x-robots-tag: noindex, nofollow`.
-
-### 4. Production
+If a rehearsal environment is ever wanted back, `envs/prod` is the template:
+copy it, set `subdomain`, and set `noindex = true` so a staging copy cannot
+outrank prod for its own content.
 
 ```bash
 cd ../prod
@@ -178,7 +162,6 @@ And these as **environment** variables, per environment:
 | Environment | Variables |
 |---|---|
 | `prod` | `AWS_DEPLOY_ROLE_ARN`, `SITE_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID`, `AWS_REGION` |
-| `staging` | the same, from `envs/staging` outputs |
 | `infra-plan` | none |
 | `infra-prod` | none |
 
@@ -188,7 +171,6 @@ Then configure the environments themselves:
   Add required reviewers to `infra-prod`; that approval gate is the only thing
   between a merged PR and a live infrastructure change.
 - **`infra-plan`** — no reviewers, so plans run automatically on PRs.
-- **`staging`** — no restrictions needed.
 
 The environment name is not cosmetic. A job that declares
 `environment: prod` gets an OIDC token whose `sub` is
@@ -254,8 +236,8 @@ page paints in the wrong theme first, and hashing it is what keeps the rest of
 `script-src` meaningful.
 
 The hashes live in `csp_script_hashes`, a list. While it is empty every inline
-script is blocked — which is the intended failure mode, because it is visible
-on staging.
+script is blocked. `scripts/preview-with-headers.mjs` serves `dist/` with the
+real policy attached, which is where that failure should be caught.
 
 **It is a list, not a single hash.** This was written expecting one entry, the
 theme-init snippet. The built site has seven: Astro inlines each island's
@@ -348,7 +330,8 @@ iterating.
 
 **A `.dev` domain has no HTTP fallback.** The TLD is HSTS-preloaded, so
 browsers refuse plaintext entirely and the site is simply unreachable until
-the certificate is valid and the distribution is deployed. Validate on staging.
+the certificate is valid and the distribution is deployed. Check `dig` and the
+certificate status before switching a live domain.
 
 **Encrypting the alarm topic breaks the alarm.** SNS SSE needs a KMS key, and
 the free `alias/aws/sns` does not grant `cloudwatch.amazonaws.com` permission
@@ -357,8 +340,8 @@ code — encrypting it with the obvious key would make every notification fail
 silently.
 
 **A hosted zone bills $0.50/month whether or not it holds records.** Deleting
-the records is not enough; delete the zone. That is also why staging is free:
-it shares prod's.
+the records is not enough; delete the zone. It is also why a second environment
+is nearly free: it shares this one.
 
 **Scanner suppressions go in different places.** checkov reads
 `# checkov:skip=ID:reason` from *inside* the resource block; trivy reads
@@ -400,7 +383,7 @@ cd infra
 terraform fmt -recursive -check
 node modules/static-site/functions/directory-index.test.js
 
-for e in envs/shared envs/staging envs/prod; do
+for e in envs/shared envs/prod; do
   terraform -chdir="$e" init -backend=false && terraform -chdir="$e" validate
 done
 
@@ -437,7 +420,7 @@ Apple Silicon laptop makes `terraform init` fail on GitHub's linux runners with
 file"*. When bumping the provider, regenerate rather than letting `init` do it:
 
 ```bash
-for d in bootstrap envs/shared envs/staging envs/prod; do
+for d in bootstrap envs/shared envs/prod; do
   terraform -chdir="$d" providers lock \
     -platform=linux_amd64 -platform=linux_arm64 \
     -platform=darwin_arm64 -platform=darwin_amd64

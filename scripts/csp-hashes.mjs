@@ -34,10 +34,12 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const DIST = join(ROOT, 'site', 'dist');
-const TFVARS = [
-  join(ROOT, 'infra', 'envs', 'staging', 'terraform.tfvars'),
-  join(ROOT, 'infra', 'envs', 'prod', 'terraform.tfvars'),
-];
+/**
+ * Every environment whose headers policy pins these hashes. One entry today;
+ * it stays a list because a second environment would need the identical set,
+ * and discovering that by hand-editing a second file is how they drift.
+ */
+const TFVARS = [join(ROOT, 'infra', 'envs', 'prod', 'terraform.tfvars')];
 
 /** Inline `<script>` only — anything with a `src` is covered by `'self'`. */
 const INLINE_SCRIPT = /<script(?![^>]*\ssrc=)([^>]*)>([\s\S]*?)<\/script>/gi;

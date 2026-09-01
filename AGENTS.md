@@ -95,7 +95,7 @@ grep -rn "getCollection('blog')" site/src --include=*.astro | grep -v src/lib
 grep -rn "aws_vpc\|nat_gateway\|aws_lb\|aws_db_instance" infra/
 ```
 
-Use `npm ci`, never `npm install` — group 00 owns the lockfile. Terraform applies to `infra/envs/staging` before prod, always.
+Use `npm ci`, never `npm install` — group 00 owns the lockfile. There is one Terraform environment, `infra/envs/prod`; plans run on PRs, applies wait on the `infra-prod` approval gate.
 
 ## 🤝 Working in this repo
 

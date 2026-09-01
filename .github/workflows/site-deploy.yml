@@ -24,8 +24,8 @@ on:
       environment:
         description: 'Target environment'
         type: choice
-        options: [staging, prod]
-        default: staging
+        options: [prod]
+        default: prod
       invalidate:
         description: 'Create a CloudFront invalidation (normally unnecessary — see §13.3)'
         type: boolean

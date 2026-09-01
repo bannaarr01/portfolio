@@ -119,7 +119,7 @@ node scripts/csp-hashes.mjs          # inline-script hashes for the CSP
 node scripts/preview-with-headers.mjs   # serve dist/ with the real CloudFront headers
 ```
 
-`preview-with-headers` is the one worth knowing about. `astro preview` sends no security headers, so it cannot tell you whether the Content-Security-Policy about to be attached by CloudFront blocks anything. This serves `dist/` with the actual policy — hashes read straight out of the staging tfvars — and reproduces the directory-index rewrite and the 403→404 mapping. A CSP failure is invisible server-side: the object is delivered with a 200 and the browser quietly refuses to run part of it.
+`preview-with-headers` is the one worth knowing about. `astro preview` sends no security headers, so it cannot tell you whether the Content-Security-Policy about to be attached by CloudFront blocks anything. This serves `dist/` with the actual policy — hashes read straight out of the prod tfvars — and reproduces the directory-index rewrite and the 403→404 mapping. A CSP failure is invisible server-side: the object is delivered with a 200 and the browser quietly refuses to run part of it.
 
 ## Writing
 
@@ -163,21 +163,26 @@ Assets are uploaded immutable with content-hashed filenames; HTML is uploaded wi
 
 A budget alert and a CloudFront 5xx alarm are defined in Terraform rather than clicked into the console.
 
-### Before the first apply
+### The environment
 
-Nothing has been applied yet, but the configuration is complete — both decisions that used to be open are now settled in `infra/envs/prod/terraform.tfvars`:
+One environment, `infra/envs/prod`, serving `joshua.naijora.com`. There is no
+staging: a second distribution and certificate for a single-author static site
+bought a rehearsal step and little else, and `scripts/preview-with-headers.mjs`
+reproduces the header policy and the directory rewrite locally, which is where
+a mistake is cheapest to find. `infra/README.md` covers bringing one back.
 
-1. **What production serves.** `joshua.naijora.com`, matching every other document in the repo. `envs/prod` takes the same optional `subdomain` variable staging has, so the two environments differ by a tfvars value rather than by shape. `serve_www` is `false` and `variables.tf` now rejects any attempt to set it alongside a subdomain: `www.joshua.naijora.com` is two labels deep, the issued `*.naijora.com` wildcard matches exactly one, and ACM SANs are immutable — covering it would mean a new certificate, not an edit.
-2. **`alert_emails`** is set to the owner address from `src/data/profile.ts` in both environments. AWS sends a confirmation email on first apply; until that link is clicked the subscription sits in `PendingConfirmation` and delivers nothing, so check for it after applying.
+`bootstrap`, `envs/shared` and `envs/prod` are applied and the site is live.
+State lives in S3, so nothing sits on a laptop.
 
-Then, staging first:
+Deploys run on merge to `main` and then wait: the `prod` GitHub environment
+requires the owner's approval before anything reaches S3 or CloudFront, and
+`infra-prod` does the same for `terraform apply`. Plans run automatically on
+pull requests and need no approval.
 
-```bash
-cd infra/envs/staging
-terraform init && terraform plan && terraform apply
-```
-
-Verify on staging before promoting: directory URLs resolve (the CloudFront viewer-request function), an unknown path renders the 404 with a 404 status (the 403→404 mapping), the security headers are present, and both themes work over real TLS with no CSP violation in the console. `scripts/preview-with-headers.mjs` reproduces all four locally, which is the cheaper place to find a mistake.
+One thing to check after a first apply: `alert_emails` is set to the owner
+address from `src/data/profile.ts`, and AWS sends a subscription confirmation.
+Until that link is clicked the subscription sits in `PendingConfirmation` and
+the budget and 5xx alarms deliver nothing.
 
 ### The CSP hashes are content-derived
 

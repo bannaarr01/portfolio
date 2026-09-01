@@ -1,12 +1,12 @@
 project = "portfolio"
 region  = "ap-southeast-1"
 
-# Must match envs/shared and envs/staging.
+# Must match envs/shared.
 #
 # RESOLVED — option (b): production serves `joshua.naijora.com`, which is what
 # README.md, AGENTS.md, domain.md §"Site domain" and astro.config.mjs have all
 # stated throughout. The environment now takes the same optional `subdomain`
-# staging has, rather than the docs being rewritten around the apex.
+# variable, rather than the docs being rewritten around the apex.
 #
 # `serve_www` stays false, and `variables.tf` now enforces that rather than
 # leaving it to a comment: `www.joshua.naijora.com` is two labels deep, the

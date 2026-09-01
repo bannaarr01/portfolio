@@ -1,13 +1,14 @@
 ##############################################################################
 # envs/prod — apex + www.
 #
-# The same modules staging uses, with different tfvars. If something works on
-# staging and fails here, the difference is a variable.
+# The only environment. A second one would reuse these modules with different
+# tfvars, which is why nothing here is hardcoded to this host.
 #
 # §11.4 applies: a distribution change takes 5–15 minutes to deploy. If the
 # domain is a `.dev` there is also no HTTP fallback (§11.3), so the site is
 # unreachable between the DNS switch and the certificate being live — validate
-# on staging first, and do not discover a headers-policy typo here.
+# check `scripts/preview-with-headers.mjs` first rather than discovering a
+# headers-policy typo against a live distribution.
 ##############################################################################
 
 # Owned by envs/shared and looked up by name, so prod holds no read lock on
@@ -22,9 +23,8 @@ data "aws_route53_zone" "primary" {
 }
 
 locals {
-  # The host this environment actually serves. Composed the same way staging
-  # composes its own, so the two environments differ by a tfvars value rather
-  # than by module shape.
+  # The host this environment actually serves, composed from tfvars so a second
+  # environment would differ by a value rather than by module shape.
   site_host = var.subdomain == null ? var.domain_name : "${var.subdomain}.${var.domain_name}"
 
   www_domain = "www.${local.site_host}"

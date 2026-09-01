@@ -12,7 +12,7 @@
  * This reproduces two things from the CloudFront distribution:
  *
  *   1. The response headers policy in `infra/modules/static-site/headers.tf`,
- *      with `csp_script_hashes` read out of the staging tfvars so the hashes
+ *      with `csp_script_hashes` read out of the prod tfvars so the hashes
  *      under test are the ones that will actually be deployed.
  *   2. The viewer-request function's directory rewrite: a URI ending in `/`
  *      gets `index.html` appended, and an unknown path returns the 404
@@ -37,7 +37,7 @@ if (!existsSync(DIST)) {
 
 /** Pull the pinned hashes straight from the tfvars — no second source of truth. */
 function pinnedHashes() {
-  const tfvars = readFileSync(join(ROOT, 'infra', 'envs', 'staging', 'terraform.tfvars'), 'utf8');
+  const tfvars = readFileSync(join(ROOT, 'infra', 'envs', 'prod', 'terraform.tfvars'), 'utf8');
   const block = /csp_script_hashes\s*=\s*\[([\s\S]*?)\]/.exec(tfvars)?.[1] ?? '';
   return [...block.matchAll(/"(sha(?:256|384|512)-[^"]+)"/g)].map((m) => m[1]);
 }
@@ -117,5 +117,5 @@ createServer((req, res) => {
   createReadStream(file).pipe(res);
 }).listen(PORT, () => {
   console.log(`dist/ on http://localhost:${PORT} with the CloudFront header set`);
-  console.log(`script-src pins ${hashes.length} hash(es) from envs/staging/terraform.tfvars`);
+  console.log(`script-src pins ${hashes.length} hash(es) from envs/prod/terraform.tfvars`);
 });

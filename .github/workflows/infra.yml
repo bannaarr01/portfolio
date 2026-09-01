@@ -72,7 +72,7 @@ jobs:
         working-directory: infra
         run: |
           set -euo pipefail
-          for env_dir in envs/shared envs/staging envs/prod; do
+          for env_dir in envs/shared envs/prod; do
             echo "::group::validate $env_dir"
             terraform -chdir="$env_dir" init -backend=false -input=false
             terraform -chdir="$env_dir" validate
@@ -175,7 +175,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        env: [shared, staging, prod]
+        env: [shared, prod]
 
     steps:
       - uses: actions/checkout@v4
@@ -328,7 +328,7 @@ jobs:
       fail-fast: true
       max-parallel: 1
       matrix:
-        env: [shared, staging, prod]
+        env: [shared, prod]
 
     steps:
       - uses: actions/checkout@v4

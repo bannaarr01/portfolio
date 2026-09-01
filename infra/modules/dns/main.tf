@@ -7,8 +7,8 @@
 # website, and re-creating the zone hands you new nameservers to re-delegate
 # at the registrar.
 #
-# Both environments share this one zone (staging is a subdomain), so the
-# $0.50/month is paid once. That is the whole reason staging is free.
+# Every environment shares this one zone, each on its own subdomain, so the
+# $0.50/month is paid once however many exist.
 ##############################################################################
 
 resource "aws_route53_zone" "this" {

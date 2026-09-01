@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        env: [shared, staging, prod]
+        env: [shared, prod]
 
     steps:
       - uses: actions/checkout@v4

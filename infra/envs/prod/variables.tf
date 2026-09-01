@@ -16,7 +16,7 @@ variable "domain_name" {
 }
 
 variable "subdomain" {
-  description = "Label prefixed to domain_name for this environment, matching how staging composes its host. Null serves the apex. `joshua` serves joshua.naijora.com, which is what README.md, AGENTS.md, domain.md and astro.config.mjs all declare production to be."
+  description = "Label prefixed to domain_name for this environment. Null serves the apex. `joshua` serves joshua.naijora.com, which is what README.md, AGENTS.md, domain.md and astro.config.mjs all declare production to be."
   type        = string
   default     = null
 }
