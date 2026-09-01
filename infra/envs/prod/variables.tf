@@ -48,6 +48,20 @@ variable "github_repo" {
   type        = string
 }
 
+# Numeric GitHub ids, for the immutable `sub` claim. See the note in
+# modules/ci-oidc/variables.tf.
+variable "github_owner_id" {
+  description = "Numeric GitHub account id of the owner."
+  type        = number
+  default     = null
+}
+
+variable "github_repo_id" {
+  description = "Numeric GitHub repository id."
+  type        = number
+  default     = null
+}
+
 variable "price_class" {
   description = "CloudFront price class. PriceClass_100 is NA + EU; widen only if the audience warrants it."
   type        = string

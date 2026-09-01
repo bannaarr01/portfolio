@@ -30,7 +30,14 @@ locals {
     : data.aws_iam_openid_connect_provider.github[0].arn
   )
 
-  repo = "${var.github_owner}/${var.github_repo}"
+  # `owner@id/repo@id` when the numeric ids are supplied, plain `owner/repo`
+  # otherwise. See the note in variables.tf: GitHub issues the first form now,
+  # and a policy written for the second fails closed with an unhelpful error.
+  repo = (
+    var.github_owner_id == null
+    ? "${var.github_owner}/${var.github_repo}"
+    : "${var.github_owner}@${var.github_owner_id}/${var.github_repo}@${var.github_repo_id}"
+  )
 
   # The repository half of the `sub` claim is fixed by the module. Callers
   # supply only the ref-or-environment suffix, and wildcards are rejected by

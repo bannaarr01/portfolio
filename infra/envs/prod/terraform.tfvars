@@ -20,6 +20,11 @@ serve_www   = false
 github_owner = "bannaarr01"
 github_repo  = "portfolio"
 
+# Numeric ids for the immutable OIDC subject claim.
+#   gh api repos/bannaarr01/portfolio --jq '{repo_id: .id, owner_id: .owner.id}'
+github_owner_id = 86472333
+github_repo_id  = 1351433953
+
 price_class = "PriceClass_100"
 
 # Subscribers to the budget alert and the CloudFront 5xx alarm. Taken from

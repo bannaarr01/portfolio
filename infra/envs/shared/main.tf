@@ -46,6 +46,9 @@ module "ci_oidc" {
   github_owner = var.github_owner
   github_repo  = var.github_repo
 
+  github_owner_id = var.github_owner_id
+  github_repo_id  = var.github_repo_id
+
   # The deploy roles are per-environment and are created by envs/staging and
   # envs/prod, each scoped to its own bucket and distribution.
   create_deploy_role    = false

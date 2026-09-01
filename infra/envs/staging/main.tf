@@ -71,6 +71,9 @@ module "ci_oidc" {
   github_owner = var.github_owner
   github_repo  = var.github_repo
 
+  github_owner_id = var.github_owner_id
+  github_repo_id  = var.github_repo_id
+
   create_deploy_role    = true
   create_terraform_role = false # owned by envs/shared
 

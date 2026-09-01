@@ -18,6 +18,51 @@ variable "github_repo" {
   type        = string
 }
 
+/*
+  ── IMMUTABLE SUBJECT CLAIMS ───────────────────────────────────────────────
+
+  GitHub now mints OIDC tokens whose `sub` embeds the numeric owner and
+  repository ids:
+
+    repo:bannaarr01@86472333/portfolio@1351433953:environment:infra-plan
+
+  rather than the historical
+
+    repo:bannaarr01/portfolio:environment:infra-plan
+
+  The ids never change, so a subject cannot be inherited by a different
+  repository that later takes the same name, which is the point of the format.
+
+  A trust policy written for the old shape fails closed and produces exactly
+  one symptom: `Not authorized to perform sts:AssumeRoleWithWebIdentity`, with
+  nothing wrong in the provider, the audience, or the workflow. The presented
+  subject is only visible in CloudTrail, so this is worth knowing before
+  debugging it a second time.
+
+  Both ids are public for a public repository:
+
+    gh api repos/<owner>/<repo> --jq '{repo_id: .id, owner_id: .owner.id}'
+
+  Leave them null to build the historical subject instead, for an account that
+  is not issuing immutable claims yet.
+*/
+variable "github_owner_id" {
+  description = "Numeric GitHub account id of the owner. Set to use immutable subject claims; null builds the historical `owner/repo` subject."
+  type        = number
+  default     = null
+}
+
+variable "github_repo_id" {
+  description = "Numeric GitHub repository id. Must be set together with github_owner_id."
+  type        = number
+  default     = null
+
+  validation {
+    condition     = (var.github_repo_id == null) == (var.github_owner_id == null)
+    error_message = "github_owner_id and github_repo_id must be set together: half an immutable subject matches nothing."
+  }
+}
+
 variable "oidc_provider_arn" {
   description = "ARN of the GitHub OIDC provider created by infra/bootstrap. Null looks it up by URL, which is the normal path — an account can only hold one provider per URL, so it is unambiguous."
   type        = string
