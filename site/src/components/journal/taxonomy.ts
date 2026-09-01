@@ -4,15 +4,18 @@ import type { CategorySlug } from '../../types/content';
 import type { IconName } from '../../types/icons';
 
 /**
- * Presentation metadata for the four disciplines — owned by group 04.
+ * Presentation metadata for the disciplines — owned by group 04.
  *
  * `glyph` and `rotate` are cover-art decisions (PLAN.md §4.8), not content, so
  * they live here rather than in group 07's YAML. `title` is only a fallback:
  * every consumer resolves the real title from the `categories` collection so a
  * rename in content never leaves stale type on the artwork.
  *
- * Typed as a total Record — adding a fifth CategorySlug is a compile error, not
- * a silently unstyled cover.
+ * Typed as a total Record — adding a CategorySlug without adding it here is a
+ * compile error, not a silently unstyled cover.
+ *
+ * `rotate` values are kept spread apart on purpose: two categories a few
+ * degrees apart produce covers nobody can tell from each other in a grid.
  */
 export const CATEGORY_ART: Record<
   CategorySlug,
@@ -27,9 +30,10 @@ export const CATEGORY_ART: Record<
     rotate: '32deg',
   },
   cpp: { title: 'C++', glyph: 'activity', rotate: '-30deg' },
+  'ai-engineering': { title: 'AI Engineering', glyph: 'sparkles', rotate: '54deg' },
 };
 
-/** All four categories, ordered by their `order` field. */
+/** Every category, ordered by its `order` field. */
 export async function getOrderedCategories() {
   const cats = await getCollection('categories');
   return [...cats].sort((a, b) => a.data.order - b.data.order);

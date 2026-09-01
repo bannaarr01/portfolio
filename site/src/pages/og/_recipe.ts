@@ -52,13 +52,20 @@ export const PAGE_BG = token('bg');
 export const ACCENT_FROM = token('accent-strong');
 export const ACCENT_TO = token('accent-2');
 
-/** §4.8 — per-category hue rotation, so the four disciplines read differently. */
+/**
+ * §4.8 — per-category hue rotation, so the disciplines read differently.
+ *
+ * These must stay in step with `rotate` in `components/journal/taxonomy.ts`:
+ * that value drives the CSS cover art and this one drives the PNG, and a card
+ * that does not match its own preview image is worse than either alone.
+ */
 export const CATEGORY_HUE: Record<CategorySlug, number> = {
   go: 0,
   'aws-cloud': -14,
   'system-design': 18,
   'backend-engineering': 32,
   cpp: -30,
+  'ai-engineering': 54,
 };
 
 /**
@@ -71,6 +78,7 @@ export const CATEGORY_GLYPH: Record<CategorySlug, IconName> = {
   'system-design': 'layers',
   'backend-engineering': 'server',
   cpp: 'activity',
+  'ai-engineering': 'sparkles',
 };
 
 export const glyphPath = (icon: IconName): string => ICON_PATHS[icon];

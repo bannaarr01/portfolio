@@ -1,0 +1,9 @@
+# Feeds: /blog/series/claude-code-in-practice/ and the part navigation on each
+# article. Part count is derived from the posts, not stored here.
+#
+# A post joins by setting BOTH `series: claude-code-in-practice` and a numeric
+# `part:`. The Zod refinement in content.config.ts rejects one without the other.
+slug: claude-code-in-practice
+title: Claude Code in practice
+description: "Six parts on what actually changes how a session goes: context, commands, MCP, hooks, sub-agents, and skills."
+category: ai-engineering
