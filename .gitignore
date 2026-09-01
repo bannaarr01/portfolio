@@ -14,5 +14,7 @@ domain.md
 .playwright-mcp/
 /Boluwaji_Joshua_Adedigba_resume.pdf
 /gaps.md
-/Screenshot 2026-08-31 at 9.02.57 PM.png
+# macOS screenshot names contain a narrow no-break space (U+202F) before AM/PM,
+# so a pattern typed with a normal space never matches. Glob past it.
+/Screenshot*.png
 dev/
