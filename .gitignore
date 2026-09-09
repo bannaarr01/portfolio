@@ -18,3 +18,4 @@ domain.md
 # so a pattern typed with a normal space never matches. Glob past it.
 /Screenshot*.png
 dev/
+/HANDOFF.md
