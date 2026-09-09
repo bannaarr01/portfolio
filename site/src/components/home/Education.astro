@@ -35,7 +35,7 @@ const { heading, degreesCard, degrees, certificationsCard, certifications } = As
 
         {
           degrees.map((degree) => (
-            <div class="degree">
+            <div class:list={['degree', { reading: Boolean(degree.status) }]}>
               {/* `period` is optional in practice: a resume often dates jobs
                   but not degrees. Joining on a filtered array keeps the
                   middot a *separator* rather than a prefix — with an empty
@@ -46,6 +46,21 @@ const { heading, degreesCard, degrees, certificationsCard, certifications } = As
               </p>
               <h4>{degree.qualification}</h4>
               <p class="inst">{degree.institution}</p>
+
+              {/* The label is the accessible name here; the dot and the sweep
+                  are decoration and are hidden, so a screen reader hears
+                  "Currently reading" once rather than announcing two unlabelled
+                  graphics beside it. */}
+              {degree.status && (
+                <p class="status">
+                  <span class="live" aria-hidden="true" />
+                  <span class="status-label">{degree.status}</span>
+                  <span class="track" aria-hidden="true">
+                    <span class="sweep" />
+                  </span>
+                </p>
+              )}
+
               {degree.notes.length > 0 && (
                 <ul class="h-bullets notes">
                   {degree.notes.map((note) => (
@@ -172,6 +187,87 @@ const { heading, degreesCard, degrees, certificationsCard, certifications } = As
     font-size: 14px;
   }
 
+  /* ------------------------------------------------------ in progress -- */
+
+  /* A degree still being read. The rail is what separates it at a glance:
+     the completed entries are divided by a neutral hairline *above* them,
+     so an accent hairline down the side reads as a different axis rather
+     than a louder version of the same one. */
+  .degree.reading {
+    position: relative;
+    padding-left: 15px;
+  }
+
+  .degree.reading::before {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 0;
+    width: 2px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(180deg, var(--accent-strong), var(--accent-2));
+    content: '';
+  }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 12px 0 0;
+  }
+
+  /* Accent, not `--success`. The Hero's availability dot is green and means
+     "open to work"; reusing that colour here would read as a second hiring
+     signal rather than an enrolment. Same geometry, different channel. */
+  .live {
+    position: relative;
+    width: 7px;
+    height: 7px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+
+  .status-label {
+    flex: none;
+    color: var(--accent-strong);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Indeterminate on purpose — see the note in `data/education.ts`. The Hero's
+     XP bar fills to a real number; this one has no number to fill to, so it
+     travels instead. A half-filled meter here would be invented data. */
+  .track {
+    position: relative;
+    overflow: hidden;
+    min-width: 34px;
+    height: 2px;
+    flex: 1;
+    border-radius: var(--radius-pill);
+    background: var(--border);
+  }
+
+  /* Resting state, and the only state under reduced motion: a soft accent
+     line sitting in the track rather than an empty grey slot. */
+  .sweep {
+    position: absolute;
+    inset: 0;
+    display: block;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--accent),
+      var(--accent-2),
+      transparent
+    );
+  }
+
   /* ----------------------------------------------------- certificates -- */
 
   .certs {
@@ -232,6 +328,51 @@ const { heading, degreesCard, degrees, certificationsCard, certifications } = As
 
   .certs a:hover :global(svg) {
     color: var(--accent-strong);
+  }
+
+  /* ----------------------------------------------------------- motion -- */
+
+  /* Opt-in, matching Hero.astro: the animation is *added* when motion is
+     welcome rather than removed when it isn't, so the reduced-motion path is
+     the one that needs no override to be correct. `global.css` clamps
+     durations under `reduce` as a second belt. Both properties here are
+     compositor-only. */
+  @media (prefers-reduced-motion: no-preference) {
+    .live::after {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+      content: '';
+    }
+
+    .sweep {
+      animation: sweep 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+  }
+
+  /* Keyframes are component-scoped in Astro, so this is a local twin of the
+     Hero's dot pulse rather than a shared one. */
+  @keyframes ping {
+    0% {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+    70%,
+    100% {
+      opacity: 0;
+      transform: scale(2.6);
+    }
+  }
+
+  @keyframes sweep {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
   }
 
   @media (max-width: 900px) {

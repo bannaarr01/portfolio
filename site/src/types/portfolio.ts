@@ -95,6 +95,14 @@ export interface Degree {
   qualification: string;
   institution: string;
   notes: string[];
+  /**
+   * Present only on a qualification still being read. The string is the chip
+   * label itself, so the wording lives with the data rather than in the
+   * component; its presence is what switches on the in-progress treatment in
+   * `Education.astro`. Omit it — do not pass `''` — once the degree is
+   * conferred, and the entry renders exactly like the completed ones.
+   */
+  status?: string;
 }
 
 export interface Certification {

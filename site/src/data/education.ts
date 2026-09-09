@@ -19,14 +19,25 @@
  *   - **Grades.** No GPA or classification is stated, so `notes` is empty on
  *     both entries. Do not add one that isn't on the transcript.
  *
- * The two degrees are the Coventry/INTI dual-award route — the local
+ * The lower two degrees are the Coventry/INTI dual-award route — the local
  * qualification and the UK-awarded one for the same programme — which is why
  * both read as Software Engineering and neither supersedes the other.
+ *
+ * The Stockholm University master's is the one entry NOT from the resume PDF,
+ * which predates it. It carries `status`, and the same two omissions apply for
+ * the same reason: no `period`, because no start or expected-completion date
+ * was given, and no `notes`.
  *
  * ── SHAPE ────────────────────────────────────────────────────────────────
  * `degrees` renders newest first with a `graduation-cap` icon; `notes` is a
  * bulleted list under each entry and may be empty. `certifications` renders
  * with an `award` icon, each row linking out via `url`.
+ *
+ * An entry with `status` set gets the in-progress treatment in
+ * `Education.astro` — accent rail, live dot, and an indeterminate sweep. The
+ * sweep is deliberately indeterminate rather than a percentage bar: no credit
+ * count is on record, and a filled meter would assert progress nobody stated.
+ * Drop the `status` key when the degree is conferred.
  */
 
 import type { EducationCardCopy } from '../components/home/types';
@@ -47,6 +58,14 @@ export const certificationsCard = {
 } satisfies EducationCardCopy;
 
 export const degrees = [
+  {
+    period: '',
+    location: 'Stockholm, Sweden',
+    qualification: "Master's Programme in Computer and Systems Sciences",
+    institution: 'Stockholm University',
+    notes: [],
+    status: 'In progress',
+  },
   {
     period: '',
     location: 'Coventry, United Kingdom',
