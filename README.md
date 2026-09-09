@@ -86,7 +86,7 @@ Route 53 ─► CloudFront ─► S3 (private, OAC)
 ACM certificate (us-east-1) attached to the distribution
 ```
 
-Production is `joshua.naijora.com`. Staging lives on a sibling subdomain in the same hosted zone, covered by the same wildcard certificate — it adds no meaningful cost, and it exists so the CloudFront Function and certificate flow get debugged somewhere other than production.
+Production is `josh.naijora.com`. Staging lives on a sibling subdomain in the same hosted zone, covered by the same wildcard certificate — it adds no meaningful cost, and it exists so the CloudFront Function and certificate flow get debugged somewhere other than production.
 
 ## Repo layout
 
@@ -165,7 +165,7 @@ A budget alert and a CloudFront 5xx alarm are defined in Terraform rather than c
 
 ### The environment
 
-One environment, `infra/envs/prod`, serving `joshua.naijora.com`. There is no
+One environment, `infra/envs/prod`, serving `josh.naijora.com`. There is no
 staging: a second distribution and certificate for a single-author static site
 bought a rehearsal step and little else, and `scripts/preview-with-headers.mjs`
 reproduces the header policy and the directory rewrite locally, which is where

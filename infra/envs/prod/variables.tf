@@ -16,7 +16,7 @@ variable "domain_name" {
 }
 
 variable "subdomain" {
-  description = "Label prefixed to domain_name for this environment. Null serves the apex. `joshua` serves joshua.naijora.com, which is what README.md, AGENTS.md, domain.md and astro.config.mjs all declare production to be."
+  description = "Label prefixed to domain_name for this environment. Null serves the apex. `josh` serves josh.naijora.com, which is what README.md, AGENTS.md, domain.md and astro.config.mjs all declare production to be."
   type        = string
   default     = null
 }
@@ -28,7 +28,7 @@ variable "hosted_zone_id" {
 }
 
 variable "serve_www" {
-  description = "Whether www.<host> is an alias on the distribution and a SAN on the certificate. When true, canonical_host 301s it to the bare host. Only legal when serving the apex: `www.joshua.naijora.com` is two labels deep, which no `*.naijora.com` wildcard matches (domain.md, AGENTS.md gotcha 8), and ACM SANs cannot be edited after issue."
+  description = "Whether www.<host> is an alias on the distribution and a SAN on the certificate. When true, canonical_host 301s it to the bare host. Only legal when serving the apex: `www.josh.naijora.com` is two labels deep, which no `*.naijora.com` wildcard matches (domain.md, AGENTS.md gotcha 8), and ACM SANs cannot be edited after issue."
   type        = bool
   default     = true
 

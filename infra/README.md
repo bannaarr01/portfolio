@@ -24,7 +24,7 @@ infra/
 │  └─ guardrails/        monthly cost budget
 └─ envs/
    ├─ shared/            hosted zone, budget, terraform role  (account-level)
-   └─ prod/              joshua.<domain>
+   └─ prod/              josh.<domain>
 ```
 
 Environments hold provider config, backend config, module calls and tfvars.

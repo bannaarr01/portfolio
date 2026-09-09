@@ -17,7 +17,7 @@
 
 Ten worktrees exist under `.claude/worktrees/` (gitignored) on `feature/<slug>` branches, one per grouped-plan slice. Some hold partial slice work. All still branch from the same base commit — nothing has merged.
 
-The site domain is `joshua.naijora.com`. What already exists in AWS for DNS and TLS, and how it hands over to Terraform, is in [`domain.md`](./domain.md).
+The site domain is `josh.naijora.com`. What already exists in AWS for DNS and TLS, and how it hands over to Terraform, is in [`domain.md`](./domain.md).
 
 Do not assume any other file exists, and do not invent paths.
 

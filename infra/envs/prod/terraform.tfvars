@@ -3,18 +3,18 @@ region  = "ap-southeast-1"
 
 # Must match envs/shared.
 #
-# RESOLVED — option (b): production serves `joshua.naijora.com`, which is what
+# RESOLVED — option (b): production serves `josh.naijora.com`, which is what
 # README.md, AGENTS.md, domain.md §"Site domain" and astro.config.mjs have all
 # stated throughout. The environment now takes the same optional `subdomain`
 # variable, rather than the docs being rewritten around the apex.
 #
 # `serve_www` stays false, and `variables.tf` now enforces that rather than
-# leaving it to a comment: `www.joshua.naijora.com` is two labels deep, the
+# leaving it to a comment: `www.josh.naijora.com` is two labels deep, the
 # issued `*.naijora.com` wildcard matches exactly one, and ACM SANs are
 # immutable — so covering it would mean a new certificate, not an edit
 # (domain.md, AGENTS.md gotcha 8).
 domain_name = "naijora.com"
-subdomain   = "joshua"
+subdomain   = "josh"
 serve_www   = false
 
 github_owner = "bannaarr01"

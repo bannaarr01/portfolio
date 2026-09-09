@@ -20,7 +20,7 @@ import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
  * Set `SITE_URL` in the deploy workflow per environment. It must agree with
  * the host the Terraform stack actually serves for that environment.
  */
-const PRODUCTION_SITE = 'https://joshua.naijora.com';
+const PRODUCTION_SITE = 'https://josh.naijora.com';
 const SITE_URL = process.env.SITE_URL?.trim() || PRODUCTION_SITE;
 
 // Owned by group 00. Every integration the whole build needs is registered
