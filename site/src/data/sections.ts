@@ -8,28 +8,25 @@
  * text on the accent word and the hero name only). Splitting on the last word
  * or two usually reads best.
  *
- * `index` is the mono rail number beside the heading. Renumber if you reorder
- * or drop a section — nothing derives these automatically.
+ * Headings carried a mono rail index (01, 02 …) until it was dropped from
+ * `SectionHeading.astro`. Reordering or adding a section is now purely a
+ * matter of `pages/index.astro` — there is no counter here to keep in step,
+ * and no gap to paper over when a section renders nothing.
  *
- * ── CURRENT NUMBERING ────────────────────────────────────────────────────
- * Testimonials renders nothing while `data/testimonials.ts` is empty, so the
- * sections after it are numbered as if it were not there — otherwise the page
- * counts 04, 06, 07 and looks like a section failed to load. The heading entry
- * below keeps its copy so restoring the section is a one-line change.
- *
- * If you add quotes back: give testimonials `05` and shift philosophy,
- * education, and `contact.ts` up to `06`, `07`, `08`.
+ * Testimonials is the one that does: it renders nothing while
+ * `data/testimonials.ts` is empty. Its entry below keeps its copy so restoring
+ * the section is a one-line change.
  */
 
 import type { SectionHeadings } from '../components/home/types';
 
 export const headings = {
-  about: { index: '01', lead: 'About', accent: 'Me' },
-  experience: { index: '02', lead: 'Work', accent: 'Experience' },
-  projects: { index: '03', lead: 'Featured', accent: 'Projects' },
-  skills: { index: '04', lead: 'Skills &', accent: 'Technologies' },
+  about: { lead: 'About', accent: 'Me' },
+  experience: { lead: 'Work', accent: 'Experience' },
+  projects: { lead: 'Featured', accent: 'Projects' },
+  skills: { lead: 'Skills &', accent: 'Technologies' },
   // Not rendered — see the note above and `data/testimonials.ts`.
-  testimonials: { index: '05', lead: 'What Colleagues', accent: 'Say' },
-  philosophy: { index: '05', lead: 'How I Think &', accent: 'Work' },
-  education: { index: '06', lead: 'Education &', accent: 'Credentials' },
+  testimonials: { lead: 'What Colleagues', accent: 'Say' },
+  philosophy: { lead: 'How I Think &', accent: 'Work' },
+  education: { lead: 'Education &', accent: 'Credentials' },
 } satisfies SectionHeadings;

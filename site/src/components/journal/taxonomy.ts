@@ -59,8 +59,3 @@ export interface Row {
   description: string;
   meta: string;
 }
-
-/** Zero-padded rail numeral: 1 -> "01". */
-export function railNumber(n: number): string {
-  return String(n).padStart(2, '0');
-}

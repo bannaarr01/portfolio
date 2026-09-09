@@ -1,7 +1,7 @@
 ---
 /**
  * RowGrid — the bordered two-column row grid used by
- * DisciplineGrid. Numbered entries, hairline cells, hover lift to --surface.
+ * DisciplineGrid. Hairline cells, hover lift to --surface.
  *
  * Ruling uses the same technique as CardGrid: every cell carries a top and
  * right hairline, and the inner grid is offset 1px up and right so the outer
@@ -10,7 +10,7 @@
  * filler cell and no per-breakpoint nth-child arithmetic.
  */
 import Icon from '../ui/Icon.astro';
-import { railNumber, type Row } from './taxonomy';
+import type { Row } from './taxonomy';
 
 interface Props {
   rows: Row[];
@@ -23,9 +23,8 @@ const { rows, variant = 'inline' } = Astro.props;
 <div class="row-frame">
   <div class:list={['row-grid', `is-${variant}`]}>
     {
-      rows.map((row, i) => (
+      rows.map((row) => (
         <a class="row" href={row.href}>
-          <span class="row-num">{railNumber(i + 1)}</span>
           <span class="row-body">
             <span class="row-title">{row.title}</span>
             <span class="row-desc">{row.description}</span>
@@ -71,16 +70,6 @@ const { rows, variant = 'inline' } = Astro.props;
 
   .row:hover {
     background: var(--surface);
-  }
-
-  .row-num {
-    flex: none;
-    padding-top: 3px;
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    font-weight: 700;
-    color: var(--accent);
-    font-variant-numeric: tabular-nums;
   }
 
   .row-body {

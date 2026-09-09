@@ -16,7 +16,7 @@ const whatsappNumber = profile.phone.replace(/\D/g, '');
 
 export const contact = {
   // 07, not 08 — the testimonials section is not rendering. See `sections.ts`.
-  heading: { index: '07', lead: "Let's", accent: 'Connect' },
+  heading: { lead: "Let's", accent: 'Connect' },
 
   lead: 'I’m open to discussing backend and cloud engineering roles, platform modernization, and technically ambitious projects.',
 

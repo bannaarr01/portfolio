@@ -28,7 +28,6 @@ export interface Cta {
  * cyan→teal gradient. `index` is the mono rail number ("01", "02", …).
  */
 export interface SectionCopy {
-  index?: string;
   lead: string;
   accent: string;
 }
