@@ -76,9 +76,9 @@ export const profile = {
     'Current work at Telekom R&D covers nationwide sales intelligence and workforce automation systems, where SSO consolidation cut login overhead 30% and Kubernetes CI/CD raised development velocity 40%. Earlier, freelancing out of Japan, I cut cloud infrastructure cost 65% by migrating a legacy PHP codebase to NestJS microservices and accelerated API responses 75%.',
   ],
 
-  location: 'Kuala Lumpur, Malaysia',
+  location: 'Stockholm, Sweden',
   email: 'joshboluwaji6@gmail.com',
-  phone: '+60 1128 557 317',
+  phone: '+46 766 926 550',
   resumeUrl: '/resume.pdf',
 
   /**
