@@ -78,7 +78,7 @@ export const profile = {
 
   location: 'Stockholm, Sweden',
   email: 'joshboluwaji6@gmail.com',
-  phone: '+46 766 926 550',
+  phone: '+46 72 043 2818',
   resumeUrl: '/resume.pdf',
 
   /**
