@@ -37,7 +37,7 @@ export const jobs = [
     company: 'Telekom Research & Development',
     location: 'Cyberjaya, Malaysia',
     start: '09/2022',
-    end: 'Present',
+    end: '09/2026',
     blocks: [
       {
         heading: 'Sales Intelligence & Workforce Automation',
